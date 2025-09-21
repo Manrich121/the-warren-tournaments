@@ -1,16 +1,16 @@
-
-import NextAuth from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
-import prisma from '@/lib/prisma';
-import { compare } from 'bcrypt';
+import NextAuth from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import prisma from "@/lib/prisma";
+import { compare } from "bcrypt";
 
 const authOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     CredentialsProvider({
-      name: 'Credentials',
+      name: "Credentials",
       credentials: {
         email: { label: "Email", type: "text" },
-        password: {  label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials.password) {
@@ -21,7 +21,7 @@ const authOptions = {
           where: { email: credentials.email },
         });
 
-        if (admin && await compare(credentials.password, admin.password)) {
+        if (admin && (await compare(credentials.password, admin.password))) {
           return { id: admin.id.toString(), email: admin.email };
         }
         return null;
@@ -29,7 +29,7 @@ const authOptions = {
     }),
   ],
   session: {
-    strategy: 'jwt' as const,
+    strategy: "jwt" as const,
   },
   callbacks: {
     async jwt({ token, user }: any) {
@@ -46,7 +46,7 @@ const authOptions = {
     },
   },
   pages: {
-    signIn: '/admin/login',
+    signIn: "/admin/login",
   },
 };
 
