@@ -10,11 +10,11 @@ This document outlines the tasks required to implement the Magic: The Gathering 
 
 ## Phase 1: Project Setup
 
-- **T001**: Initialize a new Next.js project with TypeScript.
-- **T002**: Install dependencies: `prisma`, `next-auth`, `shadcn/ui`, `tailwindcss`, `next-themes`, `jest`, `@testing-library/react`, `@testing-library/jest-dom`.
-- **T003**: Configure Prisma and connect to the PostgreSQL database.
-- **T004**: Set up Tailwind CSS and shadcn/ui.
-- **T005**: Configure Jest and React Testing Library.
+- [X] **T001**: Initialize a new Next.js project with TypeScript.
+- [X] **T002**: Install dependencies: `prisma`, `next-auth`, `shadcn/ui`, `tailwindcss`, `next-themes`, `jest`, `@testing-library/react`, `@testing-library/jest-dom`.
+- [X] **T003**: Configure Prisma and connect to the PostgreSQL database.
+- [X] **T004**: Set up Tailwind CSS and shadcn/ui.
+- [X] **T005**: Configure Jest and React Testing Library.
 
 ---
 

@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Player {
+  id           Int     @id @default(autoincrement())
+  fullName     String
+  wizardsEmail String  @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  matchesAsPlayer1 Match[] @relation("Player1")
+  matchesAsPlayer2 Match[] @relation("Player2")
+  events       Event[]   @relation("EventParticipants")
+}
+
+model Match {
+  id           Int      @id @default(autoincrement())
+  event        Event    @relation(fields: [eventId], references: [id])
+  eventId      Int
+  player1      Player   @relation("Player1", fields: [player1Id], references: [id])
+  player1Id    Int
+  player2      Player   @relation("Player2", fields: [player2Id], references: [id])
+  player2Id    Int
+  player1Score Int
+  player2Score Int
+  draw         Boolean
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Event {
+  id           Int      @id @default(autoincrement())
+  league       League   @relation(fields: [leagueId], references: [id])
+  leagueId     Int
+  name         String
+  date         DateTime
+  participants Player[] @relation("EventParticipants")
+  matches      Match[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model League {
+  id        Int       @id @default(autoincrement())
+  name      String
+  startDate DateTime
+  endDate   DateTime
+  events    Event[]
+  prizePool PrizePool?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Admin {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PrizePool {
+  id        Int      @id @default(autoincrement())
+  league    League   @relation(fields: [leagueId], references: [id])
+  leagueId  Int      @unique
+  amount    Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
