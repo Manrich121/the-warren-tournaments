@@ -1,0 +1,33 @@
+openapi: 3.0.0
+info:
+  title: Prize Pool API
+  version: 1.0.0
+paths:
+  /prize-pool:
+    get:
+      summary: Get the prize pool
+      responses:
+        '200':
+          description: The current prize pool
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrizePool'
+components:
+  schemas:
+    PrizePool:
+      type: object
+      properties:
+        id:
+          type: integer
+        leagueId:
+          type: integer
+        amount:
+          type: number
+          format: float
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time

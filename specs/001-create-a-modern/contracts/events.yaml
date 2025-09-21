@@ -1,0 +1,61 @@
+openapi: 3.0.0
+info:
+  title: Events API
+  version: 1.0.0
+paths:
+  /events:
+    get:
+      summary: Get all events
+      responses:
+        '200':
+          description: A list of events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+  /events/{id}:
+    get:
+      summary: Get an event by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A single event
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+components:
+  schemas:
+    Event:
+      type: object
+      properties:
+        id:
+          type: integer
+        leagueId:
+          type: integer
+        name:
+          type: string
+        date:
+          type: string
+          format: date-time
+        participants:
+          type: array
+          items:
+            type: integer
+        matches:
+          type: array
+          items:
+            type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time

@@ -1,0 +1,58 @@
+openapi: 3.0.0
+info:
+  title: Leagues API
+  version: 1.0.0
+paths:
+  /leagues:
+    get:
+      summary: Get all leagues
+      responses:
+        '200':
+          description: A list of leagues
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/League'
+  /leagues/{id}:
+    get:
+      summary: Get a league by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A single league
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/League'
+components:
+  schemas:
+    League:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        events:
+          type: array
+          items:
+            type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time

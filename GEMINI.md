@@ -1,0 +1,24 @@
+# the-warren-tournaments Development Guidelines
+
+Auto-generated from all feature plans. Last updated: 2025-09-21
+
+## Active Technologies
+- Next.js (TypeScript) + shadcn/ui, tailwind CSS, Prisma (001-create-a-modern)
+
+## Project Structure
+```
+src/
+tests/
+```
+
+## Commands
+npm test [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLOGIES] npm run lint
+
+## Code Style
+Next.js (TypeScript): Follow standard conventions
+
+## Recent Changes
+- 001-create-a-modern: Added Next.js (TypeScript) + shadcn/ui, tailwind CSS, Prisma
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->
