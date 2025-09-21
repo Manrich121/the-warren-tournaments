@@ -11,14 +11,14 @@ datasource db {
 }
 
 model Player {
-  id           Int     @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
   fullName     String
-  wizardsEmail String  @unique
+  wizardsEmail String   @unique
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  events       Event[]  @relation("EventParticipants")
   matchesAsPlayer1 Match[] @relation("Player1")
   matchesAsPlayer2 Match[] @relation("Player2")
-  events       Event[]   @relation("EventParticipants")
 }
 
 model Match {
@@ -54,7 +54,7 @@ model League {
   startDate DateTime
   endDate   DateTime
   events    Event[]
-  prizePool PrizePool?
+  prizePool PrizePool[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -70,7 +70,7 @@ model Admin {
 model PrizePool {
   id        Int      @id @default(autoincrement())
   league    League   @relation(fields: [leagueId], references: [id])
-  leagueId  Int      @unique
+  leagueId  Int
   amount    Float
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

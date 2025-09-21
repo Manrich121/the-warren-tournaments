@@ -12,7 +12,7 @@ tests/
 ```
 
 ## Commands
-npm test [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLOGIES] npm run lint
+pnpm test [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLOGIES] npm run lint
 
 ## Code Style
 Next.js (TypeScript): Follow standard conventions
@@ -21,4 +21,5 @@ Next.js (TypeScript): Follow standard conventions
 - 001-create-a-modern: Added Next.js (TypeScript) + shadcn/ui, tailwind CSS, Prisma
 
 <!-- MANUAL ADDITIONS START -->
+- Use `pnpx` instead of `npx`.
 <!-- MANUAL ADDITIONS END -->

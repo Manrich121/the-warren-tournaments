@@ -20,8 +20,8 @@ This document outlines the tasks required to implement the Magic: The Gathering 
 
 ## Phase 2: Data Models
 
-- **T006**: Create the Prisma schema based on `data-model.md`.
-- **T007**: Generate the Prisma client.
+- [X] **T006**: Create the Prisma schema based on `data-model.md`.
+- [X] **T007**: Generate the Prisma client.
 
 ---
 
