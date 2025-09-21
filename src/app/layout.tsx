@@ -2,8 +2,8 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { Providers } from "@/components/providers";
+import { Header } from "@/components/header";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,11 +28,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <div className="min-h-screen bg-background">
-              <header className="border-b">
-                <div className="container mx-auto px-4 py-4 flex justify-end">
-                  <ThemeToggle />
-                </div>
-              </header>
+              <Header />
               {children}
             </div>
           </ThemeProvider>

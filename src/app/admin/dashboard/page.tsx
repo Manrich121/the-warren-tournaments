@@ -1,165 +1,183 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { signOut, getSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useState, useEffect } from "react";
+import { signOut, getSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Player {
-  id: number
-  fullName: string
-  wizardsEmail: string
-  createdAt: string
-  updatedAt: string
+  id: number;
+  fullName: string;
+  wizardsEmail: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface Match {
-  id: number
-  eventId: number
-  player1Id: number
-  player2Id: number
-  player1Score: number
-  player2Score: number
-  draw: boolean
-  createdAt: string
+  id: number;
+  eventId: number;
+  player1Id: number;
+  player2Id: number;
+  player1Score: number;
+  player2Score: number;
+  draw: boolean;
+  createdAt: string;
 }
 
 interface Event {
-  id: number
-  leagueId: number
-  name: string
-  date: string
-  createdAt: string
+  id: number;
+  leagueId: number;
+  name: string;
+  date: string;
+  createdAt: string;
 }
 
 interface League {
-  id: number
-  name: string
-  startDate: string
-  endDate: string
-  createdAt: string
+  id: number;
+  name: string;
+  startDate: string;
+  endDate: string;
+  createdAt: string;
 }
 
 export default function AdminDashboardPage() {
-  const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('players')
-  const [players, setPlayers] = useState<Player[]>([])
-  const [matches, setMatches] = useState<Match[]>([])
-  const [events, setEvents] = useState<Event[]>([])
-  const [leagues, setLeagues] = useState<League[]>([])
-  const router = useRouter()
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("players");
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [matches, setMatches] = useState<Match[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [leagues, setLeagues] = useState<League[]>([]);
+  const router = useRouter();
 
   // Form states
-  const [newPlayerName, setNewPlayerName] = useState('')
-  const [newPlayerEmail, setNewPlayerEmail] = useState('')
-  const [newMatchPlayer1, setNewMatchPlayer1] = useState('')
-  const [newMatchPlayer2, setNewMatchPlayer2] = useState('')
-  const [newMatchEvent, setNewMatchEvent] = useState('')
-  const [newMatchP1Score, setNewMatchP1Score] = useState('')
-  const [newMatchP2Score, setNewMatchP2Score] = useState('')
-  const [newMatchDraw, setNewMatchDraw] = useState(false)
+  const [newPlayerName, setNewPlayerName] = useState("");
+  const [newPlayerEmail, setNewPlayerEmail] = useState("");
+  const [newMatchPlayer1, setNewMatchPlayer1] = useState("");
+  const [newMatchPlayer2, setNewMatchPlayer2] = useState("");
+  const [newMatchEvent, setNewMatchEvent] = useState("");
+  const [newMatchP1Score, setNewMatchP1Score] = useState("");
+  const [newMatchP2Score, setNewMatchP2Score] = useState("");
+  const [newMatchDraw, setNewMatchDraw] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
-      const session = await getSession()
+      const session = await getSession();
       if (!session) {
-        router.push('/admin/login')
-        return
+        router.push("/admin/login");
+        return;
       }
-      await fetchData()
-      setLoading(false)
-    }
-    checkAuth()
-  }, [router])
+      await fetchData();
+      setLoading(false);
+    };
+    checkAuth();
+  }, [router]);
 
   const fetchData = async () => {
     try {
-      const [playersRes, matchesRes, eventsRes, leaguesRes] = await Promise.all([
-        fetch('/api/players'),
-        fetch('/api/matches'),
-        fetch('/api/events'),
-        fetch('/api/leagues')
-      ])
+      const [playersRes, matchesRes, eventsRes, leaguesRes] = await Promise.all(
+        [
+          fetch("/api/players"),
+          fetch("/api/matches"),
+          fetch("/api/events"),
+          fetch("/api/leagues"),
+        ],
+      );
 
-      if (playersRes.ok) setPlayers(await playersRes.json())
-      if (matchesRes.ok) setMatches(await matchesRes.json())
-      if (eventsRes.ok) setEvents(await eventsRes.json())
-      if (leaguesRes.ok) setLeagues(await leaguesRes.json())
+      if (playersRes.ok) setPlayers(await playersRes.json());
+      if (matchesRes.ok) setMatches(await matchesRes.json());
+      if (eventsRes.ok) setEvents(await eventsRes.json());
+      if (leaguesRes.ok) setLeagues(await leaguesRes.json());
     } catch (error) {
-      console.error('Failed to fetch data:', error)
+      console.error("Failed to fetch data:", error);
     }
-  }
-
-  const handleSignOut = () => {
-    signOut({ callbackUrl: '/' })
-  }
+  };
 
   const addPlayer = async () => {
-    if (!newPlayerName || !newPlayerEmail) return
+    if (!newPlayerName || !newPlayerEmail) return;
 
     try {
-      const response = await fetch('/api/players', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/players", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fullName: newPlayerName,
-          wizardsEmail: newPlayerEmail
-        })
-      })
+          wizardsEmail: newPlayerEmail,
+        }),
+      });
 
       if (response.ok) {
-        setNewPlayerName('')
-        setNewPlayerEmail('')
-        await fetchData()
+        setNewPlayerName("");
+        setNewPlayerEmail("");
+        await fetchData();
       }
     } catch (error) {
-      console.error('Failed to add player:', error)
+      console.error("Failed to add player:", error);
     }
-  }
+  };
 
   const addMatch = async () => {
-    if (!newMatchPlayer1 || !newMatchPlayer2 || !newMatchEvent) return
+    if (!newMatchPlayer1 || !newMatchPlayer2 || !newMatchEvent) return;
 
     try {
-      const response = await fetch('/api/matches', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/matches", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           eventId: parseInt(newMatchEvent),
           player1Id: parseInt(newMatchPlayer1),
           player2Id: parseInt(newMatchPlayer2),
           player1Score: parseInt(newMatchP1Score) || 0,
           player2Score: parseInt(newMatchP2Score) || 0,
-          draw: newMatchDraw
-        })
-      })
+          draw: newMatchDraw,
+        }),
+      });
 
       if (response.ok) {
-        setNewMatchPlayer1('')
-        setNewMatchPlayer2('')
-        setNewMatchEvent('')
-        setNewMatchP1Score('')
-        setNewMatchP2Score('')
-        setNewMatchDraw(false)
-        await fetchData()
+        setNewMatchPlayer1("");
+        setNewMatchPlayer2("");
+        setNewMatchEvent("");
+        setNewMatchP1Score("");
+        setNewMatchP2Score("");
+        setNewMatchDraw(false);
+        await fetchData();
       }
     } catch (error) {
-      console.error('Failed to add match:', error)
+      console.error("Failed to add match:", error);
     }
-  }
+  };
 
   if (loading) {
     return (
       <div className="container mx-auto py-8">
         <div className="text-center">Loading...</div>
       </div>
-    )
+    );
   }
 
   return (
@@ -167,27 +185,24 @@ export default function AdminDashboardPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <Button onClick={handleSignOut} variant="outline">
-          Sign Out
-        </Button>
       </div>
 
       {/* Tabs */}
       <div className="border-b">
         <nav className="flex space-x-8">
           {[
-            { key: 'players', label: 'Players' },
-            { key: 'matches', label: 'Matches' },
-            { key: 'events', label: 'Events' },
-            { key: 'leagues', label: 'Leagues' }
+            { key: "players", label: "Players" },
+            { key: "matches", label: "Matches" },
+            { key: "events", label: "Events" },
+            { key: "leagues", label: "Leagues" },
           ].map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${
                 activeTab === tab.key
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
               {tab.label}
@@ -197,7 +212,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Players Tab */}
-      {activeTab === 'players' && (
+      {activeTab === "players" && (
         <div className="space-y-6">
           <Card>
             <CardHeader>
@@ -249,7 +264,9 @@ export default function AdminDashboardPage() {
                       <TableCell>{player.id}</TableCell>
                       <TableCell>{player.fullName}</TableCell>
                       <TableCell>{player.wizardsEmail}</TableCell>
-                      <TableCell>{new Date(player.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        {new Date(player.createdAt).toLocaleDateString()}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -260,7 +277,7 @@ export default function AdminDashboardPage() {
       )}
 
       {/* Matches Tab */}
-      {activeTab === 'matches' && (
+      {activeTab === "matches" && (
         <div className="space-y-6">
           <Card>
             <CardHeader>
@@ -270,13 +287,19 @@ export default function AdminDashboardPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Player 1</Label>
-                  <Select value={newMatchPlayer1} onValueChange={setNewMatchPlayer1}>
+                  <Select
+                    value={newMatchPlayer1}
+                    onValueChange={setNewMatchPlayer1}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select Player 1" />
                     </SelectTrigger>
                     <SelectContent>
                       {players.map((player) => (
-                        <SelectItem key={player.id} value={player.id.toString()}>
+                        <SelectItem
+                          key={player.id}
+                          value={player.id.toString()}
+                        >
                           {player.fullName}
                         </SelectItem>
                       ))}
@@ -285,13 +308,19 @@ export default function AdminDashboardPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Player 2</Label>
-                  <Select value={newMatchPlayer2} onValueChange={setNewMatchPlayer2}>
+                  <Select
+                    value={newMatchPlayer2}
+                    onValueChange={setNewMatchPlayer2}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select Player 2" />
                     </SelectTrigger>
                     <SelectContent>
                       {players.map((player) => (
-                        <SelectItem key={player.id} value={player.id.toString()}>
+                        <SelectItem
+                          key={player.id}
+                          value={player.id.toString()}
+                        >
                           {player.fullName}
                         </SelectItem>
                       ))}
@@ -302,7 +331,10 @@ export default function AdminDashboardPage() {
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Event</Label>
-                  <Select value={newMatchEvent} onValueChange={setNewMatchEvent}>
+                  <Select
+                    value={newMatchEvent}
+                    onValueChange={setNewMatchEvent}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select Event" />
                     </SelectTrigger>
@@ -368,24 +400,41 @@ export default function AdminDashboardPage() {
                 </TableHeader>
                 <TableBody>
                   {matches.map((match) => {
-                    const player1 = players.find(p => p.id === match.player1Id)
-                    const player2 = players.find(p => p.id === match.player2Id)
-                    const event = events.find(e => e.id === match.eventId)
-                    
+                    const player1 = players.find(
+                      (p) => p.id === match.player1Id,
+                    );
+                    const player2 = players.find(
+                      (p) => p.id === match.player2Id,
+                    );
+                    const event = events.find((e) => e.id === match.eventId);
+
                     return (
                       <TableRow key={match.id}>
                         <TableCell>{match.id}</TableCell>
-                        <TableCell>{event?.name || `Event #${match.eventId}`}</TableCell>
-                        <TableCell>{player1?.fullName || `Player #${match.player1Id}`}</TableCell>
-                        <TableCell>{player2?.fullName || `Player #${match.player2Id}`}</TableCell>
-                        <TableCell>{match.player1Score} - {match.player2Score}</TableCell>
                         <TableCell>
-                          {match.draw ? 'Draw' : 
-                            match.player1Score > match.player2Score ? 'Player 1 Win' : 'Player 2 Win'}
+                          {event?.name || `Event #${match.eventId}`}
                         </TableCell>
-                        <TableCell>{new Date(match.createdAt).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          {player1?.fullName || `Player #${match.player1Id}`}
+                        </TableCell>
+                        <TableCell>
+                          {player2?.fullName || `Player #${match.player2Id}`}
+                        </TableCell>
+                        <TableCell>
+                          {match.player1Score} - {match.player2Score}
+                        </TableCell>
+                        <TableCell>
+                          {match.draw
+                            ? "Draw"
+                            : match.player1Score > match.player2Score
+                              ? "Player 1 Win"
+                              : "Player 2 Win"}
+                        </TableCell>
+                        <TableCell>
+                          {new Date(match.createdAt).toLocaleDateString()}
+                        </TableCell>
                       </TableRow>
-                    )
+                    );
                   })}
                 </TableBody>
               </Table>
@@ -395,7 +444,7 @@ export default function AdminDashboardPage() {
       )}
 
       {/* Events Tab */}
-      {activeTab === 'events' && (
+      {activeTab === "events" && (
         <Card>
           <CardHeader>
             <CardTitle>Events ({events.length})</CardTitle>
@@ -413,16 +462,22 @@ export default function AdminDashboardPage() {
               </TableHeader>
               <TableBody>
                 {events.map((event) => {
-                  const league = leagues.find(l => l.id === event.leagueId)
+                  const league = leagues.find((l) => l.id === event.leagueId);
                   return (
                     <TableRow key={event.id}>
                       <TableCell>{event.id}</TableCell>
                       <TableCell>{event.name}</TableCell>
-                      <TableCell>{league?.name || `League #${event.leagueId}`}</TableCell>
-                      <TableCell>{new Date(event.date).toLocaleDateString()}</TableCell>
-                      <TableCell>{new Date(event.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        {league?.name || `League #${event.leagueId}`}
+                      </TableCell>
+                      <TableCell>
+                        {new Date(event.date).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        {new Date(event.createdAt).toLocaleDateString()}
+                      </TableCell>
                     </TableRow>
-                  )
+                  );
                 })}
               </TableBody>
             </Table>
@@ -431,7 +486,7 @@ export default function AdminDashboardPage() {
       )}
 
       {/* Leagues Tab */}
-      {activeTab === 'leagues' && (
+      {activeTab === "leagues" && (
         <Card>
           <CardHeader>
             <CardTitle>Leagues ({leagues.length})</CardTitle>
@@ -452,9 +507,15 @@ export default function AdminDashboardPage() {
                   <TableRow key={league.id}>
                     <TableCell>{league.id}</TableCell>
                     <TableCell>{league.name}</TableCell>
-                    <TableCell>{new Date(league.startDate).toLocaleDateString()}</TableCell>
-                    <TableCell>{new Date(league.endDate).toLocaleDateString()}</TableCell>
-                    <TableCell>{new Date(league.createdAt).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      {new Date(league.startDate).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      {new Date(league.endDate).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      {new Date(league.createdAt).toLocaleDateString()}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -463,5 +524,5 @@ export default function AdminDashboardPage() {
         </Card>
       )}
     </div>
-  )
+  );
 }
