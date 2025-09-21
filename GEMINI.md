@@ -21,6 +21,4 @@ Next.js (TypeScript): Follow standard conventions
 - 001-create-a-modern: Added Next.js (TypeScript) + shadcn/ui, tailwind CSS, Prisma
 
 <!-- MANUAL ADDITIONS START -->
-- Use `pnpx` instead of `npx`.
-- Use `pnpm` instead of `npm`.
 <!-- MANUAL ADDITIONS END -->

@@ -44,22 +44,22 @@ This document outlines the tasks required to implement the Magic: The Gathering 
 
 ## Phase 4: Frontend Development
 
-- **T020**: Create the public-facing leaderboard page.
-- **T021**: Create the public-facing player stats page.
-- **T022**: Create the admin login page.
-- **T023**: Create the admin dashboard for managing players.
-- **T024**: Create the admin dashboard for managing matches.
-- **T025**: Create the admin dashboard for managing events.
-- **T026**: Create the admin dashboard for managing leagues.
-- **T027**: Implement the prize pool display on the main page.
-- **T028**: Implement the dark theme using `next-themes`.
+- [X] **T020**: Create the public-facing leaderboard page.
+- [X] **T021**: Create the public-facing player stats page.
+- [X] **T022**: Create the admin login page.
+- [X] **T023**: Create the admin dashboard for managing players.
+- [X] **T024**: Create the admin dashboard for managing matches.
+- [X] **T025**: Create the admin dashboard for managing events.
+- [X] **T026**: Create the admin dashboard for managing leagues.
+- [X] **T027**: Implement the prize pool display on the main page.
+- [X] **T028**: Implement the dark theme using `next-themes`.
 
 ---
 
 ## Phase 5: Testing
 
-- **T029**: Write integration tests for the user scenarios in `quickstart.md`.
-- **T030**: Write unit tests for critical components and utility functions.
+- [X] **T029**: Write integration tests for the user scenarios in `quickstart.md`.
+- [X] **T030**: Write unit tests for critical components and utility functions.
 
 ---
 

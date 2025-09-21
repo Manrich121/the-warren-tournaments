@@ -4,7 +4,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import prisma from '@/lib/prisma';
 import { compare } from 'bcrypt';
 
-export const authOptions = {
+const authOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -22,23 +22,23 @@ export const authOptions = {
         });
 
         if (admin && await compare(credentials.password, admin.password)) {
-          return { id: admin.id, email: admin.email };
+          return { id: admin.id.toString(), email: admin.email };
         }
         return null;
       },
     }),
   ],
   session: {
-    strategy: 'jwt',
+    strategy: 'jwt' as const,
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: any) {
       if (user) {
         token.id = user.id;
       }
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: any) {
       if (session.user) {
         session.user.id = token.id as string;
       }
