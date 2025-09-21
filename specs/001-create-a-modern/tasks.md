@@ -27,18 +27,18 @@ This document outlines the tasks required to implement the Magic: The Gathering 
 
 ## Phase 3: Backend Development
 
-- **T008**: Implement API route for `GET /players`.
-- **T009**: Implement API route for `GET /players/{id}`.
-- **T010**: Implement API route for `GET /matches`.
-- **T011**: Implement API route for `GET /matches/{id}`.
-- **T012**: Implement API route for `GET /events`.
-- **T013**: Implement API route for `GET /events/{id}`.
-- **T014**: Implement API route for `GET /leagues`.
-- **T015**: Implement API route for `GET /leagues/{id}`.
-- **T016**: Implement API route for `POST /admin/login`.
-- **T017**: Implement API route for `POST /admin/logout`.
-- **T018**: Implement API route for `GET /prize-pool`.
-- **T019**: Implement admin authentication using NextAuth.js.
+- [X] **T008**: Implement API route for `GET /players`.
+- [X] **T009**: Implement API route for `GET /players/{id}`.
+- [X] **T010**: Implement API route for `GET /matches`.
+- [X] **T011**: Implement API route for `GET /matches/{id}`.
+- [X] **T012**: Implement API route for `GET /events`.
+- [X] **T013**: Implement API route for `GET /events/{id}`.
+- [X] **T014**: Implement API route for `GET /leagues`.
+- [X] **T015**: Implement API route for `GET /leagues/{id}`.
+- [X] **T016**: Implement API route for `POST /admin/login`.
+- [X] **T017**: Implement API route for `POST /admin/logout`.
+- [X] **T018**: Implement API route for `GET /prize-pool`.
+- [X] **T019**: Implement admin authentication using NextAuth.js.
 
 ---
 
