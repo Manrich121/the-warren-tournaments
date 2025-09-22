@@ -15,6 +15,29 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Player'
+    post:
+      summary: Create a new player
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fullName
+                - wizardsEmail
+              properties:
+                fullName:
+                  type: string
+                wizardsEmail:
+                  type: string
+      responses:
+        '201':
+          description: Player created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Player'
   /players/{id}:
     get:
       summary: Get a player by ID

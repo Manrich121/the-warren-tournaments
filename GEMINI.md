@@ -21,4 +21,5 @@ Next.js (TypeScript): Follow standard conventions
 - 001-create-a-modern: Added Next.js (TypeScript) + shadcn/ui, tailwind CSS, Prisma
 
 <!-- MANUAL ADDITIONS START -->
+Constitution @.specify/memory/constitution.md
 <!-- MANUAL ADDITIONS END -->
