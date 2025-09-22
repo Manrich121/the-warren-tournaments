@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { signIn, useSession } from 'next-auth/react';
 import { redirect, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -16,10 +16,13 @@ export default function AdminLoginPage() {
   const [error, setError] = useState('');
   const router = useRouter();
 
-  const session = useSession();
-  if (session) {
-    redirect('/admin/dashboard');
-  }
+  const { status } = useSession();
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      redirect('/admin/dashboard');
+    }
+  }, [status]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
