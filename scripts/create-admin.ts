@@ -1,5 +1,5 @@
-import { PrismaClient } from "@prisma/client";
-import { hash } from "bcrypt";
+import { PrismaClient } from '@prisma/client';
+import { hash } from 'bcrypt';
 
 const prisma = new PrismaClient();
 
@@ -8,9 +8,7 @@ async function createAdmin() {
   const password = process.env.ADMIN_PASSWORD;
 
   if (!email || !password) {
-    console.error(
-      "Check environment variables ADMIN_USERNAME and ADMIN_PASSWORD",
-    );
+    console.error('Check environment variables ADMIN_USERNAME and ADMIN_PASSWORD');
     process.exit(1);
   }
 
@@ -20,20 +18,20 @@ async function createAdmin() {
     const admin = await prisma.admin.create({
       data: {
         email,
-        password: hashedPassword,
-      },
+        password: hashedPassword
+      }
     });
 
-    console.log("Admin account created successfully:", {
+    console.log('Admin account created successfully:', {
       id: admin.id,
       email: admin.email,
-      createdAt: admin.createdAt,
+      createdAt: admin.createdAt
     });
   } catch (error: any) {
-    if (error.code === "P2002") {
-      console.error("Admin with this email already exists");
+    if (error.code === 'P2002') {
+      console.error('Admin with this email already exists');
     } else {
-      console.error("Error creating admin:", error.message);
+      console.error('Error creating admin:', error.message);
     }
   } finally {
     await prisma.$disconnect();

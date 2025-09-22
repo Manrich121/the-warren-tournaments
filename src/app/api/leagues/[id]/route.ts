@@ -1,19 +1,15 @@
-
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const league = await prisma.league.findUnique({
     where: {
-      id: parseInt(id, 10),
+      id: parseInt(id, 10)
     },
     include: {
-      events: true,
-    },
+      events: true
+    }
   });
   if (league) {
     return NextResponse.json(league);

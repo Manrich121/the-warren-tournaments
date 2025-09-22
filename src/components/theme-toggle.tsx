@@ -1,34 +1,25 @@
-'use client'
+'use client';
 
-import * as React from 'react'
-import { useTheme } from 'next-themes'
-import { Button } from '@/components/ui/button'
+import * as React from 'react';
+import { useTheme } from 'next-themes';
+import { Button } from '@/components/ui/button';
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = React.useState(false)
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   if (!mounted) {
-    return null
+    return null;
   }
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-    >
+    <Button variant="outline" size="sm" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
       {theme === 'light' ? (
-        <svg
-          className="h-4 w-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -37,12 +28,7 @@ export function ThemeToggle() {
           />
         </svg>
       ) : (
-        <svg
-          className="h-4 w-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -52,5 +38,5 @@ export function ThemeToggle() {
         </svg>
       )}
     </Button>
-  )
+  );
 }

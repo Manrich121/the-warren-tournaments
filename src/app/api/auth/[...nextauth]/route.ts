@@ -1,16 +1,16 @@
-import NextAuth from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
-import prisma from "@/lib/prisma";
-import { compare } from "bcrypt";
+import NextAuth from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import prisma from '@/lib/prisma';
+import { compare } from 'bcrypt';
 
 const authOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
     CredentialsProvider({
-      name: "Credentials",
+      name: 'Credentials',
       credentials: {
-        email: { label: "Email", type: "text" },
-        password: { label: "Password", type: "password" },
+        email: { label: 'Email', type: 'text' },
+        password: { label: 'Password', type: 'password' }
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials.password) {
@@ -18,18 +18,18 @@ const authOptions = {
         }
 
         const admin = await prisma.admin.findUnique({
-          where: { email: credentials.email },
+          where: { email: credentials.email }
         });
 
         if (admin && (await compare(credentials.password, admin.password))) {
           return { id: admin.id.toString(), email: admin.email };
         }
         return null;
-      },
-    }),
+      }
+    })
   ],
   session: {
-    strategy: "jwt" as const,
+    strategy: 'jwt' as const
   },
   callbacks: {
     async jwt({ token, user }: any) {
@@ -43,11 +43,11 @@ const authOptions = {
         session.user.id = token.id as string;
       }
       return session;
-    },
+    }
   },
   pages: {
-    signIn: "/admin/login",
-  },
+    signIn: '/admin/login'
+  }
 };
 
 const handler = NextAuth(authOptions);

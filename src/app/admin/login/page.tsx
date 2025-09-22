@@ -1,55 +1,55 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { signIn, getSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { useState, useEffect } from 'react';
+import { signIn, getSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const router = useRouter()
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
 
   useEffect(() => {
     // Check if user is already logged in
     const checkSession = async () => {
-      const session = await getSession()
+      const session = await getSession();
       if (session) {
-        router.push('/admin/dashboard')
+        router.push('/admin/dashboard');
       }
-    }
-    checkSession()
-  }, [router])
+    };
+    checkSession();
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
     try {
       const result = await signIn('credentials', {
         email,
         password,
-        redirect: false,
-      })
+        redirect: false
+      });
 
       if (result?.error) {
-        setError('Invalid email or password')
+        setError('Invalid email or password');
       } else {
-        router.push('/admin/dashboard')
+        router.push('/admin/dashboard');
       }
     } catch (err) {
-      setError('An error occurred during login')
+      setError('An error occurred during login');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="container mx-auto py-8">
@@ -60,13 +60,11 @@ export default function AdminLoginPage() {
               ← Back to Homepage
             </Link>
           </div>
-          
+
           <Card>
             <CardHeader className="text-center">
               <CardTitle className="text-2xl">Admin Login</CardTitle>
-              <p className="text-muted-foreground">
-                Sign in to access the admin dashboard
-              </p>
+              <p className="text-muted-foreground">Sign in to access the admin dashboard</p>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -76,7 +74,7 @@ export default function AdminLoginPage() {
                     id="email"
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={e => setEmail(e.target.value)}
                     required
                     placeholder="admin@example.com"
                   />
@@ -87,19 +85,13 @@ export default function AdminLoginPage() {
                     id="password"
                     type="password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={e => setPassword(e.target.value)}
                     required
                     placeholder="Enter your password"
                   />
                 </div>
-                {error && (
-                  <div className="text-red-500 text-sm text-center">{error}</div>
-                )}
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={loading}
-                >
+                {error && <div className="text-red-500 text-sm text-center">{error}</div>}
+                <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? 'Signing in...' : 'Sign In'}
                 </Button>
               </form>
@@ -108,5 +100,5 @@ export default function AdminLoginPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
