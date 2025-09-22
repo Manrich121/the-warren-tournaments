@@ -42,10 +42,13 @@
 - **Mobile**: `api/src/`, `ios/src/` or `android/src/`
 - Paths shown below assume single project - adjust based on plan.md structure
 
-## Phase 3.1: Setup
-- [ ] T001 Create project structure per implementation plan
-- [ ] T002 Initialize [language] project with [framework] dependencies
-- [ ] T003 [P] Configure linting and formatting tools
+## Phase 3.1: Setup & Quality Tools
+- [ ] T001 Create project structure following src/components/ and src/app/ hierarchy
+- [ ] T002 Initialize TypeScript project with strict mode enabled
+- [ ] T003 [P] Configure ESLint with next/core-web-vitals rules
+- [ ] T004 [P] Configure Prettier with project standards (120 char width, single quotes)
+- [ ] T005 [P] Configure Jest and React Testing Library
+- [ ] T006 [P] Set up pnpm package management
 
 ## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**

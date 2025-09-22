@@ -47,7 +47,25 @@
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+### Code Quality Standards
+- [ ] TypeScript strict mode enabled with no type errors
+- [ ] ESLint configuration follows next/core-web-vitals
+- [ ] Prettier formatting configuration applied
+- [ ] Component structure follows src/components/ hierarchy
+- [ ] Naming conventions aligned (PascalCase components, camelCase functions)
+
+### Testing Requirements
+- [ ] Jest and React Testing Library configured
+- [ ] Unit tests planned for critical components
+- [ ] Integration tests planned for authentication and data flows
+- [ ] Test utilities and mock data strategy defined
+
+### User Experience Consistency
+- [ ] Component reusability strategy aligned with existing UI system
+- [ ] Form validation approach using react-hook-form and Zod
+- [ ] Loading states and error handling patterns defined
+- [ ] Responsive design requirements for all viewports
+- [ ] Consistent navigation and visual hierarchy maintained
 
 ## Project Structure
 
