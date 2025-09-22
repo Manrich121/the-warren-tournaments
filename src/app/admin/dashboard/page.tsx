@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Header } from '@/components/Header';
-import { Loader2Icon } from 'lucide-react';
+import { Loader2Icon, ChevronUpIcon, ChevronDownIcon } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -78,6 +78,16 @@ export default function AdminDashboardPage() {
   const [newMatchP2Score, setNewMatchP2Score] = useState('');
   const [newMatchDraw, setNewMatchDraw] = useState(false);
 
+  // Sorting states for all tables
+  const [playerSortField, setPlayerSortField] = useState<keyof Player>('id');
+  const [playerSortDirection, setPlayerSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [matchSortField, setMatchSortField] = useState<keyof Match>('id');
+  const [matchSortDirection, setMatchSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [eventSortField, setEventSortField] = useState<keyof Event>('id');
+  const [eventSortDirection, setEventSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [leagueSortField, setLeagueSortField] = useState<keyof League>('id');
+  const [leagueSortDirection, setLeagueSortDirection] = useState<'asc' | 'desc'>('asc');
+
   useEffect(() => {
     const checkAuth = async () => {
       const session = await getSession();
@@ -126,6 +136,8 @@ export default function AdminDashboardPage() {
       if (response.ok) {
         setNewPlayerName('');
         setNewPlayerEmail('');
+        setAddPlayerOpen(false);
+        setAddPlayerLoading(false);
         await fetchData();
       }
     } catch (error) {
@@ -165,6 +177,112 @@ export default function AdminDashboardPage() {
     } catch (error) {
       console.error('Failed to add match:', error);
     }
+  };
+
+  // Generic sorting function
+  const genericSort = <T,>(array: T[], field: keyof T, direction: 'asc' | 'desc') => {
+    return [...array].sort((a, b) => {
+      const aValue = a[field];
+      const bValue = b[field];
+      
+      let comparison = 0;
+      
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        comparison = aValue.localeCompare(bValue);
+      } else if (typeof aValue === 'number' && typeof bValue === 'number') {
+        comparison = aValue - bValue;
+      } else if (aValue instanceof Date && bValue instanceof Date) {
+        comparison = aValue.getTime() - bValue.getTime();
+      } else {
+        // Handle date strings
+        const dateA = new Date(aValue as string);
+        const dateB = new Date(bValue as string);
+        comparison = dateA.getTime() - dateB.getTime();
+      }
+      
+      return direction === 'asc' ? comparison : -comparison;
+    });
+  };
+
+  // Sorting handlers for each table
+  const handlePlayerSort = (field: keyof Player) => {
+    if (field === playerSortField) {
+      setPlayerSortDirection(playerSortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setPlayerSortField(field);
+      setPlayerSortDirection('asc');
+    }
+  };
+
+  const handleMatchSort = (field: keyof Match) => {
+    if (field === matchSortField) {
+      setMatchSortDirection(matchSortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setMatchSortField(field);
+      setMatchSortDirection('asc');
+    }
+  };
+
+  const handleEventSort = (field: keyof Event) => {
+    if (field === eventSortField) {
+      setEventSortDirection(eventSortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setEventSortField(field);
+      setEventSortDirection('asc');
+    }
+  };
+
+  const handleLeagueSort = (field: keyof League) => {
+    if (field === leagueSortField) {
+      setLeagueSortDirection(leagueSortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setLeagueSortField(field);
+      setLeagueSortDirection('asc');
+    }
+  };
+
+  // Sorted data for each table
+  const sortedPlayers = genericSort(players, playerSortField, playerSortDirection);
+  const sortedMatches = genericSort(matches, matchSortField, matchSortDirection);
+  const sortedEvents = genericSort(events, eventSortField, eventSortDirection);
+  const sortedLeagues = genericSort(leagues, leagueSortField, leagueSortDirection);
+
+  // Generic sortable header component
+  const SortableHeader = <T,>({ 
+    field, 
+    currentSortField, 
+    currentSortDirection, 
+    onSort, 
+    children 
+  }: { 
+    field: keyof T;
+    currentSortField: keyof T;
+    currentSortDirection: 'asc' | 'desc';
+    onSort: (field: keyof T) => void;
+    children: React.ReactNode;
+  }) => {
+    const isActive = currentSortField === field;
+    const isAsc = currentSortDirection === 'asc';
+    
+    return (
+      <TableHead>
+        <button
+          onClick={() => onSort(field)}
+          className="flex items-center space-x-1 hover:text-foreground font-medium"
+        >
+          <span>{children}</span>
+          {isActive ? (
+            isAsc ? (
+              <ChevronUpIcon className="h-4 w-4" />
+            ) : (
+              <ChevronDownIcon className="h-4 w-4" />
+            )
+          ) : (
+            <div className="h-4 w-4" />
+          )}
+        </button>
+      </TableHead>
+    );
   };
 
   if (loading) {
@@ -208,17 +326,17 @@ export default function AdminDashboardPage() {
         {activeTab === 'players' && (
           <div className="space-y-6">
             <Dialog open={addPlayerOpen} onOpenChange={setAddPlayerOpen}>
-              <form
-                onSubmit={e => {
-                  e.preventDefault();
-                  addPlayer();
-                }}
-                className="space-y-4"
-              >
-                <DialogTrigger asChild>
-                  <Button>Add New Player</Button>
-                </DialogTrigger>
-                <DialogContent onPointerDownOutside={e => e.preventDefault()} onEscapeKeyDown={e => e.preventDefault()}>
+              <DialogTrigger asChild>
+                <Button>Add New Player</Button>
+              </DialogTrigger>
+              <DialogContent onPointerDownOutside={e => e.preventDefault()} onEscapeKeyDown={e => e.preventDefault()}>
+                <form
+                  onSubmit={e => {
+                    e.preventDefault();
+                    addPlayer();
+                  }}
+                  className="space-y-4"
+                >
                   <DialogHeader>
                     <DialogTitle>Add New Player</DialogTitle>
                   </DialogHeader>
@@ -257,8 +375,8 @@ export default function AdminDashboardPage() {
                       Add Player
                     </Button>
                   </DialogFooter>
-                </DialogContent>
-              </form>
+                </form>
+              </DialogContent>
             </Dialog>
 
             <Card>
@@ -269,14 +387,42 @@ export default function AdminDashboardPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Created</TableHead>
+                      <SortableHeader 
+                        field="id" 
+                        currentSortField={playerSortField} 
+                        currentSortDirection={playerSortDirection} 
+                        onSort={handlePlayerSort}
+                      >
+                        ID
+                      </SortableHeader>
+                      <SortableHeader 
+                        field="fullName" 
+                        currentSortField={playerSortField} 
+                        currentSortDirection={playerSortDirection} 
+                        onSort={handlePlayerSort}
+                      >
+                        Name
+                      </SortableHeader>
+                      <SortableHeader 
+                        field="wizardsEmail" 
+                        currentSortField={playerSortField} 
+                        currentSortDirection={playerSortDirection} 
+                        onSort={handlePlayerSort}
+                      >
+                        Email
+                      </SortableHeader>
+                      <SortableHeader 
+                        field="createdAt" 
+                        currentSortField={playerSortField} 
+                        currentSortDirection={playerSortDirection} 
+                        onSort={handlePlayerSort}
+                      >
+                        Created
+                      </SortableHeader>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {players.map(player => (
+                    {sortedPlayers.map(player => (
                       <TableRow key={player.id}>
                         <TableCell>{player.id}</TableCell>
                         <TableCell>{player.fullName}</TableCell>
@@ -389,17 +535,52 @@ export default function AdminDashboardPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>Event</TableHead>
-                      <TableHead>Player 1</TableHead>
-                      <TableHead>Player 2</TableHead>
+                      <SortableHeader 
+                        field="id" 
+                        currentSortField={matchSortField} 
+                        currentSortDirection={matchSortDirection} 
+                        onSort={handleMatchSort}
+                      >
+                        ID
+                      </SortableHeader>
+                      <SortableHeader 
+                        field="eventId" 
+                        currentSortField={matchSortField} 
+                        currentSortDirection={matchSortDirection} 
+                        onSort={handleMatchSort}
+                      >
+                        Event
+                      </SortableHeader>
+                      <SortableHeader 
+                        field="player1Id" 
+                        currentSortField={matchSortField} 
+                        currentSortDirection={matchSortDirection} 
+                        onSort={handleMatchSort}
+                      >
+                        Player 1
+                      </SortableHeader>
+                      <SortableHeader 
+                        field="player2Id" 
+                        currentSortField={matchSortField} 
+                        currentSortDirection={matchSortDirection} 
+                        onSort={handleMatchSort}
+                      >
+                        Player 2
+                      </SortableHeader>
                       <TableHead>Score</TableHead>
                       <TableHead>Result</TableHead>
-                      <TableHead>Date</TableHead>
+                      <SortableHeader 
+                        field="createdAt" 
+                        currentSortField={matchSortField} 
+                        currentSortDirection={matchSortDirection} 
+                        onSort={handleMatchSort}
+                      >
+                        Date
+                      </SortableHeader>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {matches.map(match => {
+                    {sortedMatches.map(match => {
                       const player1 = players.find(p => p.id === match.player1Id);
                       const player2 = players.find(p => p.id === match.player2Id);
                       const event = events.find(e => e.id === match.eventId);
@@ -441,15 +622,50 @@ export default function AdminDashboardPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>League</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Created</TableHead>
+                    <SortableHeader 
+                      field="id" 
+                      currentSortField={eventSortField} 
+                      currentSortDirection={eventSortDirection} 
+                      onSort={handleEventSort}
+                    >
+                      ID
+                    </SortableHeader>
+                    <SortableHeader 
+                      field="name" 
+                      currentSortField={eventSortField} 
+                      currentSortDirection={eventSortDirection} 
+                      onSort={handleEventSort}
+                    >
+                      Name
+                    </SortableHeader>
+                    <SortableHeader 
+                      field="leagueId" 
+                      currentSortField={eventSortField} 
+                      currentSortDirection={eventSortDirection} 
+                      onSort={handleEventSort}
+                    >
+                      League
+                    </SortableHeader>
+                    <SortableHeader 
+                      field="date" 
+                      currentSortField={eventSortField} 
+                      currentSortDirection={eventSortDirection} 
+                      onSort={handleEventSort}
+                    >
+                      Date
+                    </SortableHeader>
+                    <SortableHeader 
+                      field="createdAt" 
+                      currentSortField={eventSortField} 
+                      currentSortDirection={eventSortDirection} 
+                      onSort={handleEventSort}
+                    >
+                      Created
+                    </SortableHeader>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {events.map(event => {
+                  {sortedEvents.map(event => {
                     const league = leagues.find(l => l.id === event.leagueId);
                     return (
                       <TableRow key={event.id}>
@@ -474,18 +690,53 @@ export default function AdminDashboardPage() {
               <CardTitle>Leagues ({leagues.length})</CardTitle>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Start Date</TableHead>
-                    <TableHead>End Date</TableHead>
-                    <TableHead>Created</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {leagues.map(league => (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <SortableHeader 
+                    field="id" 
+                    currentSortField={leagueSortField} 
+                    currentSortDirection={leagueSortDirection} 
+                    onSort={handleLeagueSort}
+                  >
+                    ID
+                  </SortableHeader>
+                  <SortableHeader 
+                    field="name" 
+                    currentSortField={leagueSortField} 
+                    currentSortDirection={leagueSortDirection} 
+                    onSort={handleLeagueSort}
+                  >
+                    Name
+                  </SortableHeader>
+                  <SortableHeader 
+                    field="startDate" 
+                    currentSortField={leagueSortField} 
+                    currentSortDirection={leagueSortDirection} 
+                    onSort={handleLeagueSort}
+                  >
+                    Start Date
+                  </SortableHeader>
+                  <SortableHeader 
+                    field="endDate" 
+                    currentSortField={leagueSortField} 
+                    currentSortDirection={leagueSortDirection} 
+                    onSort={handleLeagueSort}
+                  >
+                    End Date
+                  </SortableHeader>
+                  <SortableHeader 
+                    field="createdAt" 
+                    currentSortField={leagueSortField} 
+                    currentSortDirection={leagueSortDirection} 
+                    onSort={handleLeagueSort}
+                  >
+                    Created
+                  </SortableHeader>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sortedLeagues.map(league => (
                     <TableRow key={league.id}>
                       <TableCell>{league.id}</TableCell>
                       <TableCell>{league.name}</TableCell>
