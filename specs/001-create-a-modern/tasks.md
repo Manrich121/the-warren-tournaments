@@ -66,3 +66,4 @@ This document outlines the tasks required to implement the Magic: The Gathering 
 ## Phase 6: CRUD Operations
 
 - [X] **T031**: Implement API route for `POST /players` and wire up the "Add New Player" form in the admin dashboard.
+- [X] **T032**: Move the "Add New Player" form on admin dashboard to a dialog.

@@ -11,6 +11,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Header } from '@/components/Header';
 import { Loader2Icon } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+  DialogDescription
+} from '@/components/ui/dialog';
 
 interface Player {
   id: number;
@@ -60,6 +70,7 @@ export default function AdminDashboardPage() {
   const [newPlayerName, setNewPlayerName] = useState('');
   const [newPlayerEmail, setNewPlayerEmail] = useState('');
   const [addPlayerLoading, setAddPlayerLoading] = useState(false);
+  const [addPlayerOpen, setAddPlayerOpen] = useState(false);
   const [newMatchPlayer1, setNewMatchPlayer1] = useState('');
   const [newMatchPlayer2, setNewMatchPlayer2] = useState('');
   const [newMatchEvent, setNewMatchEvent] = useState('');
@@ -120,6 +131,7 @@ export default function AdminDashboardPage() {
     } catch (error) {
       console.error('Failed to add player:', error);
     } finally {
+      setAddPlayerOpen(false);
       setAddPlayerLoading(false);
     }
   };
@@ -195,17 +207,24 @@ export default function AdminDashboardPage() {
         {/* Players Tab */}
         {activeTab === 'players' && (
           <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Add New Player</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <form
-                  onSubmit={e => {
-                    e.preventDefault();
-                    addPlayer();
-                  }}
-                >
+            <Dialog open={addPlayerOpen} onOpenChange={setAddPlayerOpen}>
+              <form
+                onSubmit={e => {
+                  e.preventDefault();
+                  addPlayer();
+                }}
+                className="space-y-4"
+              >
+                <DialogTrigger asChild>
+                  <Button>Add New Player</Button>
+                </DialogTrigger>
+                <DialogContent onPointerDownOutside={e => e.preventDefault()} onEscapeKeyDown={e => e.preventDefault()}>
+                  <DialogHeader>
+                    <DialogTitle>Add New Player</DialogTitle>
+                  </DialogHeader>
+                  <DialogDescription>
+                    Enter the full name and Wizards Account email of the new player.
+                  </DialogDescription>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="playerName">Full Name</Label>
@@ -217,7 +236,7 @@ export default function AdminDashboardPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="playerEmail">Wizards Email</Label>
+                      <Label htmlFor="playerEmail">Email</Label>
                       <Input
                         id="playerEmail"
                         type="email"
@@ -227,13 +246,20 @@ export default function AdminDashboardPage() {
                       />
                     </div>
                   </div>
-                  <Button type={'submit'} disabled={addPlayerLoading}>
-                    {addPlayerLoading && <Loader2Icon className="animate-spin" />}
-                    Add Player
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button variant={'outline'} type="button">
+                        Cancel
+                      </Button>
+                    </DialogClose>
+                    <Button type="submit" disabled={addPlayerLoading}>
+                      {addPlayerLoading && <Loader2Icon className="animate-spin" />}
+                      Add Player
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </form>
+            </Dialog>
 
             <Card>
               <CardHeader>
