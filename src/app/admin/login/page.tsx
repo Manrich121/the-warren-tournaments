@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { signIn, getSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { signIn, useSession } from 'next-auth/react';
+import { redirect, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,16 +16,10 @@ export default function AdminLoginPage() {
   const [error, setError] = useState('');
   const router = useRouter();
 
-  useEffect(() => {
-    // Check if user is already logged in
-    const checkSession = async () => {
-      const session = await getSession();
-      if (session) {
-        router.push('/admin/dashboard');
-      }
-    };
-    checkSession();
-  }, [router]);
+  const session = useSession();
+  if (session) {
+    redirect('/admin/dashboard');
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
