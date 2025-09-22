@@ -63,18 +63,6 @@ This document outlines the tasks required to implement the Magic: The Gathering 
 
 ---
 
-## Parallel Execution Examples
+## Phase 6: CRUD Operations
 
-The following tasks can be run in parallel:
-
-- `T008` - `T018` (API route implementation)
-- `T020` - `T028` (Frontend development)
-
-Example:
-```bash
-# Terminal 1
-gemini -p "Implement API route for GET /players"
-
-# Terminal 2
-gemini -p "Implement API route for GET /matches"
-```
+- [X] **T031**: Implement API route for `POST /players` and wire up the "Add New Player" form in the admin dashboard.

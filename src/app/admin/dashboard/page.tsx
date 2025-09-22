@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Header } from '@/components/Header';
+import { Loader2Icon } from 'lucide-react';
 
 interface Player {
   id: number;
@@ -58,6 +59,7 @@ export default function AdminDashboardPage() {
   // Form states
   const [newPlayerName, setNewPlayerName] = useState('');
   const [newPlayerEmail, setNewPlayerEmail] = useState('');
+  const [addPlayerLoading, setAddPlayerLoading] = useState(false);
   const [newMatchPlayer1, setNewMatchPlayer1] = useState('');
   const [newMatchPlayer2, setNewMatchPlayer2] = useState('');
   const [newMatchEvent, setNewMatchEvent] = useState('');
@@ -99,6 +101,7 @@ export default function AdminDashboardPage() {
   const addPlayer = async () => {
     if (!newPlayerName || !newPlayerEmail) return;
 
+    setAddPlayerLoading(true);
     try {
       const response = await fetch('/api/players', {
         method: 'POST',
@@ -116,6 +119,8 @@ export default function AdminDashboardPage() {
       }
     } catch (error) {
       console.error('Failed to add player:', error);
+    } finally {
+      setAddPlayerLoading(false);
     }
   };
 
@@ -195,28 +200,38 @@ export default function AdminDashboardPage() {
                 <CardTitle>Add New Player</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="playerName">Full Name</Label>
-                    <Input
-                      id="playerName"
-                      value={newPlayerName}
-                      onChange={e => setNewPlayerName(e.target.value)}
-                      placeholder="John Doe"
-                    />
+                <form
+                  onSubmit={e => {
+                    e.preventDefault();
+                    addPlayer();
+                  }}
+                >
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="playerName">Full Name</Label>
+                      <Input
+                        id="playerName"
+                        value={newPlayerName}
+                        onChange={e => setNewPlayerName(e.target.value)}
+                        placeholder="John Doe"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="playerEmail">Wizards Email</Label>
+                      <Input
+                        id="playerEmail"
+                        type="email"
+                        value={newPlayerEmail}
+                        onChange={e => setNewPlayerEmail(e.target.value)}
+                        placeholder="john.doe@example.com"
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="playerEmail">Wizards Email</Label>
-                    <Input
-                      id="playerEmail"
-                      type="email"
-                      value={newPlayerEmail}
-                      onChange={e => setNewPlayerEmail(e.target.value)}
-                      placeholder="john.doe@example.com"
-                    />
-                  </div>
-                </div>
-                <Button onClick={addPlayer}>Add Player</Button>
+                  <Button type={'submit'} disabled={addPlayerLoading}>
+                    {addPlayerLoading && <Loader2Icon className="animate-spin" />}
+                    Add Player
+                  </Button>
+                </form>
               </CardContent>
             </Card>
 
