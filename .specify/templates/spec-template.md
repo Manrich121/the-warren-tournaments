@@ -45,10 +45,13 @@ When creating this spec from a user prompt:
 4. **Common underspecified areas**:
    - User types and permissions
    - Data retention/deletion policies  
-   - Performance targets and scale
-   - Error handling behaviors
+   - Performance targets and scale (Core Web Vitals compliance)
+   - Error handling behaviors and user feedback
    - Integration requirements
    - Security/compliance needs
+   - Responsive design breakpoints
+   - Form validation and error messaging
+   - Loading states and async operation feedback
 
 ---
 
