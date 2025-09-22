@@ -120,7 +120,7 @@ export function Leaderboard() {
 
       {/* Leaderboard */}
       <Card>
-        <CardHeader>
+        <CardHeader className={'text-xl'}>
           <CardTitle>League Leaderboard</CardTitle>
         </CardHeader>
         <CardContent>

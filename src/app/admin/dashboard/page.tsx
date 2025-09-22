@@ -1,22 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { signOut, getSession, useSession } from 'next-auth/react';
+import { getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
-} from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Header } from '@/components/Header';
 
 interface Player {
   id: number;
@@ -166,72 +159,242 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-      </div>
+    <>
+      <Header title="Admin Dashboard" />
+      <div className="container mx-auto py-8 space-y-6">
+        {/* Header removed from here, now above */}
+        {/* Tabs */}
+        <div className="border-b">
+          <nav className="flex space-x-8">
+            {[
+              { key: 'players', label: 'Players' },
+              { key: 'matches', label: 'Matches' },
+              { key: 'events', label: 'Events' },
+              { key: 'leagues', label: 'Leagues' }
+            ].map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === tab.key
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </div>
 
-      {/* Tabs */}
-      <div className="border-b">
-        <nav className="flex space-x-8">
-          {[
-            { key: 'players', label: 'Players' },
-            { key: 'matches', label: 'Matches' },
-            { key: 'events', label: 'Events' },
-            { key: 'leagues', label: 'Leagues' }
-          ].map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === tab.key
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
-      </div>
+        {/* Players Tab */}
+        {activeTab === 'players' && (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Add New Player</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="playerName">Full Name</Label>
+                    <Input
+                      id="playerName"
+                      value={newPlayerName}
+                      onChange={e => setNewPlayerName(e.target.value)}
+                      placeholder="John Doe"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="playerEmail">Wizards Email</Label>
+                    <Input
+                      id="playerEmail"
+                      type="email"
+                      value={newPlayerEmail}
+                      onChange={e => setNewPlayerEmail(e.target.value)}
+                      placeholder="john.doe@example.com"
+                    />
+                  </div>
+                </div>
+                <Button onClick={addPlayer}>Add Player</Button>
+              </CardContent>
+            </Card>
 
-      {/* Players Tab */}
-      {activeTab === 'players' && (
-        <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Players ({players.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>ID</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Created</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {players.map(player => (
+                      <TableRow key={player.id}>
+                        <TableCell>{player.id}</TableCell>
+                        <TableCell>{player.fullName}</TableCell>
+                        <TableCell>{player.wizardsEmail}</TableCell>
+                        <TableCell>{new Date(player.createdAt).toLocaleDateString()}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Matches Tab */}
+        {activeTab === 'matches' && (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Add New Match</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Player 1</Label>
+                    <Select value={newMatchPlayer1} onValueChange={setNewMatchPlayer1}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Player 1" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {players.map(player => (
+                          <SelectItem key={player.id} value={player.id.toString()}>
+                            {player.fullName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Player 2</Label>
+                    <Select value={newMatchPlayer2} onValueChange={setNewMatchPlayer2}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Player 2" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {players.map(player => (
+                          <SelectItem key={player.id} value={player.id.toString()}>
+                            {player.fullName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label>Event</Label>
+                    <Select value={newMatchEvent} onValueChange={setNewMatchEvent}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Event" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {events.map(event => (
+                          <SelectItem key={event.id} value={event.id.toString()}>
+                            {event.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Player 1 Score</Label>
+                    <Input
+                      type="number"
+                      value={newMatchP1Score}
+                      onChange={e => setNewMatchP1Score(e.target.value)}
+                      placeholder="0"
+                      min="0"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Player 2 Score</Label>
+                    <Input
+                      type="number"
+                      value={newMatchP2Score}
+                      onChange={e => setNewMatchP2Score(e.target.value)}
+                      placeholder="0"
+                      min="0"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="draw"
+                    checked={newMatchDraw}
+                    onChange={e => setNewMatchDraw(e.target.checked)}
+                  />
+                  <Label htmlFor="draw">Draw</Label>
+                </div>
+                <Button onClick={addMatch}>Add Match</Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Matches ({matches.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>ID</TableHead>
+                      <TableHead>Event</TableHead>
+                      <TableHead>Player 1</TableHead>
+                      <TableHead>Player 2</TableHead>
+                      <TableHead>Score</TableHead>
+                      <TableHead>Result</TableHead>
+                      <TableHead>Date</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {matches.map(match => {
+                      const player1 = players.find(p => p.id === match.player1Id);
+                      const player2 = players.find(p => p.id === match.player2Id);
+                      const event = events.find(e => e.id === match.eventId);
+
+                      return (
+                        <TableRow key={match.id}>
+                          <TableCell>{match.id}</TableCell>
+                          <TableCell>{event?.name || `Event #${match.eventId}`}</TableCell>
+                          <TableCell>{player1?.fullName || `Player #${match.player1Id}`}</TableCell>
+                          <TableCell>{player2?.fullName || `Player #${match.player2Id}`}</TableCell>
+                          <TableCell>
+                            {match.player1Score} - {match.player2Score}
+                          </TableCell>
+                          <TableCell>
+                            {match.draw
+                              ? 'Draw'
+                              : match.player1Score > match.player2Score
+                                ? 'Player 1 Win'
+                                : 'Player 2 Win'}
+                          </TableCell>
+                          <TableCell>{new Date(match.createdAt).toLocaleDateString()}</TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Events Tab */}
+        {activeTab === 'events' && (
           <Card>
             <CardHeader>
-              <CardTitle>Add New Player</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="playerName">Full Name</Label>
-                  <Input
-                    id="playerName"
-                    value={newPlayerName}
-                    onChange={e => setNewPlayerName(e.target.value)}
-                    placeholder="John Doe"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="playerEmail">Wizards Email</Label>
-                  <Input
-                    id="playerEmail"
-                    type="email"
-                    value={newPlayerEmail}
-                    onChange={e => setNewPlayerEmail(e.target.value)}
-                    placeholder="john.doe@example.com"
-                  />
-                </div>
-              </div>
-              <Button onClick={addPlayer}>Add Player</Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Players ({players.length})</CardTitle>
+              <CardTitle>Events ({events.length})</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
@@ -239,156 +402,21 @@ export default function AdminDashboardPage() {
                   <TableRow>
                     <TableHead>ID</TableHead>
                     <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
+                    <TableHead>League</TableHead>
+                    <TableHead>Date</TableHead>
                     <TableHead>Created</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {players.map(player => (
-                    <TableRow key={player.id}>
-                      <TableCell>{player.id}</TableCell>
-                      <TableCell>{player.fullName}</TableCell>
-                      <TableCell>{player.wizardsEmail}</TableCell>
-                      <TableCell>{new Date(player.createdAt).toLocaleDateString()}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Matches Tab */}
-      {activeTab === 'matches' && (
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Add New Match</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Player 1</Label>
-                  <Select value={newMatchPlayer1} onValueChange={setNewMatchPlayer1}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Player 1" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {players.map(player => (
-                        <SelectItem key={player.id} value={player.id.toString()}>
-                          {player.fullName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Player 2</Label>
-                  <Select value={newMatchPlayer2} onValueChange={setNewMatchPlayer2}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Player 2" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {players.map(player => (
-                        <SelectItem key={player.id} value={player.id.toString()}>
-                          {player.fullName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Event</Label>
-                  <Select value={newMatchEvent} onValueChange={setNewMatchEvent}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Event" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {events.map(event => (
-                        <SelectItem key={event.id} value={event.id.toString()}>
-                          {event.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Player 1 Score</Label>
-                  <Input
-                    type="number"
-                    value={newMatchP1Score}
-                    onChange={e => setNewMatchP1Score(e.target.value)}
-                    placeholder="0"
-                    min="0"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Player 2 Score</Label>
-                  <Input
-                    type="number"
-                    value={newMatchP2Score}
-                    onChange={e => setNewMatchP2Score(e.target.value)}
-                    placeholder="0"
-                    min="0"
-                  />
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="draw"
-                  checked={newMatchDraw}
-                  onChange={e => setNewMatchDraw(e.target.checked)}
-                />
-                <Label htmlFor="draw">Draw</Label>
-              </div>
-              <Button onClick={addMatch}>Add Match</Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Matches ({matches.length})</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Event</TableHead>
-                    <TableHead>Player 1</TableHead>
-                    <TableHead>Player 2</TableHead>
-                    <TableHead>Score</TableHead>
-                    <TableHead>Result</TableHead>
-                    <TableHead>Date</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {matches.map(match => {
-                    const player1 = players.find(p => p.id === match.player1Id);
-                    const player2 = players.find(p => p.id === match.player2Id);
-                    const event = events.find(e => e.id === match.eventId);
-
+                  {events.map(event => {
+                    const league = leagues.find(l => l.id === event.leagueId);
                     return (
-                      <TableRow key={match.id}>
-                        <TableCell>{match.id}</TableCell>
-                        <TableCell>{event?.name || `Event #${match.eventId}`}</TableCell>
-                        <TableCell>{player1?.fullName || `Player #${match.player1Id}`}</TableCell>
-                        <TableCell>{player2?.fullName || `Player #${match.player2Id}`}</TableCell>
-                        <TableCell>
-                          {match.player1Score} - {match.player2Score}
-                        </TableCell>
-                        <TableCell>
-                          {match.draw
-                            ? 'Draw'
-                            : match.player1Score > match.player2Score
-                              ? 'Player 1 Win'
-                              : 'Player 2 Win'}
-                        </TableCell>
-                        <TableCell>{new Date(match.createdAt).toLocaleDateString()}</TableCell>
+                      <TableRow key={event.id}>
+                        <TableCell>{event.id}</TableCell>
+                        <TableCell>{event.name}</TableCell>
+                        <TableCell>{league?.name || `League #${event.leagueId}`}</TableCell>
+                        <TableCell>{new Date(event.date).toLocaleDateString()}</TableCell>
+                        <TableCell>{new Date(event.createdAt).toLocaleDateString()}</TableCell>
                       </TableRow>
                     );
                   })}
@@ -396,77 +424,41 @@ export default function AdminDashboardPage() {
               </Table>
             </CardContent>
           </Card>
-        </div>
-      )}
+        )}
 
-      {/* Events Tab */}
-      {activeTab === 'events' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Events ({events.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>League</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Created</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {events.map(event => {
-                  const league = leagues.find(l => l.id === event.leagueId);
-                  return (
-                    <TableRow key={event.id}>
-                      <TableCell>{event.id}</TableCell>
-                      <TableCell>{event.name}</TableCell>
-                      <TableCell>{league?.name || `League #${event.leagueId}`}</TableCell>
-                      <TableCell>{new Date(event.date).toLocaleDateString()}</TableCell>
-                      <TableCell>{new Date(event.createdAt).toLocaleDateString()}</TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Leagues Tab */}
-      {activeTab === 'leagues' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Leagues ({leagues.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Start Date</TableHead>
-                  <TableHead>End Date</TableHead>
-                  <TableHead>Created</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {leagues.map(league => (
-                  <TableRow key={league.id}>
-                    <TableCell>{league.id}</TableCell>
-                    <TableCell>{league.name}</TableCell>
-                    <TableCell>{new Date(league.startDate).toLocaleDateString()}</TableCell>
-                    <TableCell>{new Date(league.endDate).toLocaleDateString()}</TableCell>
-                    <TableCell>{new Date(league.createdAt).toLocaleDateString()}</TableCell>
+        {/* Leagues Tab */}
+        {activeTab === 'leagues' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Leagues ({leagues.length})</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Start Date</TableHead>
+                    <TableHead>End Date</TableHead>
+                    <TableHead>Created</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+                </TableHeader>
+                <TableBody>
+                  {leagues.map(league => (
+                    <TableRow key={league.id}>
+                      <TableCell>{league.id}</TableCell>
+                      <TableCell>{league.name}</TableCell>
+                      <TableCell>{new Date(league.startDate).toLocaleDateString()}</TableCell>
+                      <TableCell>{new Date(league.endDate).toLocaleDateString()}</TableCell>
+                      <TableCell>{new Date(league.createdAt).toLocaleDateString()}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </>
   );
 }

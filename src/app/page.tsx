@@ -1,9 +1,13 @@
+import { Header } from '@/components/Header';
 import { Leaderboard } from '@/components/Leaderboard';
 
 export default function Home() {
   return (
-    <main>
-      <Leaderboard />
-    </main>
+    <>
+      <Header title="The Warren Tournaments" />
+      <main>
+        <Leaderboard />
+      </main>
+    </>
   );
 }
