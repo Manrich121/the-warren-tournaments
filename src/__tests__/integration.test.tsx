@@ -10,8 +10,8 @@
  */
 
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { Leaderboard } from '@/components/Leaderboard';
 import { calculatePrizePool } from '@/lib/playerStats';
 
