@@ -5,7 +5,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const { id } = await params;
   const player = await prisma.player.findUnique({
     where: {
-      id: parseInt(id, 10)
+      id
     }
   });
   if (player) {
@@ -22,7 +22,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     
     const updatedPlayer = await prisma.player.update({
       where: {
-        id: parseInt(id, 10)
+        id
       },
       data: {
         fullName: data.fullName,
@@ -43,7 +43,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     
     await prisma.player.delete({
       where: {
-        id: parseInt(id, 10)
+        id
       }
     });
     

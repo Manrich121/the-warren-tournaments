@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface UpdatePlayerData {
-  id: number;
+  id: string;
   fullName: string;
   wizardsEmail: string;
 }

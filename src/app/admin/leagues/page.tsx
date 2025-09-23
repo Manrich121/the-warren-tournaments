@@ -18,7 +18,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useLeagues } from '@/hooks/useLeagues';
 import { useDeleteLeague } from '@/hooks/useDeleteLeague';
-import { League } from '@/lib/types';
+import { League } from '@prisma/client';
 import { genericSort } from '@/lib/utils';
 import { AddLeagueDialog } from '@/components/AddLeagueDialog';
 
@@ -34,7 +34,7 @@ export default function AdminLeaguesPage() {
   const { data: leagues, isLoading, error } = useLeagues();
   const deleteLeagueMutation = useDeleteLeague();
 
-  const [deleteLeagueId, setDeleteLeagueId] = useState<number | null>(null);
+  const [deleteLeagueId, setDeleteLeagueId] = useState<string | null>(null);
   const [deleteLeagueOpen, setDeleteLeagueOpen] = useState(false);
 
   const [sortField, setSortField] = useState<keyof League>('id');

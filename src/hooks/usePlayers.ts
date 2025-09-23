@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Player } from '@/lib/types';
+import { Player } from '@prisma/client';
 import { keys } from '@/hooks/keys';
 
 const fetchPlayers = async (): Promise<Player[]> => {

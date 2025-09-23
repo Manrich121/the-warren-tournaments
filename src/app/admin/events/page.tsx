@@ -24,7 +24,7 @@ import { useEvents } from '@/hooks/useEvents';
 import { useLeagues } from '@/hooks/useLeagues';
 import { useDeleteEvent } from '@/hooks/useDeleteEvent';
 import { useUpdateEvent } from '@/hooks/useUpdateEvent';
-import { Event, League } from '@/lib/types';
+import { Event } from '@prisma/client';
 import { AddEventDialog } from '@/components/AddEventDialog';
 import { genericSort } from '@/lib/utils';
 
@@ -42,10 +42,10 @@ export default function AdminEventsPage() {
   const deleteEventMutation = useDeleteEvent();
   const updateEventMutation = useUpdateEvent();
 
-  const [deleteEventId, setDeleteEventId] = useState<number | null>(null);
+  const [deleteEventId, setDeleteEventId] = useState<string | null>(null);
   const [deleteEventOpen, setDeleteEventOpen] = useState(false);
 
-  const [editEventId, setEditEventId] = useState<number | null>(null);
+  const [editEventId, setEditEventId] = useState<string | null>(null);
   const [editEventName, setEditEventName] = useState('');
   const [editEventDate, setEditEventDate] = useState('');
   const [editEventLeagueId, setEditEventLeagueId] = useState('');
@@ -71,7 +71,7 @@ export default function AdminEventsPage() {
     setEditEventId(event.id);
     setEditEventName(event.name);
     setEditEventDate(new Date(event.date).toISOString().split('T')[0]);
-    setEditEventLeagueId(event.leagueId.toString());
+    setEditEventLeagueId(event.leagueId);
     setEditEventOpen(true);
   };
 
@@ -81,8 +81,8 @@ export default function AdminEventsPage() {
       {
         id: editEventId,
         name: editEventName,
-        date: new Date(editEventDate).toISOString(),
-        leagueId: parseInt(editEventLeagueId)
+        date: new Date(editEventDate),
+        leagueId: editEventLeagueId
       },
       {
         onSuccess: () => {
@@ -265,7 +265,7 @@ export default function AdminEventsPage() {
                       </SelectTrigger>
                       <SelectContent>
                         {leagues?.map(league => (
-                          <SelectItem key={league.id} value={league.id.toString()}>
+                          <SelectItem key={league.id} value={league.id}>
                             {league.name}
                           </SelectItem>
                         ))}

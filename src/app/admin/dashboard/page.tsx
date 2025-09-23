@@ -13,7 +13,7 @@ import { useEvents } from '@/hooks/useEvents';
 import { useLeagues } from '@/hooks/useLeagues';
 import { usePrizePools } from '@/hooks/usePrizePools';
 import { useMatches } from '@/hooks/useMatches';
-import { League, Player } from '@/lib/types';
+import { League, Player } from '@prisma/client';
 
 export default function AdminDashboardPage() {
   const router = useRouter();

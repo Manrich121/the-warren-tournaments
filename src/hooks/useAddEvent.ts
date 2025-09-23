@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Event } from '@/lib/types';
+import { Event } from '@prisma/client';
 import { keys } from '@/hooks/keys';
 
-const addEvent = async (newEvent: Omit<Event, 'id' | 'createdAt'>): Promise<Event> => {
+const addEvent = async (newEvent: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>): Promise<Event> => {
   const res = await fetch('/api/events', {
     method: 'POST',
     headers: {
@@ -18,7 +18,7 @@ const addEvent = async (newEvent: Omit<Event, 'id' | 'createdAt'>): Promise<Even
 
 export const useAddEvent = () => {
   const queryClient = useQueryClient();
-  return useMutation<Event, Error, Omit<Event, 'id' | 'createdAt'>>({
+  return useMutation<Event, Error, Omit<Event, 'id' | 'createdAt' | 'updatedAt'>>({
     mutationFn: addEvent,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.events() });

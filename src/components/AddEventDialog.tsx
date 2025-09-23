@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Loader2Icon } from 'lucide-react';
 import { useAddEvent } from '@/hooks/useAddEvent';
-import { League } from '@/lib/types';
+import { League } from '@prisma/client';
 
 export function AddEventDialog({ leagues }: { leagues: League[] | undefined }) {
   const [open, setOpen] = useState(false);
@@ -32,8 +32,8 @@ export function AddEventDialog({ leagues }: { leagues: League[] | undefined }) {
     addEventMutation.mutate(
       {
         name: newEventName,
-        date: new Date(newEventDate).toISOString(),
-        leagueId: parseInt(newEventLeagueId)
+        date: new Date(newEventDate),
+        leagueId: newEventLeagueId
       },
       {
         onSuccess: () => {
@@ -85,7 +85,7 @@ export function AddEventDialog({ leagues }: { leagues: League[] | undefined }) {
                 </SelectTrigger>
                 <SelectContent>
                   {leagues?.map(league => (
-                    <SelectItem key={league.id} value={league.id.toString()}>
+                    <SelectItem key={league.id} value={league.id}>
                       {league.name}
                     </SelectItem>
                   ))}

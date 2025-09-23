@@ -1,8 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Match } from '@/lib/types';
+import { Match } from '@prisma/client';
 import { keys } from '@/hooks/keys';
 
-const addMatch = async (newMatch: Omit<Match, 'id' | 'createdAt' | 'player1' | 'player2'>): Promise<Match> => {
+export type AddMatchParams = Omit<Match, 'id' | 'createdAt' | 'updatedAt' | 'player1' | 'player2'>;
+
+const addMatch = async (newMatch: AddMatchParams): Promise<Match> => {
   const res = await fetch('/api/matches', {
     method: 'POST',
     headers: {
@@ -18,7 +20,7 @@ const addMatch = async (newMatch: Omit<Match, 'id' | 'createdAt' | 'player1' | '
 
 export const useAddMatch = () => {
   const queryClient = useQueryClient();
-  return useMutation<Match, Error, Omit<Match, 'id' | 'createdAt' | 'player1' | 'player2'>>({
+  return useMutation<Match, Error, AddMatchParams>({
     mutationFn: addMatch,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.matches() });

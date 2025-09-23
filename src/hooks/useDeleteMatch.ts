@@ -4,7 +4,7 @@ export function useDeleteMatch() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id: string) => {
       const response = await fetch(`/api/matches/${id}`, {
         method: 'DELETE'
       });

@@ -9,7 +9,7 @@ import { usePlayers } from '@/hooks/usePlayers';
 import { usePrizePools } from '@/hooks/usePrizePools';
 import { useMatches } from '@/hooks/useMatches';
 import { calculatePlayerStats } from '@/lib/playerStats';
-import { Player } from '@/lib/types';
+import { Player } from '@prisma/client';
 
 export function Leaderboard() {
   const { data: playersData, isLoading: playersLoading, error: playersError } = usePlayers();

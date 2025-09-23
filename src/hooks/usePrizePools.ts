@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { PrizePool } from '@/lib/types';
+import { PrizePool } from '@prisma/client';
 import { keys } from '@/hooks/keys';
 
 const fetchPrizePool = async (): Promise<PrizePool[]> => {

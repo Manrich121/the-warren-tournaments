@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { League } from '@/lib/types';
+import { League } from '@prisma/client';
 import { keys } from '@/hooks/keys';
 
 const fetchLeagues = async (): Promise<League[]> => {

@@ -1,13 +1,4 @@
-export interface Match {
-  id: number
-  eventId: number
-  player1Id: number
-  player2Id: number
-  player1Score: number
-  player2Score: number
-  draw: boolean
-  createdAt: string
-}
+import { Match } from '@prisma/client';
 
 export interface PlayerStats {
   wins: number
@@ -17,7 +8,7 @@ export interface PlayerStats {
   winRate: number
 }
 
-export function calculatePlayerStats(playerId: number, matches: Match[]): PlayerStats {
+export function calculatePlayerStats(playerId: string, matches: Match[]): PlayerStats {
   let wins = 0
   let losses = 0
   let draws = 0
@@ -54,7 +45,7 @@ export function calculatePlayerStats(playerId: number, matches: Match[]): Player
   return { wins, losses, draws, totalMatches, winRate }
 }
 
-export function sortPlayersByWinRate(playerStats: Array<{ playerId: number; stats: PlayerStats }>): Array<{ playerId: number; stats: PlayerStats }> {
+export function sortPlayersByWinRate(playerStats: Array<{ playerId: string; stats: PlayerStats }>): Array<{ playerId: string; stats: PlayerStats }> {
   return playerStats.sort((a, b) => {
     // Primary sort by win rate (descending)
     if (b.stats.winRate !== a.stats.winRate) {

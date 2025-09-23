@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { keys } from '@/hooks/keys';
 
-const deleteEvent = async (id: number): Promise<void> => {
+const deleteEvent = async (id: string): Promise<void> => {
   const res = await fetch(`/api/events/${id}`, {
     method: 'DELETE'
   });
@@ -12,7 +12,7 @@ const deleteEvent = async (id: number): Promise<void> => {
 
 export const useDeleteEvent = () => {
   const queryClient = useQueryClient();
-  return useMutation<void, Error, number>({
+  return useMutation<void, Error, string>({
     mutationFn: deleteEvent,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.events() });

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Event } from '@/lib/types';
+import { Event } from '@prisma/client';
 import { keys } from '@/hooks/keys';
 
 const fetchEvents = async (): Promise<Event[]> => {

@@ -9,13 +9,13 @@ import { Button } from '@/components/ui/button';
 import { usePlayer } from '@/hooks/usePlayer';
 import { useMatches } from '@/hooks/useMatches';
 import { calculatePlayerStats } from '@/lib/playerStats';
-import { Match, Player } from '@/lib/types';
+import { Match } from '@prisma/client';
 
 export default function PlayerStatsPage() {
   const params = useParams();
   const playerId = Array.isArray(params.id) ? params.id[0] : params.id;
 
-  const { data: player, isLoading: playerLoading, error: playerError } = usePlayer(playerId);
+  const { data: player, isLoading: playerLoading, error: playerError } = usePlayer(playerId!);
   const { data: matchesData, isLoading: matchesLoading, error: matchesError } = useMatches();
 
   const isLoading = playerLoading || matchesLoading;
@@ -23,14 +23,12 @@ export default function PlayerStatsPage() {
 
   const playerMatches = useMemo(() => {
     if (!matchesData || !playerId) return [];
-    return matchesData.filter(
-      (match: Match) => match.player1Id === parseInt(playerId) || match.player2Id === parseInt(playerId)
-    );
+    return matchesData.filter((match: Match) => match.player1Id === playerId || match.player2Id === playerId);
   }, [matchesData, playerId]);
 
   const stats = useMemo(() => {
     if (!playerId || !playerMatches) return { wins: 0, losses: 0, draws: 0, totalMatches: 0, winRate: 0 };
-    return calculatePlayerStats(parseInt(playerId), playerMatches);
+    return calculatePlayerStats(playerId, playerMatches);
   }, [playerId, playerMatches]);
 
   if (!playerId) {
@@ -153,7 +151,7 @@ export default function PlayerStatsPage() {
                 {playerMatches
                   .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                   .map(match => {
-                    const isPlayer1 = match.player1Id === parseInt(playerId);
+                    const isPlayer1 = match.player1Id === playerId;
                     const opponentId = isPlayer1 ? match.player2Id : match.player1Id;
                     // The opponent player data is not available in the match object from the API.
                     // I need to fetch all players and find the opponent.

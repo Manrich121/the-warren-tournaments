@@ -18,7 +18,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useDeletePlayer } from '@/hooks/useDeletePlayer';
-import { Player } from '@/lib/types';
+import { Player } from '@prisma/client';
 import { genericSort } from '@/lib/utils';
 import { AddPlayerDialog } from '@/components/AddPlayerDialog';
 
@@ -34,7 +34,7 @@ export default function AdminPlayersPage() {
   const { data: players, isLoading, error } = usePlayers();
   const deletePlayerMutation = useDeletePlayer();
 
-  const [deletePlayerId, setDeletePlayerId] = useState<number | null>(null);
+  const [deletePlayerId, setDeletePlayerId] = useState<string | null>(null);
   const [deletePlayerOpen, setDeletePlayerOpen] = useState(false);
 
   // Sorting states

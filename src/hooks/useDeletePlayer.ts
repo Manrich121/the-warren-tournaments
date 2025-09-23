@@ -4,7 +4,7 @@ export function useDeletePlayer() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id: string) => {
       const response = await fetch(`/api/players/${id}`, {
         method: 'DELETE'
       });

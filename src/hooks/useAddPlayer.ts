@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Player } from '@/lib/types';
+import { Player } from '@prisma/client';
 import { keys } from '@/hooks/keys';
 
 const addPlayer = async (newPlayer: Omit<Player, 'id' | 'createdAt' | 'updatedAt'>): Promise<Player> => {

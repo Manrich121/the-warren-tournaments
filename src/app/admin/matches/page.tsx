@@ -26,7 +26,7 @@ import { usePlayers } from '@/hooks/usePlayers';
 import { useEvents } from '@/hooks/useEvents';
 import { useDeleteMatch } from '@/hooks/useDeleteMatch';
 import { useUpdateMatch } from '@/hooks/useUpdateMatch';
-import { Match } from '@/lib/types';
+import { Match } from '@prisma/client';
 import { genericSort } from '@/lib/utils';
 import { AddMatchDialog } from '@/components/AddMatchDialog';
 
@@ -45,10 +45,10 @@ export default function AdminMatchesPage() {
   const deleteMatchMutation = useDeleteMatch();
   const updateMatchMutation = useUpdateMatch();
 
-  const [deleteMatchId, setDeleteMatchId] = useState<number | null>(null);
+  const [deleteMatchId, setDeleteMatchId] = useState<string | null>(null);
   const [deleteMatchOpen, setDeleteMatchOpen] = useState(false);
 
-  const [editMatchId, setEditMatchId] = useState<number | null>(null);
+  const [editMatchId, setEditMatchId] = useState<string | null>(null);
   const [editMatchRound, setEditMatchRound] = useState('');
   const [editMatchPlayer1Score, setEditMatchPlayer1Score] = useState('');
   const [editMatchPlayer2Score, setEditMatchPlayer2Score] = useState('');
@@ -95,9 +95,9 @@ export default function AdminMatchesPage() {
         player1Score: parseInt(editMatchPlayer1Score),
         player2Score: parseInt(editMatchPlayer2Score),
         draw: editMatchDraw,
-        eventId: parseInt(editMatchEventId),
-        player1Id: parseInt(editMatchPlayer1Id),
-        player2Id: parseInt(editMatchPlayer2Id)
+        eventId: editMatchEventId,
+        player1Id: editMatchPlayer1Id,
+        player2Id: editMatchPlayer2Id
       },
       {
         onSuccess: () => {

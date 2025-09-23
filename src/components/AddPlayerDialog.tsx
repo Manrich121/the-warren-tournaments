@@ -17,7 +17,7 @@ import {
 import { Loader2Icon } from 'lucide-react';
 import { useAddPlayer } from '@/hooks/useAddPlayer';
 import { useUpdatePlayer } from '@/hooks/useUpdatePlayer';
-import { Player } from '@/lib/types';
+import { Player } from '@prisma/client';
 
 interface AddPlayerDialogProps {
   player?: Player;

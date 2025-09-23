@@ -1,6 +1,6 @@
 -- CreateTable
 CREATE TABLE "public"."Player" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "fullName" TEXT NOT NULL,
     "wizardsEmail" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -11,10 +11,10 @@ CREATE TABLE "public"."Player" (
 
 -- CreateTable
 CREATE TABLE "public"."Match" (
-    "id" SERIAL NOT NULL,
-    "eventId" INTEGER NOT NULL,
-    "player1Id" INTEGER NOT NULL,
-    "player2Id" INTEGER NOT NULL,
+    "id" TEXT NOT NULL,
+    "eventId" TEXT NOT NULL,
+    "player1Id" TEXT NOT NULL,
+    "player2Id" TEXT NOT NULL,
     "player1Score" INTEGER NOT NULL,
     "player2Score" INTEGER NOT NULL,
     "round" INTEGER NOT NULL,
@@ -27,8 +27,8 @@ CREATE TABLE "public"."Match" (
 
 -- CreateTable
 CREATE TABLE "public"."Event" (
-    "id" SERIAL NOT NULL,
-    "leagueId" INTEGER NOT NULL,
+    "id" TEXT NOT NULL,
+    "leagueId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "date" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -39,7 +39,7 @@ CREATE TABLE "public"."Event" (
 
 -- CreateTable
 CREATE TABLE "public"."League" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "startDate" TIMESTAMP(3) NOT NULL,
     "endDate" TIMESTAMP(3) NOT NULL,
@@ -51,7 +51,7 @@ CREATE TABLE "public"."League" (
 
 -- CreateTable
 CREATE TABLE "public"."Admin" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -62,8 +62,8 @@ CREATE TABLE "public"."Admin" (
 
 -- CreateTable
 CREATE TABLE "public"."PrizePool" (
-    "id" SERIAL NOT NULL,
-    "leagueId" INTEGER NOT NULL,
+    "id" TEXT NOT NULL,
+    "leagueId" TEXT NOT NULL,
     "amount" DOUBLE PRECISION NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -73,8 +73,8 @@ CREATE TABLE "public"."PrizePool" (
 
 -- CreateTable
 CREATE TABLE "public"."_EventParticipants" (
-    "A" INTEGER NOT NULL,
-    "B" INTEGER NOT NULL,
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
 
     CONSTRAINT "_EventParticipants_AB_pkey" PRIMARY KEY ("A","B")
 );

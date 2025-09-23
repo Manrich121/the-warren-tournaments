@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Match } from '@/lib/types';
+import { Match } from '@prisma/client';
 import { keys } from '@/hooks/keys';
 
 const fetchMatches = async (): Promise<Match[]> => {

@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { League } from '@/lib/types';
+import { League } from '@prisma/client';
 import { keys } from '@/hooks/keys';
 
-const addLeague = async (newLeague: Omit<League, 'id' | 'createdAt'>): Promise<League> => {
+const addLeague = async (newLeague: Omit<League, 'id' | 'createdAt' | 'updatedAt'>): Promise<League> => {
   const res = await fetch('/api/leagues', {
     method: 'POST',
     headers: {
@@ -18,7 +18,7 @@ const addLeague = async (newLeague: Omit<League, 'id' | 'createdAt'>): Promise<L
 
 export const useAddLeague = () => {
   const queryClient = useQueryClient();
-  return useMutation<League, Error, Omit<League, 'id' | 'createdAt'>>({
+  return useMutation<League, Error, Omit<League, 'id' | 'createdAt' | 'updatedAt'>>({
     mutationFn: addLeague,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.leagues() });

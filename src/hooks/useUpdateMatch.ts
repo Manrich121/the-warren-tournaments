@@ -1,14 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface UpdateMatchData {
-  id: number;
+  id: string;
   round: number;
   player1Score: number;
   player2Score: number;
   draw: boolean;
-  eventId: number;
-  player1Id: number;
-  player2Id: number;
+  eventId: string;
+  player1Id: string;
+  player2Id: string;
 }
 
 export function useUpdateMatch() {

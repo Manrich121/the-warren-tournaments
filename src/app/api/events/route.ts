@@ -5,7 +5,7 @@ import { z } from 'zod';
 const eventSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   date: z.string().datetime('Date must be a valid date'),
-  leagueId: z.number().int()
+  leagueId: z.string()
 });
 
 export async function POST(request: Request) {

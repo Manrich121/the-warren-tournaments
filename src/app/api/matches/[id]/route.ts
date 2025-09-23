@@ -5,7 +5,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const { id } = await params;
   const match = await prisma.match.findUnique({
     where: {
-      id: parseInt(id, 10)
+      id
     }
   });
   if (match) {
@@ -22,7 +22,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     
     const updatedMatch = await prisma.match.update({
       where: {
-        id: parseInt(id, 10)
+        id
       },
       data: {
         round: data.round,
@@ -48,7 +48,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     
     await prisma.match.delete({
       where: {
-        id: parseInt(id, 10)
+        id
       }
     });
     

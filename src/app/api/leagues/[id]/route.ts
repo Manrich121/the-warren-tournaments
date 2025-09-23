@@ -8,9 +8,9 @@ const leagueSchema = z.object({
   endDate: z.string().datetime('End date must be a valid date')
 });
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const id = parseInt(params.id, 10);
+    const { id } = await params;
     const league = await prisma.league.findUnique({
       where: { id }
     });
@@ -25,9 +25,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const id = parseInt(params.id, 10);
+    const { id } = await params;
     const json = await request.json();
     const validatedData = leagueSchema.parse(json);
 
@@ -45,9 +45,9 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const id = parseInt(params.id, 10);
+    const { id } = await params;
 
     await prisma.league.delete({
       where: { id }

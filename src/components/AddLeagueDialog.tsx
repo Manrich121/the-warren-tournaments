@@ -17,7 +17,7 @@ import {
 import { Loader2Icon } from 'lucide-react';
 import { useAddLeague } from '@/hooks/useAddLeague';
 import { useUpdateLeague } from '@/hooks/useUpdateLeague';
-import { League } from '@/lib/types';
+import { League } from '@prisma/client';
 
 interface AddLeagueDialogProps {
   league?: League;
@@ -54,14 +54,14 @@ export function AddLeagueDialog({ league, children }: AddLeagueDialogProps) {
         {
           id: league.id,
           name,
-          startDate: new Date(startDate).toISOString(),
-          endDate: new Date(endDate).toISOString()
+          startDate: new Date(startDate),
+          endDate: new Date(endDate)
         },
         { onSuccess: () => setOpen(false) }
       );
     } else {
       addLeagueMutation.mutate(
-        { name, startDate: new Date(startDate).toISOString(), endDate: new Date(endDate).toISOString() },
+        { name, startDate: new Date(startDate), endDate: new Date(endDate) },
         {
           onSuccess: () => {
             setName('');
@@ -114,7 +114,9 @@ export function AddLeagueDialog({ league, children }: AddLeagueDialogProps) {
               </Button>
             </DialogClose>
             <Button type="submit" disabled={addLeagueMutation.isPending || updateLeagueMutation.isPending}>
-              {(addLeagueMutation.isPending || updateLeagueMutation.isPending) && <Loader2Icon className="animate-spin" />}
+              {(addLeagueMutation.isPending || updateLeagueMutation.isPending) && (
+                <Loader2Icon className="animate-spin" />
+              )}
               {isEditMode ? 'Update League' : 'Add League'}
             </Button>
           </DialogFooter>

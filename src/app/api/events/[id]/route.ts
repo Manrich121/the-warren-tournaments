@@ -5,12 +5,12 @@ import { z } from 'zod';
 const eventSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   date: z.string().datetime('Date must be a valid date'),
-  leagueId: z.number().int()
+  leagueId: z.string()
 });
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const id = parseInt(params.id, 10);
+    const { id } = await params;
     const event = await prisma.event.findUnique({
       where: { id }
     });
@@ -25,9 +25,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const id = parseInt(params.id, 10);
+    const { id } = await params;
     const json = await request.json();
     const validatedData = eventSchema.parse(json);
 
@@ -45,9 +45,9 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const id = parseInt(params.id, 10);
+    const { id } = await params;
 
     await prisma.event.delete({
       where: { id }

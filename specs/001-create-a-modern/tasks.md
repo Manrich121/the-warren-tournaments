@@ -116,3 +116,16 @@ This document outlines the tasks required to implement the Magic: The Gathering 
 - [X] **T064**: Create `useDeletePlayer` and `useUpdatePlayer` hooks with corresponding API endpoints.
 - [X] **T065**: Update `AddPlayerDialog` component to function as both add and edit dialog.
 - [X] **T066**: Add complete Edit and Delete functionality to players admin page with consistent UI.
+
+---
+
+## Phase 10: Database Schema Migration to CUID
+
+- [X] **T067**: Remove previous database migrations and update Prisma schema to use CUID for all ID fields.
+- [X] **T068**: Reset database and create new initial migration with CUID-based schema.
+- [X] **T069**: Replace manual TypeScript types with Prisma-generated types across the application.
+- [X] **T070**: Update all API routes to handle string IDs instead of numeric IDs (remove parseInt calls).
+- [X] **T071**: Update frontend components and hooks to work with string IDs instead of numeric IDs.
+- [X] **T072**: Update business logic functions to handle string IDs (e.g., calculatePlayerStats).
+- [~] **T073**: Fix all TypeScript compilation errors related to ID type changes (mostly complete, some minor issues remain).
+- [ ] **T074**: Test all CRUD operations with the new CUID-based schema.

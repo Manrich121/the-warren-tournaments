@@ -17,7 +17,7 @@ import {
 import { Loader2Icon } from 'lucide-react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useAddMatch } from '@/hooks/useAddMatch';
-import { Player, Event } from '@/lib/types';
+import { Player, Event } from '@prisma/client';
 
 export interface AddMatchDialogProps {
   players: Player[] | undefined;
@@ -67,9 +67,9 @@ export function AddMatchDialog({ players, events }: AddMatchDialogProps) {
 
     addMatchMutation.mutate(
       {
-        eventId: parseInt(newMatchEvent),
-        player1Id: parseInt(newMatchPlayer1),
-        player2Id: parseInt(newMatchPlayer2),
+        eventId: newMatchEvent,
+        player1Id: newMatchPlayer1,
+        player2Id: newMatchPlayer2,
         player1Score: parseInt(newMatchP1Score) || 0,
         player2Score: parseInt(newMatchP2Score) || 0,
         draw: newMatchDraw,
@@ -113,7 +113,7 @@ export function AddMatchDialog({ players, events }: AddMatchDialogProps) {
                 </SelectTrigger>
                 <SelectContent>
                   {events?.map(event => (
-                    <SelectItem key={event.id} value={event.id.toString()}>
+                    <SelectItem key={event.id} value={event.id}>
                       {event.name}
                     </SelectItem>
                   ))}
@@ -134,7 +134,7 @@ export function AddMatchDialog({ players, events }: AddMatchDialogProps) {
                 </SelectTrigger>
                 <SelectContent>
                   {players?.map(player => (
-                    <SelectItem key={player.id} value={player.id.toString()}>
+                    <SelectItem key={player.id} value={player.id}>
                       {player.fullName}
                     </SelectItem>
                   ))}
@@ -149,7 +149,7 @@ export function AddMatchDialog({ players, events }: AddMatchDialogProps) {
                 </SelectTrigger>
                 <SelectContent>
                   {players?.map(player => (
-                    <SelectItem key={player.id} value={player.id.toString()}>
+                    <SelectItem key={player.id} value={player.id}>
                       {player.fullName}
                     </SelectItem>
                   ))}
