@@ -22,5 +22,5 @@ Next.js (TypeScript): Follow standard conventions
 
 <!-- MANUAL ADDITIONS START -->
 Constitution @.specify/memory/constitution.md
-When adding shadcn/ui components, use `pnpx shadcn@latest add <component-name>`.
+When adding shadcn/ui components, use `pnpx shadcn@latest add <component-name>` instead of `pnpx shadcn-ui@latest add <component-name>`
 <!-- MANUAL ADDITIONS END -->

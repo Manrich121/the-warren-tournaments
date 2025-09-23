@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2Icon, ChevronUpIcon, ChevronDownIcon } from 'lucide-react';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useMatches } from '@/hooks/useMatches';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useEvents } from '@/hooks/useEvents';
@@ -39,11 +40,38 @@ export default function AdminMatchesPage() {
   const [newMatchDraw, setNewMatchDraw] = useState(false);
   const [round, setRound] = useState('');
 
+  const [scoreSelection, setScoreSelection] = useState('');
+
+  useEffect(() => {
+    let scoreToParse = scoreSelection;
+    if (scoreToParse) {
+      const [p1, p2] = scoreToParse.split('-').map(s => parseInt(s, 10));
+      setNewMatchP1Score(String(p1));
+      setNewMatchP2Score(String(p2));
+      setNewMatchDraw(p1 === p2);
+    } else {
+      setNewMatchP1Score('');
+      setNewMatchP2Score('');
+      setNewMatchDraw(false);
+    }
+  }, [scoreSelection]);
+
   const [sortField, setSortField] = useState<keyof Match>('id');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   const isLoading = matchesLoading || playersLoading || eventsLoading || status === 'loading';
   const error = matchesError || playersError || eventsError;
+
+  const resetForm = () => {
+    setNewMatchPlayer1('');
+    setNewMatchPlayer2('');
+    setNewMatchEvent('');
+    setNewMatchP1Score('');
+    setNewMatchP2Score('');
+    setNewMatchDraw(false);
+    setRound('');
+    setScoreSelection('');
+  };
 
   const handleAddMatch = () => {
     if (!newMatchPlayer1 || !newMatchPlayer2 || !newMatchEvent || !round) return;
@@ -59,15 +87,7 @@ export default function AdminMatchesPage() {
         round: parseInt(round)
       },
       {
-        onSuccess: () => {
-          setNewMatchPlayer1('');
-          setNewMatchPlayer2('');
-          setNewMatchEvent('');
-          setNewMatchP1Score('');
-          setNewMatchP2Score('');
-          setNewMatchDraw(false);
-          setRound('');
-        }
+        onSuccess: () => resetForm()
       }
     );
   };
@@ -133,7 +153,7 @@ export default function AdminMatchesPage() {
               <CardTitle>Add New Match</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Event</Label>
                   <Select value={newMatchEvent} onValueChange={setNewMatchEvent}>
@@ -186,36 +206,33 @@ export default function AdminMatchesPage() {
                   </Select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Player 1 Score</Label>
-                  <Input
-                    type="number"
-                    value={newMatchP1Score}
-                    onChange={e => setNewMatchP1Score(e.target.value)}
-                    placeholder="0"
-                    min="0"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Player 2 Score</Label>
-                  <Input
-                    type="number"
-                    value={newMatchP2Score}
-                    onChange={e => setNewMatchP2Score(e.target.value)}
-                    placeholder="0"
-                    min="0"
-                  />
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="draw"
-                  checked={newMatchDraw}
-                  onChange={e => setNewMatchDraw(e.target.checked)}
-                />
-                <Label htmlFor="draw">Draw</Label>
+              <div className="flex flex-col items-center space-y-2">
+                <Label>Score</Label>
+                <ToggleGroup
+                  type="single"
+                  value={scoreSelection}
+                  onValueChange={value => {
+                    if (value) {
+                      setScoreSelection(value);
+                    } else {
+                      setScoreSelection('');
+                    }
+                  }}
+                  className="flex-wrap"
+                >
+                  <ToggleGroupItem value="2-0">2-0</ToggleGroupItem>
+                  <ToggleGroupItem value="2-1">2-1</ToggleGroupItem>
+                  <ToggleGroupItem value="1-0">1-0</ToggleGroupItem>
+                  <ToggleGroupItem variant={'outline'} value="1-1">
+                    1-1
+                  </ToggleGroupItem>
+                  <ToggleGroupItem variant={'outline'} value="0-0">
+                    0-0
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="0-1">0-1</ToggleGroupItem>
+                  <ToggleGroupItem value="1-2">1-2</ToggleGroupItem>
+                  <ToggleGroupItem value="0-2">0-2</ToggleGroupItem>
+                </ToggleGroup>
               </div>
               <Button onClick={handleAddMatch} disabled={addMatchMutation.isPending}>
                 {addMatchMutation.isPending && <Loader2Icon className="animate-spin" />}
