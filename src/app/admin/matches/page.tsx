@@ -1,22 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2Icon, ChevronUpIcon, ChevronDownIcon } from 'lucide-react';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { ChevronUpIcon, ChevronDownIcon } from 'lucide-react';
 import { useMatches } from '@/hooks/useMatches';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useEvents } from '@/hooks/useEvents';
-import { useAddMatch } from '@/hooks/useAddMatch';
-import { Match, Player, Event } from '@/lib/types';
+import { Match } from '@/lib/types';
 import { genericSort } from '@/lib/utils';
+import { AddMatchDialog } from '@/components/AddMatchDialog';
 
 export default function AdminMatchesPage() {
   const router = useRouter();
@@ -30,67 +25,12 @@ export default function AdminMatchesPage() {
   const { data: matches, isLoading: matchesLoading, error: matchesError } = useMatches();
   const { data: players, isLoading: playersLoading, error: playersError } = usePlayers();
   const { data: events, isLoading: eventsLoading, error: eventsError } = useEvents();
-  const addMatchMutation = useAddMatch();
-
-  const [newMatchPlayer1, setNewMatchPlayer1] = useState('');
-  const [newMatchPlayer2, setNewMatchPlayer2] = useState('');
-  const [newMatchEvent, setNewMatchEvent] = useState('');
-  const [newMatchP1Score, setNewMatchP1Score] = useState('');
-  const [newMatchP2Score, setNewMatchP2Score] = useState('');
-  const [newMatchDraw, setNewMatchDraw] = useState(false);
-  const [round, setRound] = useState('');
-
-  const [scoreSelection, setScoreSelection] = useState('');
-
-  useEffect(() => {
-    let scoreToParse = scoreSelection;
-    if (scoreToParse) {
-      const [p1, p2] = scoreToParse.split('-').map(s => parseInt(s, 10));
-      setNewMatchP1Score(String(p1));
-      setNewMatchP2Score(String(p2));
-      setNewMatchDraw(p1 === p2);
-    } else {
-      setNewMatchP1Score('');
-      setNewMatchP2Score('');
-      setNewMatchDraw(false);
-    }
-  }, [scoreSelection]);
 
   const [sortField, setSortField] = useState<keyof Match>('id');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   const isLoading = matchesLoading || playersLoading || eventsLoading || status === 'loading';
   const error = matchesError || playersError || eventsError;
-
-  const resetForm = () => {
-    setNewMatchPlayer1('');
-    setNewMatchPlayer2('');
-    setNewMatchEvent('');
-    setNewMatchP1Score('');
-    setNewMatchP2Score('');
-    setNewMatchDraw(false);
-    setRound('');
-    setScoreSelection('');
-  };
-
-  const handleAddMatch = () => {
-    if (!newMatchPlayer1 || !newMatchPlayer2 || !newMatchEvent || !round) return;
-
-    addMatchMutation.mutate(
-      {
-        eventId: parseInt(newMatchEvent),
-        player1Id: parseInt(newMatchPlayer1),
-        player2Id: parseInt(newMatchPlayer2),
-        player1Score: parseInt(newMatchP1Score) || 0,
-        player2Score: parseInt(newMatchP2Score) || 0,
-        draw: newMatchDraw,
-        round: parseInt(round)
-      },
-      {
-        onSuccess: () => resetForm()
-      }
-    );
-  };
 
   const handleSort = (field: keyof Match) => {
     if (field === sortField) {
@@ -148,103 +88,12 @@ export default function AdminMatchesPage() {
     <>
       <div className="container mx-auto py-8 space-y-6">
         <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Add New Match</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Event</Label>
-                  <Select value={newMatchEvent} onValueChange={setNewMatchEvent}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Event" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {events?.map(event => (
-                        <SelectItem key={event.id} value={event.id.toString()}>
-                          {event.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Round</Label>
-                  <Input type="number" value={round} onChange={e => setRound(e.target.value)} placeholder="1" min="1" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Player 1</Label>
-                  <Select value={newMatchPlayer1} onValueChange={setNewMatchPlayer1}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Player 1" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {players?.map(player => (
-                        <SelectItem key={player.id} value={player.id.toString()}>
-                          {player.fullName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Player 2</Label>
-                  <Select value={newMatchPlayer2} onValueChange={setNewMatchPlayer2}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Player 2" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {players?.map(player => (
-                        <SelectItem key={player.id} value={player.id.toString()}>
-                          {player.fullName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="flex flex-col items-center space-y-2">
-                <Label>Score</Label>
-                <ToggleGroup
-                  type="single"
-                  value={scoreSelection}
-                  onValueChange={value => {
-                    if (value) {
-                      setScoreSelection(value);
-                    } else {
-                      setScoreSelection('');
-                    }
-                  }}
-                  className="flex-wrap"
-                >
-                  <ToggleGroupItem value="2-0">2-0</ToggleGroupItem>
-                  <ToggleGroupItem value="2-1">2-1</ToggleGroupItem>
-                  <ToggleGroupItem value="1-0">1-0</ToggleGroupItem>
-                  <ToggleGroupItem variant={'outline'} value="1-1">
-                    1-1
-                  </ToggleGroupItem>
-                  <ToggleGroupItem variant={'outline'} value="0-0">
-                    0-0
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="0-1">0-1</ToggleGroupItem>
-                  <ToggleGroupItem value="1-2">1-2</ToggleGroupItem>
-                  <ToggleGroupItem value="0-2">0-2</ToggleGroupItem>
-                </ToggleGroup>
-              </div>
-              <Button onClick={handleAddMatch} disabled={addMatchMutation.isPending}>
-                {addMatchMutation.isPending && <Loader2Icon className="animate-spin" />}
-                Add Match
-              </Button>
-            </CardContent>
-          </Card>
+          <div className="flex justify-between items-center">
+            <h1 className="text-3xl font-bold">Matches ({matches?.length || 0})</h1>
+            <AddMatchDialog players={players} events={events} />
+          </div>
 
           <Card>
-            <CardHeader>
-              <CardTitle>Matches ({matches?.length || 0})</CardTitle>
-            </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
@@ -277,8 +126,8 @@ export default function AdminMatchesPage() {
                           {match.draw
                             ? 'Draw'
                             : match.player1Score > match.player2Score
-                              ? 'Player 1 Win'
-                              : 'Player 2 Win'}
+                            ? 'Player 1 Win'
+                            : 'Player 2 Win'}
                         </TableCell>
                         <TableCell>{new Date(match.createdAt).toLocaleDateString()}</TableCell>
                       </TableRow>
