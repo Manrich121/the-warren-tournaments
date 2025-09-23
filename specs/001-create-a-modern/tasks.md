@@ -100,3 +100,19 @@ This document outlines the tasks required to implement the Magic: The Gathering 
 - [X] **T047**: Create reusable hooks for all API resources (`players`, `leagues`, `events`, `matches`, `prize-pools`).
 - [X] **T048**: Create reusable mutation hooks for all `POST`, `PUT`, `DELETE` API endpoints.
 - [X] **T049**: Refactor all pages and components to use the new data fetching and mutation hooks.
+
+---
+
+## Phase 9: UI/UX Improvements and Complete CRUD Operations
+
+- [X] **T056**: Update dialog animations to use simple fade in with grow from 95% to 100%.
+- [X] **T057**: Convert Delete buttons to icon buttons using TrashIcon across all admin pages.
+- [X] **T058**: Add proper button alignment using flex containers with consistent gap spacing.
+- [X] **T059**: Install and configure shadcn/ui tooltip component.
+- [X] **T060**: Convert Edit buttons to icon buttons using PencilIcon across all admin pages.
+- [X] **T061**: Add tooltips for both Edit and Delete buttons on hover across all admin pages.
+- [X] **T062**: Create `useDeleteMatch` and `useUpdateMatch` hooks with corresponding API endpoints.
+- [X] **T063**: Add complete Edit and Delete functionality to matches admin page with form dialogs.
+- [X] **T064**: Create `useDeletePlayer` and `useUpdatePlayer` hooks with corresponding API endpoints.
+- [X] **T065**: Update `AddPlayerDialog` component to function as both add and edit dialog.
+- [X] **T066**: Add complete Edit and Delete functionality to players admin page with consistent UI.

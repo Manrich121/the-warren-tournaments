@@ -19,12 +19,7 @@ import {
   DialogClose,
   DialogDescription
 } from '@/components/ui/dialog';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useEvents } from '@/hooks/useEvents';
 import { useLeagues } from '@/hooks/useLeagues';
 import { useDeleteEvent } from '@/hooks/useDeleteEvent';
@@ -154,7 +149,7 @@ export default function AdminEventsPage() {
       <div className="container mx-auto py-8 space-y-6">
         <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold">Events ({events?.length || 0})</h1>
+            <h1 className="text-3xl font-bold">Events</h1>
             <AddEventDialog leagues={leagues} />
           </div>
 
@@ -186,7 +181,12 @@ export default function AdminEventsPage() {
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <Button variant="outline" size="sm" className="p-2" onClick={() => handleEditEvent(event)}>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="p-2"
+                                    onClick={() => handleEditEvent(event)}
+                                  >
                                     <PencilIcon className="h-4 w-4" />
                                   </Button>
                                 </TooltipTrigger>

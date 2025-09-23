@@ -4,9 +4,20 @@ import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ChevronUpIcon, ChevronDownIcon } from 'lucide-react';
+import { ChevronUpIcon, ChevronDownIcon, TrashIcon, PencilIcon, Loader2Icon } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription
+} from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { usePlayers } from '@/hooks/usePlayers';
+import { useDeletePlayer } from '@/hooks/useDeletePlayer';
 import { Player } from '@/lib/types';
 import { genericSort } from '@/lib/utils';
 import { AddPlayerDialog } from '@/components/AddPlayerDialog';
@@ -21,10 +32,24 @@ export default function AdminPlayersPage() {
   });
 
   const { data: players, isLoading, error } = usePlayers();
+  const deletePlayerMutation = useDeletePlayer();
+
+  const [deletePlayerId, setDeletePlayerId] = useState<number | null>(null);
+  const [deletePlayerOpen, setDeletePlayerOpen] = useState(false);
 
   // Sorting states
   const [sortField, setSortField] = useState<keyof Player>('id');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
+  const handleDeletePlayer = () => {
+    if (!deletePlayerId) return;
+    deletePlayerMutation.mutate(deletePlayerId, {
+      onSuccess: () => {
+        setDeletePlayerId(null);
+        setDeletePlayerOpen(false);
+      }
+    });
+  };
 
   const handleSort = (field: keyof Player) => {
     if (field === sortField) {
@@ -83,7 +108,7 @@ export default function AdminPlayersPage() {
       <div className="container mx-auto py-8 space-y-6">
         <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold">Players ({players?.length || 0})</h1>
+            <h1 className="text-3xl font-bold">Players</h1>
             <AddPlayerDialog />
           </div>
 
@@ -96,6 +121,7 @@ export default function AdminPlayersPage() {
                     <SortableHeader field="fullName">Name</SortableHeader>
                     <SortableHeader field="wizardsEmail">Email</SortableHeader>
                     <SortableHeader field="createdAt">Created</SortableHeader>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -105,12 +131,71 @@ export default function AdminPlayersPage() {
                       <TableCell>{player.fullName}</TableCell>
                       <TableCell>{player.wizardsEmail}</TableCell>
                       <TableCell>{new Date(player.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <AddPlayerDialog player={player}>
+                                  <Button variant="outline" size="sm" className="p-2">
+                                    <PencilIcon className="h-4 w-4" />
+                                  </Button>
+                                </AddPlayerDialog>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Edit player</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="p-2"
+                                  onClick={() => {
+                                    setDeletePlayerId(player.id);
+                                    setDeletePlayerOpen(true);
+                                  }}
+                                >
+                                  <TrashIcon className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Delete player</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </CardContent>
           </Card>
+
+          <Dialog open={deletePlayerOpen} onOpenChange={setDeletePlayerOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Are you sure you want to delete this player?</DialogTitle>
+                <DialogDescription>
+                  This action cannot be undone. This will permanently delete the player and remove them from all
+                  associated matches.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setDeletePlayerOpen(false)}>
+                  Cancel
+                </Button>
+                <Button variant="destructive" onClick={handleDeletePlayer} disabled={deletePlayerMutation.isPending}>
+                  {deletePlayerMutation.isPending && <Loader2Icon className="animate-spin" />}
+                  Delete
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </>

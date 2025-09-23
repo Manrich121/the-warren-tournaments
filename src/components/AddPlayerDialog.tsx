@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,46 +16,93 @@ import {
 } from '@/components/ui/dialog';
 import { Loader2Icon } from 'lucide-react';
 import { useAddPlayer } from '@/hooks/useAddPlayer';
+import { useUpdatePlayer } from '@/hooks/useUpdatePlayer';
+import { Player } from '@/lib/types';
 
-export function AddPlayerDialog() {
+interface AddPlayerDialogProps {
+  player?: Player;
+  children?: React.ReactNode;
+}
+
+export function AddPlayerDialog({ player, children }: AddPlayerDialogProps) {
   const [open, setOpen] = useState(false);
   const addPlayerMutation = useAddPlayer();
+  const updatePlayerMutation = useUpdatePlayer();
 
   const [newPlayerName, setNewPlayerName] = useState('');
   const [newPlayerEmail, setNewPlayerEmail] = useState('');
 
-  const handleAddPlayer = async () => {
+  const isEditMode = !!player;
+
+  useEffect(() => {
+    if (player) {
+      setNewPlayerName(player.fullName);
+      setNewPlayerEmail(player.wizardsEmail);
+    } else {
+      setNewPlayerName('');
+      setNewPlayerEmail('');
+    }
+  }, [player]);
+
+  const handleSubmit = async () => {
     if (!newPlayerName || !newPlayerEmail) return;
 
-    addPlayerMutation.mutate(
-      { fullName: newPlayerName, wizardsEmail: newPlayerEmail },
-      {
-        onSuccess: () => {
-          setNewPlayerName('');
-          setNewPlayerEmail('');
-          setOpen(false);
+    if (isEditMode && player) {
+      updatePlayerMutation.mutate(
+        {
+          id: player.id,
+          fullName: newPlayerName,
+          wizardsEmail: newPlayerEmail
+        },
+        {
+          onSuccess: () => {
+            setOpen(false);
+          }
         }
-      }
-    );
+      );
+    } else {
+      addPlayerMutation.mutate(
+        { fullName: newPlayerName, wizardsEmail: newPlayerEmail },
+        {
+          onSuccess: () => {
+            setNewPlayerName('');
+            setNewPlayerEmail('');
+            setOpen(false);
+          }
+        }
+      );
+    }
   };
+
+  const currentMutation = isEditMode ? updatePlayerMutation : addPlayerMutation;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>Add New Player</Button>
-      </DialogTrigger>
+      {children ? (
+        <DialogTrigger asChild>
+          {children}
+        </DialogTrigger>
+      ) : (
+        <DialogTrigger asChild>
+          <Button>Add New Player</Button>
+        </DialogTrigger>
+      )}
       <DialogContent onPointerDownOutside={e => e.preventDefault()} onEscapeKeyDown={e => e.preventDefault()}>
         <form
           onSubmit={e => {
             e.preventDefault();
-            handleAddPlayer();
+            handleSubmit();
           }}
           className="space-y-4"
         >
           <DialogHeader>
-            <DialogTitle>Add New Player</DialogTitle>
+            <DialogTitle>{isEditMode ? 'Edit Player' : 'Add New Player'}</DialogTitle>
           </DialogHeader>
-          <DialogDescription>Enter the full name and Wizards Account email of the new player.</DialogDescription>
+          <DialogDescription>
+            {isEditMode 
+              ? 'Update the player information below.' 
+              : 'Enter the full name and Wizards Account email of the new player.'}
+          </DialogDescription>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="playerName">Full Name</Label>
@@ -83,9 +130,9 @@ export function AddPlayerDialog() {
                 Cancel
               </Button>
             </DialogClose>
-            <Button type="submit" disabled={addPlayerMutation.isPending}>
-              {addPlayerMutation.isPending && <Loader2Icon className="animate-spin" />}
-              Add Player
+            <Button type="submit" disabled={currentMutation.isPending}>
+              {currentMutation.isPending && <Loader2Icon className="animate-spin" />}
+              {isEditMode ? 'Update Player' : 'Add Player'}
             </Button>
           </DialogFooter>
         </form>
