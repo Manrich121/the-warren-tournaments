@@ -73,3 +73,12 @@ This document outlines the tasks required to implement the Magic: The Gathering 
 - [X] **T036**: Implement API route for `PUT /leagues/{id}` and wire up the "Edit" button in the admin dashboard.
 - [X] **T037**: Implement API route for `DELETE /events/{id}` and wire up the "Delete" button in the admin dashboard.
 - [X] **T038**: Implement API route for `PUT /events/{id}` and wire up the "Edit" button in the admin dashboard.
+
+---
+
+## Phase 7: Admin Dashboard Refactor
+
+- [X] **T039**: Refactor the admin dashboard into separate pages for players, leagues, events, and matches.
+- [X] **T040**: Create a new dashboard page with overview cards for key metrics.
+- [X] **T041**: Create a shared admin layout with navigation.
+- [X] **T042**: Update the main `Header` component and add it to the root layout.

@@ -83,7 +83,6 @@ export function Leaderboard() {
         <h1 className="text-4xl font-bold mb-2">The Warren Tournaments</h1>
         <p className="text-muted-foreground">Magic: The Gathering League Tracker</p>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {/* Prize Pool */}
         {prizePool && (
@@ -117,7 +116,6 @@ export function Leaderboard() {
           </CardContent>
         </Card>
       </div>
-
       {/* Leaderboard */}
       <Card>
         <CardHeader className={'text-xl'}>
@@ -145,7 +143,10 @@ export function Leaderboard() {
                     <TableRow key={player.id}>
                       <TableCell className="font-medium">#{index + 1}</TableCell>
                       <TableCell>
-                        <Link href={`/players/${player.id}`} className="text-primary hover:underline font-medium">
+                        <Link
+                          href={`/players/${player.id}`}
+                          className="text-primary hover:underline font-medium"
+                          legacyBehavior>
                           {player.fullName}
                         </Link>
                       </TableCell>

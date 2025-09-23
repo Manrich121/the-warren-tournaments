@@ -168,7 +168,6 @@ export default function PlayerStatsPage() {
           <Button variant="outline">Back to Leaderboard</Button>
         </Link>
       </div>
-
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card>
@@ -212,7 +211,6 @@ export default function PlayerStatsPage() {
           </CardContent>
         </Card>
       </div>
-
       {/* Match History */}
       <Card>
         <CardHeader>
