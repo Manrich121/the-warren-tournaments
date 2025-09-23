@@ -5,22 +5,19 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Loader2Icon, ChevronUpIcon, ChevronDownIcon } from 'lucide-react';
+import { Loader2Icon, ChevronUpIcon, ChevronDownIcon, TrashIcon, PencilIcon } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogClose,
   DialogDescription
 } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useLeagues } from '@/hooks/useLeagues';
 import { useDeleteLeague } from '@/hooks/useDeleteLeague';
-import { useUpdateLeague } from '@/hooks/useUpdateLeague';
 import { League } from '@/lib/types';
 import { genericSort } from '@/lib/utils';
 import { AddLeagueDialog } from '@/components/AddLeagueDialog';
@@ -36,16 +33,9 @@ export default function AdminLeaguesPage() {
 
   const { data: leagues, isLoading, error } = useLeagues();
   const deleteLeagueMutation = useDeleteLeague();
-  const updateLeagueMutation = useUpdateLeague();
 
   const [deleteLeagueId, setDeleteLeagueId] = useState<number | null>(null);
   const [deleteLeagueOpen, setDeleteLeagueOpen] = useState(false);
-
-  const [editLeagueId, setEditLeagueId] = useState<number | null>(null);
-  const [editLeagueName, setEditLeagueName] = useState('');
-  const [editLeagueStartDate, setEditLeagueStartDate] = useState('');
-  const [editLeagueEndDate, setEditLeagueEndDate] = useState('');
-  const [editLeagueOpen, setEditLeagueOpen] = useState(false);
 
   const [sortField, setSortField] = useState<keyof League>('id');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -58,31 +48,6 @@ export default function AdminLeaguesPage() {
         setDeleteLeagueOpen(false);
       }
     });
-  };
-
-  const handleEditLeague = (league: League) => {
-    setEditLeagueId(league.id);
-    setEditLeagueName(league.name);
-    setEditLeagueStartDate(new Date(league.startDate).toISOString().split('T')[0]);
-    setEditLeagueEndDate(new Date(league.endDate).toISOString().split('T')[0]);
-    setEditLeagueOpen(true);
-  };
-
-  const handleUpdateLeague = () => {
-    if (!editLeagueId) return;
-    updateLeagueMutation.mutate(
-      {
-        id: editLeagueId,
-        name: editLeagueName,
-        startDate: new Date(editLeagueStartDate).toISOString(),
-        endDate: new Date(editLeagueEndDate).toISOString()
-      },
-      {
-        onSuccess: () => {
-          setEditLeagueOpen(false);
-        }
-      }
-    );
   };
 
   const handleSort = (field: keyof League) => {
@@ -142,8 +107,10 @@ export default function AdminLeaguesPage() {
       <div className="container mx-auto py-8 space-y-6">
         <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold">Leagues ({leagues?.length || 0})</h1>
-            <AddLeagueDialog />
+            <h1 className="text-3xl font-bold">Leagues</h1>
+            <AddLeagueDialog>
+              <Button>Add New League</Button>
+            </AddLeagueDialog>
           </div>
 
           <Card>
@@ -151,7 +118,6 @@ export default function AdminLeaguesPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <SortableHeader field="id">ID</SortableHeader>
                     <SortableHeader field="name">Name</SortableHeader>
                     <SortableHeader field="startDate">Start Date</SortableHeader>
                     <SortableHeader field="endDate">End Date</SortableHeader>
@@ -162,25 +128,47 @@ export default function AdminLeaguesPage() {
                 <TableBody>
                   {sortedLeagues.map(league => (
                     <TableRow key={league.id}>
-                      <TableCell>{league.id}</TableCell>
                       <TableCell>{league.name}</TableCell>
                       <TableCell>{new Date(league.startDate).toLocaleDateString()}</TableCell>
                       <TableCell>{new Date(league.endDate).toLocaleDateString()}</TableCell>
                       <TableCell>{new Date(league.createdAt).toLocaleDateString()}</TableCell>
                       <TableCell>
-                        <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditLeague(league)}>
-                          Edit
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => {
-                            setDeleteLeagueId(league.id);
-                            setDeleteLeagueOpen(true);
-                          }}
-                        >
-                          Delete
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <AddLeagueDialog league={league}>
+                                  <Button variant="outline" size="sm" className="p-2">
+                                    <PencilIcon className="h-4 w-4" />
+                                  </Button>
+                                </AddLeagueDialog>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Edit league</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="p-2"
+                                  onClick={() => {
+                                    setDeleteLeagueId(league.id);
+                                    setDeleteLeagueOpen(true);
+                                  }}
+                                >
+                                  <TrashIcon className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Delete league</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -188,63 +176,6 @@ export default function AdminLeaguesPage() {
               </Table>
             </CardContent>
           </Card>
-
-          <Dialog open={editLeagueOpen} onOpenChange={setEditLeagueOpen}>
-            <DialogContent>
-              <form
-                onSubmit={e => {
-                  e.preventDefault();
-                  handleUpdateLeague();
-                }}
-                className="space-y-4"
-              >
-                <DialogHeader>
-                  <DialogTitle>Edit League</DialogTitle>
-                </DialogHeader>
-                <DialogDescription>Update the name, start date, and end date for the league.</DialogDescription>
-                <div className="space-y-2">
-                  <Label htmlFor="editLeagueName">Name</Label>
-                  <Input
-                    id="editLeagueName"
-                    value={editLeagueName}
-                    onChange={e => setEditLeagueName(e.target.value)}
-                    placeholder="League Name"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="editLeagueStartDate">Start Date</Label>
-                    <Input
-                      id="editLeagueStartDate"
-                      type="date"
-                      value={editLeagueStartDate}
-                      onChange={e => setEditLeagueStartDate(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="editLeagueEndDate">End Date</Label>
-                    <Input
-                      id="editLeagueEndDate"
-                      type="date"
-                      value={editLeagueEndDate}
-                      onChange={e => setEditLeagueEndDate(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button variant={'outline'} type="button">
-                      Cancel
-                    </Button>
-                  </DialogClose>
-                  <Button type="submit" disabled={updateLeagueMutation.isPending}>
-                    {updateLeagueMutation.isPending && <Loader2Icon className="animate-spin" />}
-                    Update League
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
 
           <Dialog open={deleteLeagueOpen} onOpenChange={setDeleteLeagueOpen}>
             <DialogContent>

@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2Icon, ChevronUpIcon, ChevronDownIcon } from 'lucide-react';
+import { Loader2Icon, ChevronUpIcon, ChevronDownIcon, TrashIcon, PencilIcon } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -19,12 +19,19 @@ import {
   DialogClose,
   DialogDescription
 } from '@/components/ui/dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from '@/components/ui/tooltip';
 import { useEvents } from '@/hooks/useEvents';
 import { useLeagues } from '@/hooks/useLeagues';
 import { useDeleteEvent } from '@/hooks/useDeleteEvent';
 import { useUpdateEvent } from '@/hooks/useUpdateEvent';
 import { Event, League } from '@/lib/types';
 import { AddEventDialog } from '@/components/AddEventDialog';
+import { genericSort } from '@/lib/utils';
 
 export default function AdminEventsPage() {
   const router = useRouter();
@@ -90,29 +97,6 @@ export default function AdminEventsPage() {
     );
   };
 
-  const genericSort = <T,>(array: T[], field: keyof T, direction: 'asc' | 'desc') => {
-    return [...array].sort((a, b) => {
-      const aValue = a[field];
-      const bValue = b[field];
-
-      let comparison = 0;
-
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        comparison = aValue.localeCompare(bValue);
-      } else if (typeof aValue === 'number' && typeof bValue === 'number') {
-        comparison = aValue - bValue;
-      } else if (aValue instanceof Date && bValue instanceof Date) {
-        comparison = aValue.getTime() - bValue.getTime();
-      } else {
-        const dateA = new Date(aValue as string);
-        const dateB = new Date(bValue as string);
-        comparison = dateA.getTime() - dateB.getTime();
-      }
-
-      return direction === 'asc' ? comparison : -comparison;
-    });
-  };
-
   const handleSort = (field: keyof Event) => {
     if (field === sortField) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -135,11 +119,15 @@ export default function AdminEventsPage() {
           className="flex items-center space-x-1 hover:text-foreground font-medium"
         >
           <span>{children}</span>
-          {isActive
-            ? isAsc
-              ? <ChevronUpIcon className="h-4 w-4" />
-              : <ChevronDownIcon className="h-4 w-4" />
-            : <div className="h-4 w-4" />}
+          {isActive ? (
+            isAsc ? (
+              <ChevronUpIcon className="h-4 w-4" />
+            ) : (
+              <ChevronDownIcon className="h-4 w-4" />
+            )
+          ) : (
+            <div className="h-4 w-4" />
+          )}
         </button>
       </TableHead>
     );
@@ -194,19 +182,40 @@ export default function AdminEventsPage() {
                         <TableCell>{new Date(event.date).toLocaleDateString()}</TableCell>
                         <TableCell>{new Date(event.createdAt).toLocaleDateString()}</TableCell>
                         <TableCell>
-                          <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditEvent(event)}>
-                            Edit
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => {
-                              setDeleteEventId(event.id);
-                              setDeleteEventOpen(true);
-                            }}
-                          >
-                            Delete
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="outline" size="sm" className="p-2" onClick={() => handleEditEvent(event)}>
+                                    <PencilIcon className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Edit event</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="p-2"
+                                    onClick={() => {
+                                      setDeleteEventId(event.id);
+                                      setDeleteEventOpen(true);
+                                    }}
+                                  >
+                                    <TrashIcon className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Delete event</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
