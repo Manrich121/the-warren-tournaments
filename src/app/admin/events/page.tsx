@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,16 +16,15 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogClose,
   DialogDescription
 } from '@/components/ui/dialog';
 import { useEvents } from '@/hooks/useEvents';
 import { useLeagues } from '@/hooks/useLeagues';
-import { useAddEvent } from '@/hooks/useAddEvent';
 import { useDeleteEvent } from '@/hooks/useDeleteEvent';
 import { useUpdateEvent } from '@/hooks/useUpdateEvent';
 import { Event, League } from '@/lib/types';
+import { AddEventDialog } from '@/components/AddEventDialog';
 
 export default function AdminEventsPage() {
   const router = useRouter();
@@ -38,14 +37,8 @@ export default function AdminEventsPage() {
 
   const { data: events, isLoading: eventsLoading, error: eventsError } = useEvents();
   const { data: leagues, isLoading: leaguesLoading, error: leaguesError } = useLeagues();
-  const addEventMutation = useAddEvent();
   const deleteEventMutation = useDeleteEvent();
   const updateEventMutation = useUpdateEvent();
-
-  const [newEventName, setNewEventName] = useState('');
-  const [newEventDate, setNewEventDate] = useState('');
-  const [newEventLeagueId, setNewEventLeagueId] = useState('');
-  const [addEventOpen, setAddEventOpen] = useState(false);
 
   const [deleteEventId, setDeleteEventId] = useState<number | null>(null);
   const [deleteEventOpen, setDeleteEventOpen] = useState(false);
@@ -61,25 +54,6 @@ export default function AdminEventsPage() {
 
   const isLoading = eventsLoading || leaguesLoading || status === 'loading';
   const error = eventsError || leaguesError;
-
-  const handleAddEvent = () => {
-    if (!newEventName || !newEventDate || !newEventLeagueId) return;
-    addEventMutation.mutate(
-      {
-        name: newEventName,
-        date: new Date(newEventDate).toISOString(),
-        leagueId: parseInt(newEventLeagueId),
-      },
-      {
-        onSuccess: () => {
-          setNewEventName('');
-          setNewEventDate('');
-          setNewEventLeagueId('');
-          setAddEventOpen(false);
-        }
-      }
-    );
-  };
 
   const handleDeleteEvent = () => {
     if (!deleteEventId) return;
@@ -106,7 +80,7 @@ export default function AdminEventsPage() {
         id: editEventId,
         name: editEventName,
         date: new Date(editEventDate).toISOString(),
-        leagueId: parseInt(editEventLeagueId),
+        leagueId: parseInt(editEventLeagueId)
       },
       {
         onSuccess: () => {
@@ -120,9 +94,9 @@ export default function AdminEventsPage() {
     return [...array].sort((a, b) => {
       const aValue = a[field];
       const bValue = b[field];
-      
+
       let comparison = 0;
-      
+
       if (typeof aValue === 'string' && typeof bValue === 'string') {
         comparison = aValue.localeCompare(bValue);
       } else if (typeof aValue === 'number' && typeof bValue === 'number') {
@@ -134,7 +108,7 @@ export default function AdminEventsPage() {
         const dateB = new Date(bValue as string);
         comparison = dateA.getTime() - dateB.getTime();
       }
-      
+
       return direction === 'asc' ? comparison : -comparison;
     });
   };
@@ -150,16 +124,10 @@ export default function AdminEventsPage() {
 
   const sortedEvents = events ? genericSort(events, sortField, sortDirection) : [];
 
-  const SortableHeader = ({ 
-    field, 
-    children 
-  }: { 
-    field: keyof Event;
-    children: React.ReactNode;
-  }) => {
+  const SortableHeader = ({ field, children }: { field: keyof Event; children: React.ReactNode }) => {
     const isActive = sortField === field;
     const isAsc = sortDirection === 'asc';
-    
+
     return (
       <TableHead>
         <button
@@ -167,15 +135,11 @@ export default function AdminEventsPage() {
           className="flex items-center space-x-1 hover:text-foreground font-medium"
         >
           <span>{children}</span>
-          {isActive ? (
-            isAsc ? (
-              <ChevronUpIcon className="h-4 w-4" />
-            ) : (
-              <ChevronDownIcon className="h-4 w-4" />
-            )
-          ) : (
-            <div className="h-4 w-4" />
-          )}
+          {isActive
+            ? isAsc
+              ? <ChevronUpIcon className="h-4 w-4" />
+              : <ChevronDownIcon className="h-4 w-4" />
+            : <div className="h-4 w-4" />}
         </button>
       </TableHead>
     );
@@ -201,78 +165,12 @@ export default function AdminEventsPage() {
     <>
       <div className="container mx-auto py-8 space-y-6">
         <div className="space-y-6">
-          <Dialog open={addEventOpen} onOpenChange={setAddEventOpen}>
-            <DialogTrigger asChild>
-              <Button>Add New Event</Button>
-            </DialogTrigger>
-            <DialogContent onPointerDownOutside={e => e.preventDefault()} onEscapeKeyDown={e => e.preventDefault()}>
-              <form
-                onSubmit={e => {
-                  e.preventDefault();
-                  handleAddEvent();
-                }}
-                className="space-y-4"
-              >
-                <DialogHeader>
-                  <DialogTitle>Add New Event</DialogTitle>
-                </DialogHeader>
-                <DialogDescription>
-                  Enter the name, date, and select the league for the new event.
-                </DialogDescription>
-                <div className="space-y-2">
-                  <Label htmlFor="eventName">Name</Label>
-                  <Input
-                    id="eventName"
-                    value={newEventName}
-                    onChange={e => setNewEventName(e.target.value)}
-                    placeholder="Event Name"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="eventDate">Date</Label>
-                    <Input
-                      id="eventDate"
-                      type="date"
-                      value={newEventDate}
-                      onChange={e => setNewEventDate(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="eventLeague">League</Label>
-                    <Select value={newEventLeagueId} onValueChange={setNewEventLeagueId}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select League" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {leagues?.map(league => (
-                          <SelectItem key={league.id} value={league.id.toString()}>
-                            {league.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button variant={'outline'} type="button">
-                      Cancel
-                    </Button>
-                  </DialogClose>
-                  <Button type="submit" disabled={addEventMutation.isPending}>
-                    {addEventMutation.isPending && <Loader2Icon className="animate-spin" />}
-                    Add Event
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <div className="flex justify-between items-center">
+            <h1 className="text-3xl font-bold">Events ({events?.length || 0})</h1>
+            <AddEventDialog leagues={leagues} />
+          </div>
 
           <Card>
-            <CardHeader>
-              <CardTitle>Events ({events?.length || 0})</CardTitle>
-            </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
@@ -330,9 +228,7 @@ export default function AdminEventsPage() {
                 <DialogHeader>
                   <DialogTitle>Edit Event</DialogTitle>
                 </DialogHeader>
-                <DialogDescription>
-                  Update the name, date, and league for the event.
-                </DialogDescription>
+                <DialogDescription>Update the name, date, and league for the event.</DialogDescription>
                 <div className="space-y-2">
                   <Label htmlFor="editEventName">Name</Label>
                   <Input

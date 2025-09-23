@@ -98,8 +98,8 @@ export default function AdminMatchesPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <SortableHeader field="id">ID</SortableHeader>
                     <SortableHeader field="eventId">Event</SortableHeader>
+                    <SortableHeader field="round">Round</SortableHeader>
                     <SortableHeader field="player1Id">Player 1</SortableHeader>
                     <SortableHeader field="player2Id">Player 2</SortableHeader>
                     <TableHead>Score</TableHead>
@@ -115,8 +115,8 @@ export default function AdminMatchesPage() {
 
                     return (
                       <TableRow key={match.id}>
-                        <TableCell>{match.id}</TableCell>
                         <TableCell>{event?.name || `Event #${match.eventId}`}</TableCell>
+                        <TableCell>{match.round}</TableCell>
                         <TableCell>{player1?.fullName || `Player #${match.player1Id}`}</TableCell>
                         <TableCell>{player2?.fullName || `Player #${match.player2Id}`}</TableCell>
                         <TableCell>
@@ -126,8 +126,8 @@ export default function AdminMatchesPage() {
                           {match.draw
                             ? 'Draw'
                             : match.player1Score > match.player2Score
-                            ? 'Player 1 Win'
-                            : 'Player 2 Win'}
+                              ? 'Player 1 Win'
+                              : 'Player 2 Win'}
                         </TableCell>
                         <TableCell>{new Date(match.createdAt).toLocaleDateString()}</TableCell>
                       </TableRow>

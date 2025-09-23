@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,16 +15,15 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogClose,
   DialogDescription
 } from '@/components/ui/dialog';
 import { useLeagues } from '@/hooks/useLeagues';
-import { useAddLeague } from '@/hooks/useAddLeague';
 import { useDeleteLeague } from '@/hooks/useDeleteLeague';
 import { useUpdateLeague } from '@/hooks/useUpdateLeague';
 import { League } from '@/lib/types';
 import { genericSort } from '@/lib/utils';
+import { AddLeagueDialog } from '@/components/AddLeagueDialog';
 
 export default function AdminLeaguesPage() {
   const router = useRouter();
@@ -36,14 +35,8 @@ export default function AdminLeaguesPage() {
   });
 
   const { data: leagues, isLoading, error } = useLeagues();
-  const addLeagueMutation = useAddLeague();
   const deleteLeagueMutation = useDeleteLeague();
   const updateLeagueMutation = useUpdateLeague();
-
-  const [newLeagueName, setNewLeagueName] = useState('');
-  const [newLeagueStartDate, setNewLeagueStartDate] = useState('');
-  const [newLeagueEndDate, setNewLeagueEndDate] = useState('');
-  const [addLeagueOpen, setAddLeagueOpen] = useState(false);
 
   const [deleteLeagueId, setDeleteLeagueId] = useState<number | null>(null);
   const [deleteLeagueOpen, setDeleteLeagueOpen] = useState(false);
@@ -56,25 +49,6 @@ export default function AdminLeaguesPage() {
 
   const [sortField, setSortField] = useState<keyof League>('id');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-
-  const handleAddLeague = () => {
-    if (!newLeagueName || !newLeagueStartDate || !newLeagueEndDate) return;
-    addLeagueMutation.mutate(
-      {
-        name: newLeagueName,
-        startDate: new Date(newLeagueStartDate).toISOString(),
-        endDate: new Date(newLeagueEndDate).toISOString()
-      },
-      {
-        onSuccess: () => {
-          setNewLeagueName('');
-          setNewLeagueStartDate('');
-          setNewLeagueEndDate('');
-          setAddLeagueOpen(false);
-        }
-      }
-    );
-  };
 
   const handleDeleteLeague = () => {
     if (!deleteLeagueId) return;
@@ -167,70 +141,12 @@ export default function AdminLeaguesPage() {
     <>
       <div className="container mx-auto py-8 space-y-6">
         <div className="space-y-6">
-          <Dialog open={addLeagueOpen} onOpenChange={setAddLeagueOpen}>
-            <DialogTrigger asChild>
-              <Button>Add New League</Button>
-            </DialogTrigger>
-            <DialogContent onPointerDownOutside={e => e.preventDefault()} onEscapeKeyDown={e => e.preventDefault()}>
-              <form
-                onSubmit={e => {
-                  e.preventDefault();
-                  handleAddLeague();
-                }}
-                className="space-y-4"
-              >
-                <DialogHeader>
-                  <DialogTitle>Add New League</DialogTitle>
-                </DialogHeader>
-                <DialogDescription>Enter the name, start date, and end date for the new league.</DialogDescription>
-                <div className="space-y-2">
-                  <Label htmlFor="leagueName">Name</Label>
-                  <Input
-                    id="leagueName"
-                    value={newLeagueName}
-                    onChange={e => setNewLeagueName(e.target.value)}
-                    placeholder="League Name"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="leagueStartDate">Start Date</Label>
-                    <Input
-                      id="leagueStartDate"
-                      type="date"
-                      value={newLeagueStartDate}
-                      onChange={e => setNewLeagueStartDate(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="leagueEndDate">End Date</Label>
-                    <Input
-                      id="leagueEndDate"
-                      type="date"
-                      value={newLeagueEndDate}
-                      onChange={e => setNewLeagueEndDate(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button variant={'outline'} type="button">
-                      Cancel
-                    </Button>
-                  </DialogClose>
-                  <Button type="submit" disabled={addLeagueMutation.isPending}>
-                    {addLeagueMutation.isPending && <Loader2Icon className="animate-spin" />}
-                    Add League
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <div className="flex justify-between items-center">
+            <h1 className="text-3xl font-bold">Leagues ({leagues?.length || 0})</h1>
+            <AddLeagueDialog />
+          </div>
 
           <Card>
-            <CardHeader>
-              <CardTitle>Leagues ({leagues?.length || 0})</CardTitle>
-            </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>

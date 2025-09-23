@@ -88,6 +88,9 @@ This document outlines the tasks required to implement the Magic: The Gathering 
 - [X] **T050**: Update "Add new Match" form to use a toggle-group for score entry.
 - [X] **T051**: Refactor "Add New Match" form into a dialog component.
 - [X] **T052**: Move the `AddMatchDialog` component to a separate file for better code organization.
+- [X] **T053**: Refactor `Add New Player` dialog to a separate component and update players page layout.
+- [X] **T054**: Refactor `Add New League` dialog to a separate component and update leagues page layout.
+- [X] **T055**: Refactor `Add New Event` dialog to a separate component and update events page layout.
 
 ---
 

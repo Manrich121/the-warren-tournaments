@@ -9,10 +9,12 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { eventId, player1Id, player2Id, player1Score, player2Score, draw } = body;
+    const { eventId, player1Id, player2Id, player1Score, player2Score, draw, round } = body;
 
     if (eventId === undefined || player1Id === undefined || player2Id === undefined) {
-      return new NextResponse(JSON.stringify({ error: 'Event ID, Player 1 ID, and Player 2 ID are required' }), { status: 400 });
+      return new NextResponse(JSON.stringify({ error: 'Event ID, Player 1 ID, and Player 2 ID are required' }), {
+        status: 400
+      });
     }
 
     const newMatch = await prisma.match.create({
@@ -22,8 +24,9 @@ export async function POST(request: Request) {
         player2Id,
         player1Score,
         player2Score,
-        draw,
-      },
+        round,
+        draw
+      }
     });
 
     return new NextResponse(JSON.stringify(newMatch), { status: 201 });
