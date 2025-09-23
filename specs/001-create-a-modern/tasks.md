@@ -22,6 +22,7 @@ This document outlines the tasks required to implement the Magic: The Gathering 
 
 - [X] **T006**: Create the Prisma schema based on `data-model.md`.
 - [X] **T007**: Generate the Prisma client.
+- [X] **T045**: Add `round` to `Match` model and migrate the database.
 
 ---
 

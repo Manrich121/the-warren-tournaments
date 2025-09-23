@@ -18,7 +18,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={inter.className}>
         <Providers>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-            <Header />
             <div className="min-h-screen bg-background">{children}</div>
           </ThemeProvider>
         </Providers>

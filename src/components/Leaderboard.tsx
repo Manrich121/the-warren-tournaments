@@ -143,10 +143,7 @@ export function Leaderboard() {
                     <TableRow key={player.id}>
                       <TableCell className="font-medium">#{index + 1}</TableCell>
                       <TableCell>
-                        <Link
-                          href={`/players/${player.id}`}
-                          className="text-primary hover:underline font-medium"
-                          legacyBehavior>
+                        <Link href={`/players/${player.id}`} className="text-primary hover:underline font-medium">
                           {player.fullName}
                         </Link>
                       </TableCell>
