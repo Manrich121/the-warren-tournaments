@@ -5,7 +5,7 @@ import { z } from 'zod';
 const eventSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   date: z.string().datetime('Date must be a valid date'),
-  leagueId: z.number().int(),
+  leagueId: z.number().int()
 });
 
 export async function POST(request: Request) {
@@ -14,13 +14,13 @@ export async function POST(request: Request) {
     const validatedData = eventSchema.parse(json);
 
     const event = await prisma.event.create({
-      data: validatedData,
+      data: validatedData
     });
 
     return NextResponse.json(event, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.errors }, { status: 400 });
+      return NextResponse.json({ error: error.issues }, { status: 400 });
     }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

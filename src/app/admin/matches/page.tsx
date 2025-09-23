@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { getSession } from 'next-auth/react';
+import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,40 +10,26 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2Icon, ChevronUpIcon, ChevronDownIcon } from 'lucide-react';
-
-interface Match {
-  id: number;
-  eventId: number;
-  player1Id: number;
-  player2Id: number;
-  player1Score: number;
-  player2Score: number;
-  draw: boolean;
-  createdAt: string;
-}
-
-interface Player {
-  id: number;
-  fullName: string;
-  wizardsEmail: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface Event {
-  id: number;
-  leagueId: number;
-  name: string;
-  date: string;
-  createdAt: string;
-}
+import { useMatches } from '@/hooks/useMatches';
+import { usePlayers } from '@/hooks/usePlayers';
+import { useEvents } from '@/hooks/useEvents';
+import { useAddMatch } from '@/hooks/useAddMatch';
+import { Match, Player, Event } from '@/lib/types';
+import { genericSort } from '@/lib/utils';
 
 export default function AdminMatchesPage() {
-  const [loading, setLoading] = useState(true);
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [events, setEvents] = useState<Event[]>([]);
   const router = useRouter();
+  const { status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push('/admin/login');
+    }
+  });
+
+  const { data: matches, isLoading: matchesLoading, error: matchesError } = useMatches();
+  const { data: players, isLoading: playersLoading, error: playersError } = usePlayers();
+  const { data: events, isLoading: eventsLoading, error: eventsError } = useEvents();
+  const addMatchMutation = useAddMatch();
 
   const [newMatchPlayer1, setNewMatchPlayer1] = useState('');
   const [newMatchPlayer2, setNewMatchPlayer2] = useState('');
@@ -51,123 +37,60 @@ export default function AdminMatchesPage() {
   const [newMatchP1Score, setNewMatchP1Score] = useState('');
   const [newMatchP2Score, setNewMatchP2Score] = useState('');
   const [newMatchDraw, setNewMatchDraw] = useState(false);
+  const [round, setRound] = useState('');
 
-  const [matchSortField, setMatchSortField] = useState<keyof Match>('id');
-  const [matchSortDirection, setMatchSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [sortField, setSortField] = useState<keyof Match>('id');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const session = await getSession();
-      if (!session) {
-        router.push('/admin/login');
-        return;
+  const isLoading = matchesLoading || playersLoading || eventsLoading || status === 'loading';
+  const error = matchesError || playersError || eventsError;
+
+  const handleAddMatch = () => {
+    if (!newMatchPlayer1 || !newMatchPlayer2 || !newMatchEvent || !round) return;
+
+    addMatchMutation.mutate(
+      {
+        eventId: parseInt(newMatchEvent),
+        player1Id: parseInt(newMatchPlayer1),
+        player2Id: parseInt(newMatchPlayer2),
+        player1Score: parseInt(newMatchP1Score) || 0,
+        player2Score: parseInt(newMatchP2Score) || 0,
+        draw: newMatchDraw,
+        round: parseInt(round)
+      },
+      {
+        onSuccess: () => {
+          setNewMatchPlayer1('');
+          setNewMatchPlayer2('');
+          setNewMatchEvent('');
+          setNewMatchP1Score('');
+          setNewMatchP2Score('');
+          setNewMatchDraw(false);
+          setRound('');
+        }
       }
-      await fetchData();
-      setLoading(false);
-    };
-    checkAuth();
-  }, [router]);
-
-  const fetchData = async () => {
-    try {
-      const [matchesRes, playersRes, eventsRes] = await Promise.all([
-        fetch('/api/matches'),
-        fetch('/api/players'),
-        fetch('/api/events'),
-      ]);
-      if (matchesRes.ok) setMatches(await matchesRes.json());
-      if (playersRes.ok) setPlayers(await playersRes.json());
-      if (eventsRes.ok) setEvents(await eventsRes.json());
-    } catch (error) {
-      console.error('Failed to fetch data:', error);
-    }
+    );
   };
 
-  const addMatch = async () => {
-    if (!newMatchPlayer1 || !newMatchPlayer2 || !newMatchEvent) return;
-
-    try {
-      const response = await fetch('/api/matches', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          eventId: parseInt(newMatchEvent),
-          player1Id: parseInt(newMatchPlayer1),
-          player2Id: parseInt(newMatchPlayer2),
-          player1Score: parseInt(newMatchP1Score) || 0,
-          player2Score: parseInt(newMatchP2Score) || 0,
-          draw: newMatchDraw
-        })
-      });
-
-      if (response.ok) {
-        setNewMatchPlayer1('');
-        setNewMatchPlayer2('');
-        setNewMatchEvent('');
-        setNewMatchP1Score('');
-        setNewMatchP2Score('');
-        setNewMatchDraw(false);
-        await fetchData();
-      }
-    } catch (error) {
-      console.error('Failed to add match:', error);
-    }
-  };
-
-  const genericSort = <T,>(array: T[], field: keyof T, direction: 'asc' | 'desc') => {
-    return [...array].sort((a, b) => {
-      const aValue = a[field];
-      const bValue = b[field];
-      
-      let comparison = 0;
-      
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        comparison = aValue.localeCompare(bValue);
-      } else if (typeof aValue === 'number' && typeof bValue === 'number') {
-        comparison = aValue - bValue;
-      } else if (aValue instanceof Date && bValue instanceof Date) {
-        comparison = aValue.getTime() - bValue.getTime();
-      } else {
-        const dateA = new Date(aValue as string);
-        const dateB = new Date(bValue as string);
-        comparison = dateA.getTime() - dateB.getTime();
-      }
-      
-      return direction === 'asc' ? comparison : -comparison;
-    });
-  };
-
-  const handleMatchSort = (field: keyof Match) => {
-    if (field === matchSortField) {
-      setMatchSortDirection(matchSortDirection === 'asc' ? 'desc' : 'asc');
+  const handleSort = (field: keyof Match) => {
+    if (field === sortField) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
-      setMatchSortField(field);
-      setMatchSortDirection('asc');
+      setSortField(field);
+      setSortDirection('asc');
     }
   };
 
-  const sortedMatches = genericSort(matches, matchSortField, matchSortDirection);
+  const sortedMatches = matches ? genericSort(matches, sortField, sortDirection) : [];
 
-  const SortableHeader = <T,>({ 
-    field, 
-    currentSortField, 
-    currentSortDirection, 
-    onSort, 
-    children 
-  }: { 
-    field: keyof T;
-    currentSortField: keyof T;
-    currentSortDirection: 'asc' | 'desc';
-    onSort: (field: keyof T) => void;
-    children: React.ReactNode;
-  }) => {
-    const isActive = currentSortField === field;
-    const isAsc = currentSortDirection === 'asc';
-    
+  const SortableHeader = ({ field, children }: { field: keyof Match; children: React.ReactNode }) => {
+    const isActive = sortField === field;
+    const isAsc = sortDirection === 'asc';
+
     return (
       <TableHead>
         <button
-          onClick={() => onSort(field)}
+          onClick={() => handleSort(field)}
           className="flex items-center space-x-1 hover:text-foreground font-medium"
         >
           <span>{children}</span>
@@ -185,10 +108,18 @@ export default function AdminMatchesPage() {
     );
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="container mx-auto py-8">
         <div className="text-center">Loading...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="text-center text-red-500">Error: {error.message}</div>
       </div>
     );
   }
@@ -202,6 +133,27 @@ export default function AdminMatchesPage() {
               <CardTitle>Add New Match</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="grid grid-cols-4 gap-4">
+                <div className="space-y-2">
+                  <Label>Event</Label>
+                  <Select value={newMatchEvent} onValueChange={setNewMatchEvent}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Event" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {events?.map(event => (
+                        <SelectItem key={event.id} value={event.id.toString()}>
+                          {event.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Round</Label>
+                  <Input type="number" value={round} onChange={e => setRound(e.target.value)} placeholder="1" min="1" />
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Player 1</Label>
@@ -210,7 +162,7 @@ export default function AdminMatchesPage() {
                       <SelectValue placeholder="Select Player 1" />
                     </SelectTrigger>
                     <SelectContent>
-                      {players.map(player => (
+                      {players?.map(player => (
                         <SelectItem key={player.id} value={player.id.toString()}>
                           {player.fullName}
                         </SelectItem>
@@ -225,7 +177,7 @@ export default function AdminMatchesPage() {
                       <SelectValue placeholder="Select Player 2" />
                     </SelectTrigger>
                     <SelectContent>
-                      {players.map(player => (
+                      {players?.map(player => (
                         <SelectItem key={player.id} value={player.id.toString()}>
                           {player.fullName}
                         </SelectItem>
@@ -234,22 +186,7 @@ export default function AdminMatchesPage() {
                   </Select>
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Event</Label>
-                  <Select value={newMatchEvent} onValueChange={setNewMatchEvent}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Event" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {events.map(event => (
-                        <SelectItem key={event.id} value={event.id.toString()}>
-                          {event.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Player 1 Score</Label>
                   <Input
@@ -280,67 +217,35 @@ export default function AdminMatchesPage() {
                 />
                 <Label htmlFor="draw">Draw</Label>
               </div>
-              <Button onClick={addMatch}>Add Match</Button>
+              <Button onClick={handleAddMatch} disabled={addMatchMutation.isPending}>
+                {addMatchMutation.isPending && <Loader2Icon className="animate-spin" />}
+                Add Match
+              </Button>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Matches ({matches.length})</CardTitle>
+              <CardTitle>Matches ({matches?.length || 0})</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <SortableHeader 
-                      field="id" 
-                      currentSortField={matchSortField} 
-                      currentSortDirection={matchSortDirection} 
-                      onSort={handleMatchSort}
-                    >
-                      ID
-                    </SortableHeader>
-                    <SortableHeader 
-                      field="eventId" 
-                      currentSortField={matchSortField} 
-                      currentSortDirection={matchSortDirection} 
-                      onSort={handleMatchSort}
-                    >
-                      Event
-                    </SortableHeader>
-                    <SortableHeader 
-                      field="player1Id" 
-                      currentSortField={matchSortField} 
-                      currentSortDirection={matchSortDirection} 
-                      onSort={handleMatchSort}
-                    >
-                      Player 1
-                    </SortableHeader>
-                    <SortableHeader 
-                      field="player2Id" 
-                      currentSortField={matchSortField} 
-                      currentSortDirection={matchSortDirection} 
-                      onSort={handleMatchSort}
-                    >
-                      Player 2
-                    </SortableHeader>
+                    <SortableHeader field="id">ID</SortableHeader>
+                    <SortableHeader field="eventId">Event</SortableHeader>
+                    <SortableHeader field="player1Id">Player 1</SortableHeader>
+                    <SortableHeader field="player2Id">Player 2</SortableHeader>
                     <TableHead>Score</TableHead>
                     <TableHead>Result</TableHead>
-                    <SortableHeader 
-                      field="createdAt" 
-                      currentSortField={matchSortField} 
-                      currentSortDirection={matchSortDirection} 
-                      onSort={handleMatchSort}
-                    >
-                      Date
-                    </SortableHeader>
+                    <SortableHeader field="createdAt">Date</SortableHeader>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {sortedMatches.map(match => {
-                    const player1 = players.find(p => p.id === match.player1Id);
-                    const player2 = players.find(p => p.id === match.player2Id);
-                    const event = events.find(e => e.id === match.eventId);
+                    const player1 = players?.find(p => p.id === match.player1Id);
+                    const player2 = players?.find(p => p.id === match.player2Id);
+                    const event = events?.find(e => e.id === match.eventId);
 
                     return (
                       <TableRow key={match.id}>

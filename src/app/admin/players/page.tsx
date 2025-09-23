@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { getSession } from 'next-auth/react';
+import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,140 +19,66 @@ import {
   DialogClose,
   DialogDescription
 } from '@/components/ui/dialog';
-
-interface Player {
-  id: number;
-  fullName: string;
-  wizardsEmail: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import { usePlayers } from '@/hooks/usePlayers';
+import { useAddPlayer } from '@/hooks/useAddPlayer';
+import { Player } from '@/lib/types';
+import { genericSort } from '@/lib/utils';
 
 export default function AdminPlayersPage() {
-  const [loading, setLoading] = useState(true);
-  const [players, setPlayers] = useState<Player[]>([]);
   const router = useRouter();
+  const { status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push('/admin/login');
+    }
+  });
+
+  const { data: players, isLoading, error } = usePlayers();
+  const addPlayerMutation = useAddPlayer();
 
   // Form states
   const [newPlayerName, setNewPlayerName] = useState('');
   const [newPlayerEmail, setNewPlayerEmail] = useState('');
-  const [addPlayerLoading, setAddPlayerLoading] = useState(false);
   const [addPlayerOpen, setAddPlayerOpen] = useState(false);
 
-  // Sorting states for all tables
-  const [playerSortField, setPlayerSortField] = useState<keyof Player>('id');
-  const [playerSortDirection, setPlayerSortDirection] = useState<'asc' | 'desc'>('asc');
+  // Sorting states
+  const [sortField, setSortField] = useState<keyof Player>('id');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const session = await getSession();
-      if (!session) {
-        router.push('/admin/login');
-        return;
-      }
-      await fetchData();
-      setLoading(false);
-    };
-    checkAuth();
-  }, [router]);
-
-  const fetchData = async () => {
-    try {
-      const playersRes = await fetch('/api/players');
-      if (playersRes.ok) setPlayers(await playersRes.json());
-    } catch (error) {
-      console.error('Failed to fetch data:', error);
-    }
-  };
-
-  const addPlayer = async () => {
+  const handleAddPlayer = async () => {
     if (!newPlayerName || !newPlayerEmail) return;
 
-    setAddPlayerLoading(true);
-    try {
-      const response = await fetch('/api/players', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fullName: newPlayerName,
-          wizardsEmail: newPlayerEmail
-        })
-      });
-
-      if (response.ok) {
-        setNewPlayerName('');
-        setNewPlayerEmail('');
-        setAddPlayerOpen(false);
-        setAddPlayerLoading(false);
-        await fetchData();
+    addPlayerMutation.mutate(
+      { fullName: newPlayerName, wizardsEmail: newPlayerEmail },
+      {
+        onSuccess: () => {
+          setNewPlayerName('');
+          setNewPlayerEmail('');
+          setAddPlayerOpen(false);
+        }
       }
-    } catch (error) {
-      console.error('Failed to add player:', error);
-    } finally {
-      setAddPlayerOpen(false);
-      setAddPlayerLoading(false);
-    }
+    );
   };
 
-  // Generic sorting function
-  const genericSort = <T,>(array: T[], field: keyof T, direction: 'asc' | 'desc') => {
-    return [...array].sort((a, b) => {
-      const aValue = a[field];
-      const bValue = b[field];
-      
-      let comparison = 0;
-      
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        comparison = aValue.localeCompare(bValue);
-      } else if (typeof aValue === 'number' && typeof bValue === 'number') {
-        comparison = aValue - bValue;
-      } else if (aValue instanceof Date && bValue instanceof Date) {
-        comparison = aValue.getTime() - bValue.getTime();
-      } else {
-        // Handle date strings
-        const dateA = new Date(aValue as string);
-        const dateB = new Date(bValue as string);
-        comparison = dateA.getTime() - dateB.getTime();
-      }
-      
-      return direction === 'asc' ? comparison : -comparison;
-    });
-  };
-
-  // Sorting handlers for each table
-  const handlePlayerSort = (field: keyof Player) => {
-    if (field === playerSortField) {
-      setPlayerSortDirection(playerSortDirection === 'asc' ? 'desc' : 'asc');
+  const handleSort = (field: keyof Player) => {
+    if (field === sortField) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
-      setPlayerSortField(field);
-      setPlayerSortDirection('asc');
+      setSortField(field);
+      setSortDirection('asc');
     }
   };
 
-  // Sorted data for each table
-  const sortedPlayers = genericSort(players, playerSortField, playerSortDirection);
+  const sortedPlayers = players ? genericSort(players, sortField, sortDirection) : [];
 
-  // Generic sortable header component
-  const SortableHeader = <T,>({ 
-    field, 
-    currentSortField, 
-    currentSortDirection, 
-    onSort, 
-    children 
-  }: { 
-    field: keyof T;
-    currentSortField: keyof T;
-    currentSortDirection: 'asc' | 'desc';
-    onSort: (field: keyof T) => void;
-    children: React.ReactNode;
-  }) => {
-    const isActive = currentSortField === field;
-    const isAsc = currentSortDirection === 'asc';
-    
+  const SortableHeader = ({ field, children }: { field: keyof Player; children: React.ReactNode }) => {
+    const isActive = sortField === field;
+    const isAsc = sortDirection === 'asc';
+
     return (
       <TableHead>
         <button
-          onClick={() => onSort(field)}
+          onClick={() => handleSort(field)}
           className="flex items-center space-x-1 hover:text-foreground font-medium"
         >
           <span>{children}</span>
@@ -170,10 +96,18 @@ export default function AdminPlayersPage() {
     );
   };
 
-  if (loading) {
+  if (isLoading || status === 'loading') {
     return (
       <div className="container mx-auto py-8">
         <div className="text-center">Loading...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="text-center text-red-500">Error: {error.message}</div>
       </div>
     );
   }
@@ -190,16 +124,14 @@ export default function AdminPlayersPage() {
               <form
                 onSubmit={e => {
                   e.preventDefault();
-                  addPlayer();
+                  handleAddPlayer();
                 }}
                 className="space-y-4"
               >
                 <DialogHeader>
                   <DialogTitle>Add New Player</DialogTitle>
                 </DialogHeader>
-                <DialogDescription>
-                  Enter the full name and Wizards Account email of the new player.
-                </DialogDescription>
+                <DialogDescription>Enter the full name and Wizards Account email of the new player.</DialogDescription>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="playerName">Full Name</Label>
@@ -227,8 +159,8 @@ export default function AdminPlayersPage() {
                       Cancel
                     </Button>
                   </DialogClose>
-                  <Button type="submit" disabled={addPlayerLoading}>
-                    {addPlayerLoading && <Loader2Icon className="animate-spin" />}
+                  <Button type="submit" disabled={addPlayerMutation.isPending}>
+                    {addPlayerMutation.isPending && <Loader2Icon className="animate-spin" />}
                     Add Player
                   </Button>
                 </DialogFooter>
@@ -238,44 +170,16 @@ export default function AdminPlayersPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Players ({players.length})</CardTitle>
+              <CardTitle>Players ({players?.length || 0})</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <SortableHeader 
-                      field="id" 
-                      currentSortField={playerSortField} 
-                      currentSortDirection={playerSortDirection} 
-                      onSort={handlePlayerSort}
-                    >
-                      ID
-                    </SortableHeader>
-                    <SortableHeader 
-                      field="fullName" 
-                      currentSortField={playerSortField} 
-                      currentSortDirection={playerSortDirection} 
-                      onSort={handlePlayerSort}
-                    >
-                      Name
-                    </SortableHeader>
-                    <SortableHeader 
-                      field="wizardsEmail" 
-                      currentSortField={playerSortField} 
-                      currentSortDirection={playerSortDirection} 
-                      onSort={handlePlayerSort}
-                    >
-                      Email
-                    </SortableHeader>
-                    <SortableHeader 
-                      field="createdAt" 
-                      currentSortField={playerSortField} 
-                      currentSortDirection={playerSortDirection} 
-                      onSort={handlePlayerSort}
-                    >
-                      Created
-                    </SortableHeader>
+                    <SortableHeader field="id">ID</SortableHeader>
+                    <SortableHeader field="fullName">Name</SortableHeader>
+                    <SortableHeader field="wizardsEmail">Email</SortableHeader>
+                    <SortableHeader field="createdAt">Created</SortableHeader>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

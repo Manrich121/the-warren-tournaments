@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { getSession } from 'next-auth/react';
+import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,110 +19,71 @@ import {
   DialogClose,
   DialogDescription
 } from '@/components/ui/dialog';
-
-interface League {
-  id: number;
-  name: string;
-  startDate: string;
-  endDate: string;
-  createdAt: string;
-}
+import { useLeagues } from '@/hooks/useLeagues';
+import { useAddLeague } from '@/hooks/useAddLeague';
+import { useDeleteLeague } from '@/hooks/useDeleteLeague';
+import { useUpdateLeague } from '@/hooks/useUpdateLeague';
+import { League } from '@/lib/types';
+import { genericSort } from '@/lib/utils';
 
 export default function AdminLeaguesPage() {
-  const [loading, setLoading] = useState(true);
-  const [leagues, setLeagues] = useState<League[]>([]);
   const router = useRouter();
+  const { status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push('/admin/login');
+    }
+  });
+
+  const { data: leagues, isLoading, error } = useLeagues();
+  const addLeagueMutation = useAddLeague();
+  const deleteLeagueMutation = useDeleteLeague();
+  const updateLeagueMutation = useUpdateLeague();
 
   const [newLeagueName, setNewLeagueName] = useState('');
   const [newLeagueStartDate, setNewLeagueStartDate] = useState('');
   const [newLeagueEndDate, setNewLeagueEndDate] = useState('');
   const [addLeagueOpen, setAddLeagueOpen] = useState(false);
-  const [addLeagueLoading, setAddLeagueLoading] = useState(false);
 
   const [deleteLeagueId, setDeleteLeagueId] = useState<number | null>(null);
   const [deleteLeagueOpen, setDeleteLeagueOpen] = useState(false);
-  const [deleteLeagueLoading, setDeleteLeagueLoading] = useState(false);
 
   const [editLeagueId, setEditLeagueId] = useState<number | null>(null);
   const [editLeagueName, setEditLeagueName] = useState('');
   const [editLeagueStartDate, setEditLeagueStartDate] = useState('');
   const [editLeagueEndDate, setEditLeagueEndDate] = useState('');
   const [editLeagueOpen, setEditLeagueOpen] = useState(false);
-  const [editLeagueLoading, setEditLeagueLoading] = useState(false);
 
-  const [leagueSortField, setLeagueSortField] = useState<keyof League>('id');
-  const [leagueSortDirection, setLeagueSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [sortField, setSortField] = useState<keyof League>('id');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const session = await getSession();
-      if (!session) {
-        router.push('/admin/login');
-        return;
-      }
-      await fetchData();
-      setLoading(false);
-    };
-    checkAuth();
-  }, [router]);
-
-  const fetchData = async () => {
-    try {
-      const leaguesRes = await fetch('/api/leagues');
-      if (leaguesRes.ok) setLeagues(await leaguesRes.json());
-    } catch (error) {
-      console.error('Failed to fetch data:', error);
-    }
-  };
-
-  const addLeague = async () => {
+  const handleAddLeague = () => {
     if (!newLeagueName || !newLeagueStartDate || !newLeagueEndDate) return;
-
-    setAddLeagueLoading(true);
-    try {
-      const response = await fetch('/api/leagues', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: newLeagueName,
-          startDate: new Date(newLeagueStartDate).toISOString(),
-          endDate: new Date(newLeagueEndDate).toISOString(),
-        }),
-      });
-
-      if (response.ok) {
-        setNewLeagueName('');
-        setNewLeagueStartDate('');
-        setNewLeagueEndDate('');
-        setAddLeagueOpen(false);
-        await fetchData();
+    addLeagueMutation.mutate(
+      {
+        name: newLeagueName,
+        startDate: new Date(newLeagueStartDate).toISOString(),
+        endDate: new Date(newLeagueEndDate).toISOString()
+      },
+      {
+        onSuccess: () => {
+          setNewLeagueName('');
+          setNewLeagueStartDate('');
+          setNewLeagueEndDate('');
+          setAddLeagueOpen(false);
+        }
       }
-    } catch (error) {
-      console.error('Failed to add league:', error);
-    } finally {
-      setAddLeagueLoading(false);
-    }
+    );
   };
 
-  const deleteLeague = async () => {
+  const handleDeleteLeague = () => {
     if (!deleteLeagueId) return;
-
-    setDeleteLeagueLoading(true);
-    try {
-      const response = await fetch(`/api/leagues/${deleteLeagueId}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
+    deleteLeagueMutation.mutate(deleteLeagueId, {
+      onSuccess: () => {
         setDeleteLeagueId(null);
         setDeleteLeagueOpen(false);
-        await fetchData();
       }
-    } catch (error) {
-      console.error('Failed to delete league:', error);
-    } finally {
-      setDeleteLeagueLoading(false);
-    }
+    });
   };
 
   const handleEditLeague = (league: League) => {
@@ -133,86 +94,42 @@ export default function AdminLeaguesPage() {
     setEditLeagueOpen(true);
   };
 
-  const updateLeague = async () => {
+  const handleUpdateLeague = () => {
     if (!editLeagueId) return;
-
-    setEditLeagueLoading(true);
-    try {
-      const response = await fetch(`/api/leagues/${editLeagueId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: editLeagueName,
-          startDate: new Date(editLeagueStartDate).toISOString(),
-          endDate: new Date(editLeagueEndDate).toISOString(),
-        }),
-      });
-
-      if (response.ok) {
-        setEditLeagueOpen(false);
-        await fetchData();
+    updateLeagueMutation.mutate(
+      {
+        id: editLeagueId,
+        name: editLeagueName,
+        startDate: new Date(editLeagueStartDate).toISOString(),
+        endDate: new Date(editLeagueEndDate).toISOString()
+      },
+      {
+        onSuccess: () => {
+          setEditLeagueOpen(false);
+        }
       }
-    } catch (error) {
-      console.error('Failed to update league:', error);
-    } finally {
-      setEditLeagueLoading(false);
-    }
+    );
   };
 
-  const genericSort = <T,>(array: T[], field: keyof T, direction: 'asc' | 'desc') => {
-    return [...array].sort((a, b) => {
-      const aValue = a[field];
-      const bValue = b[field];
-      
-      let comparison = 0;
-      
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        comparison = aValue.localeCompare(bValue);
-      } else if (typeof aValue === 'number' && typeof bValue === 'number') {
-        comparison = aValue - bValue;
-      } else if (aValue instanceof Date && bValue instanceof Date) {
-        comparison = aValue.getTime() - bValue.getTime();
-      } else {
-        const dateA = new Date(aValue as string);
-        const dateB = new Date(bValue as string);
-        comparison = dateA.getTime() - dateB.getTime();
-      }
-      
-      return direction === 'asc' ? comparison : -comparison;
-    });
-  };
-
-  const handleLeagueSort = (field: keyof League) => {
-    if (field === leagueSortField) {
-      setLeagueSortDirection(leagueSortDirection === 'asc' ? 'desc' : 'asc');
+  const handleSort = (field: keyof League) => {
+    if (field === sortField) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
-      setLeagueSortField(field);
-      setLeagueSortDirection('asc');
+      setSortField(field);
+      setSortDirection('asc');
     }
   };
 
-  const sortedLeagues = genericSort(leagues, leagueSortField, leagueSortDirection);
+  const sortedLeagues = leagues ? genericSort(leagues, sortField, sortDirection) : [];
 
-  const SortableHeader = <T,>({ 
-    field, 
-    currentSortField, 
-    currentSortDirection, 
-    onSort, 
-    children 
-  }: { 
-    field: keyof T;
-    currentSortField: keyof T;
-    currentSortDirection: 'asc' | 'desc';
-    onSort: (field: keyof T) => void;
-    children: React.ReactNode;
-  }) => {
-    const isActive = currentSortField === field;
-    const isAsc = currentSortDirection === 'asc';
-    
+  const SortableHeader = ({ field, children }: { field: keyof League; children: React.ReactNode }) => {
+    const isActive = sortField === field;
+    const isAsc = sortDirection === 'asc';
+
     return (
       <TableHead>
         <button
-          onClick={() => onSort(field)}
+          onClick={() => handleSort(field)}
           className="flex items-center space-x-1 hover:text-foreground font-medium"
         >
           <span>{children}</span>
@@ -230,10 +147,18 @@ export default function AdminLeaguesPage() {
     );
   };
 
-  if (loading) {
+  if (isLoading || status === 'loading') {
     return (
       <div className="container mx-auto py-8">
         <div className="text-center">Loading...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="text-center text-red-500">Error: {error.message}</div>
       </div>
     );
   }
@@ -250,16 +175,14 @@ export default function AdminLeaguesPage() {
               <form
                 onSubmit={e => {
                   e.preventDefault();
-                  addLeague();
+                  handleAddLeague();
                 }}
                 className="space-y-4"
               >
                 <DialogHeader>
                   <DialogTitle>Add New League</DialogTitle>
                 </DialogHeader>
-                <DialogDescription>
-                  Enter the name, start date, and end date for the new league.
-                </DialogDescription>
+                <DialogDescription>Enter the name, start date, and end date for the new league.</DialogDescription>
                 <div className="space-y-2">
                   <Label htmlFor="leagueName">Name</Label>
                   <Input
@@ -295,8 +218,8 @@ export default function AdminLeaguesPage() {
                       Cancel
                     </Button>
                   </DialogClose>
-                  <Button type="submit" disabled={addLeagueLoading}>
-                    {addLeagueLoading && <Loader2Icon className="animate-spin" />}
+                  <Button type="submit" disabled={addLeagueMutation.isPending}>
+                    {addLeagueMutation.isPending && <Loader2Icon className="animate-spin" />}
                     Add League
                   </Button>
                 </DialogFooter>
@@ -306,52 +229,17 @@ export default function AdminLeaguesPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Leagues ({leagues.length})</CardTitle>
+              <CardTitle>Leagues ({leagues?.length || 0})</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <SortableHeader 
-                      field="id" 
-                      currentSortField={leagueSortField} 
-                      currentSortDirection={leagueSortDirection} 
-                      onSort={handleLeagueSort}
-                    >
-                      ID
-                    </SortableHeader>
-                    <SortableHeader 
-                      field="name" 
-                      currentSortField={leagueSortField} 
-                      currentSortDirection={leagueSortDirection} 
-                      onSort={handleLeagueSort}
-                    >
-                      Name
-                    </SortableHeader>
-                    <SortableHeader 
-                      field="startDate" 
-                      currentSortField={leagueSortField} 
-                      currentSortDirection={leagueSortDirection} 
-                      onSort={handleLeagueSort}
-                    >
-                      Start Date
-                    </SortableHeader>
-                    <SortableHeader 
-                      field="endDate" 
-                      currentSortField={leagueSortField} 
-                      currentSortDirection={leagueSortDirection} 
-                      onSort={handleLeagueSort}
-                    >
-                      End Date
-                    </SortableHeader>
-                    <SortableHeader 
-                      field="createdAt" 
-                      currentSortField={leagueSortField} 
-                      currentSortDirection={leagueSortDirection} 
-                      onSort={handleLeagueSort}
-                    >
-                      Created
-                    </SortableHeader>
+                    <SortableHeader field="id">ID</SortableHeader>
+                    <SortableHeader field="name">Name</SortableHeader>
+                    <SortableHeader field="startDate">Start Date</SortableHeader>
+                    <SortableHeader field="endDate">End Date</SortableHeader>
+                    <SortableHeader field="createdAt">Created</SortableHeader>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -390,16 +278,14 @@ export default function AdminLeaguesPage() {
               <form
                 onSubmit={e => {
                   e.preventDefault();
-                  updateLeague();
+                  handleUpdateLeague();
                 }}
                 className="space-y-4"
               >
                 <DialogHeader>
                   <DialogTitle>Edit League</DialogTitle>
                 </DialogHeader>
-                <DialogDescription>
-                  Update the name, start date, and end date for the league.
-                </DialogDescription>
+                <DialogDescription>Update the name, start date, and end date for the league.</DialogDescription>
                 <div className="space-y-2">
                   <Label htmlFor="editLeagueName">Name</Label>
                   <Input
@@ -435,8 +321,8 @@ export default function AdminLeaguesPage() {
                       Cancel
                     </Button>
                   </DialogClose>
-                  <Button type="submit" disabled={editLeagueLoading}>
-                    {editLeagueLoading && <Loader2Icon className="animate-spin" />}
+                  <Button type="submit" disabled={updateLeagueMutation.isPending}>
+                    {updateLeagueMutation.isPending && <Loader2Icon className="animate-spin" />}
                     Update League
                   </Button>
                 </DialogFooter>
@@ -449,15 +335,16 @@ export default function AdminLeaguesPage() {
               <DialogHeader>
                 <DialogTitle>Are you sure you want to delete this league?</DialogTitle>
                 <DialogDescription>
-                  This action cannot be undone. This will permanently delete the league and all associated events and matches.
+                  This action cannot be undone. This will permanently delete the league and all associated events and
+                  matches.
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setDeleteLeagueOpen(false)}>
                   Cancel
                 </Button>
-                <Button variant="destructive" onClick={deleteLeague} disabled={deleteLeagueLoading}>
-                  {deleteLeagueLoading && <Loader2Icon className="animate-spin" />}
+                <Button variant="destructive" onClick={handleDeleteLeague} disabled={deleteLeagueMutation.isPending}>
+                  {deleteLeagueMutation.isPending && <Loader2Icon className="animate-spin" />}
                   Delete
                 </Button>
               </DialogFooter>

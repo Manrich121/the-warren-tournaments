@@ -85,3 +85,12 @@ This document outlines the tasks required to implement the Magic: The Gathering 
 - [X] **T041**: Create a shared admin layout with navigation.
 - [X] **T042**: Update the main `Header` component and add it to the root layout.
 - [X] **T044**: Fix data loading for matches on the admin dashboard to correctly display player information and improve UI resilience.
+
+---
+
+## Phase 8: Data Fetching Refactor
+
+- [X] **T046**: Setup `@tanstack/react-query` for client-side data fetching.
+- [X] **T047**: Create reusable hooks for all API resources (`players`, `leagues`, `events`, `matches`, `prize-pools`).
+- [X] **T048**: Create reusable mutation hooks for all `POST`, `PUT`, `DELETE` API endpoints.
+- [X] **T049**: Refactor all pages and components to use the new data fetching and mutation hooks.
