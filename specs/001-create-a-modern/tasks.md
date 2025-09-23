@@ -67,3 +67,9 @@ This document outlines the tasks required to implement the Magic: The Gathering 
 
 - [X] **T031**: Implement API route for `POST /players` and wire up the "Add New Player" form in the admin dashboard.
 - [X] **T032**: Move the "Add New Player" form on admin dashboard to a dialog.
+- [X] **T033**: Implement API route for `POST /leagues` and wire up the "Add New League" form in the admin dashboard.
+- [X] **T034**: Implement API route for `POST /events` and wire up the "Add New Event" form in the admin dashboard.
+- [X] **T035**: Implement API route for `DELETE /leagues/{id}` and wire up the "Delete" button in the admin dashboard.
+- [X] **T036**: Implement API route for `PUT /leagues/{id}` and wire up the "Edit" button in the admin dashboard.
+- [X] **T037**: Implement API route for `DELETE /events/{id}` and wire up the "Delete" button in the admin dashboard.
+- [X] **T038**: Implement API route for `PUT /events/{id}` and wire up the "Edit" button in the admin dashboard.
