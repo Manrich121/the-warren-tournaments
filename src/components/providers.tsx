@@ -15,6 +15,3 @@ export function Providers({ children }: { children: React.ReactNode }) {
     </QueryClientProvider>
   );
 }
-
-// This code is for all users
-(window as any).__TANSTACK_QUERY_CLIENT__ = queryClient;
