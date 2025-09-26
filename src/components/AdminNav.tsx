@@ -5,10 +5,10 @@ import { usePathname } from 'next/navigation';
 
 const links = [
   { href: '/admin/dashboard', label: 'Dashboard' },
-  { href: '/admin/players', label: 'Players' },
   { href: '/admin/leagues', label: 'Leagues' },
   { href: '/admin/events', label: 'Events' },
-  { href: '/admin/matches', label: 'Matches' }
+  { href: '/admin/matches', label: 'Matches' },
+  { href: '/admin/players', label: 'Players' }
 ];
 
 export function AdminNav() {

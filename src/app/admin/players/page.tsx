@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ChevronUpIcon, ChevronDownIcon, TrashIcon, PencilIcon, Loader2Icon } from 'lucide-react';
+import { ChevronUpIcon, ChevronDownIcon, TrashIcon, PencilIcon, Loader2Icon, XIcon, SearchIcon } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -15,14 +16,16 @@ import {
   DialogTitle,
   DialogDescription
 } from '@/components/ui/dialog';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useDeletePlayer } from '@/hooks/useDeletePlayer';
+import { useURLFilters } from '@/hooks/useURLFilters';
 import { Player } from '@prisma/client';
 import { genericSort } from '@/lib/utils';
 import { AddPlayerDialog } from '@/components/AddPlayerDialog';
 
-export default function AdminPlayersPage() {
+function AdminPlayersContent() {
   const router = useRouter();
   const { status } = useSession({
     required: true,
@@ -40,6 +43,10 @@ export default function AdminPlayersPage() {
   // Sorting states
   const [sortField, setSortField] = useState<keyof Player>('id');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
+  // Filtering
+  const { filters, setFilter, clearFilters, hasActiveFilters } = useURLFilters();
+  const [searchQuery, setSearchQuery] = useState(filters.search || '');
 
   const handleDeletePlayer = () => {
     if (!deletePlayerId) return;
@@ -60,7 +67,36 @@ export default function AdminPlayersPage() {
     }
   };
 
-  const sortedPlayers = players ? genericSort(players, sortField, sortDirection) : [];
+  // Handle search query changes with debouncing
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    if (value.trim()) {
+      setFilter('search', value.trim());
+    } else {
+      setFilter('search', null);
+    }
+  };
+
+  // Apply filters
+  const filteredPlayers = useMemo(() => {
+    if (!players) return [];
+
+    return players.filter(player => {
+      // Search filter
+      if (filters.search) {
+        const query = filters.search.toLowerCase();
+        const nameMatch = player.fullName.toLowerCase().includes(query);
+        const emailMatch = player.wizardsEmail.toLowerCase().includes(query);
+        if (!nameMatch && !emailMatch) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [players, filters]);
+
+  const sortedPlayers = filteredPlayers ? genericSort(filteredPlayers, sortField, sortDirection) : [];
 
   const SortableHeader = ({ field, children }: { field: keyof Player; children: React.ReactNode }) => {
     const isActive = sortField === field;
@@ -111,6 +147,48 @@ export default function AdminPlayersPage() {
             <h1 className="text-3xl font-bold">Players</h1>
             <AddPlayerDialog />
           </div>
+
+          {/* Filters */}
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="filters" className="border rounded-lg">
+              <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">Filters</span>
+                  {hasActiveFilters && (
+                    <span className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full">Active</span>
+                  )}
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="flex flex-wrap gap-4 items-center p-4 pt-1">
+                  <div className="relative w-[300px]">
+                    <SearchIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search by name or email..."
+                      value={searchQuery}
+                      onChange={e => handleSearchChange(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+
+                  {hasActiveFilters && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        clearFilters();
+                        setSearchQuery('');
+                      }}
+                      className="ml-auto"
+                    >
+                      <XIcon className="h-4 w-4 mr-2" />
+                      Clear Filters
+                    </Button>
+                  )}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
 
           <Card>
             <CardContent>
@@ -197,5 +275,19 @@ export default function AdminPlayersPage() {
         </div>
       </div>
     </>
+  );
+}
+
+export default function AdminPlayersPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="container mx-auto py-8">
+          <div className="text-center">Loading...</div>
+        </div>
+      }
+    >
+      <AdminPlayersContent />
+    </Suspense>
   );
 }

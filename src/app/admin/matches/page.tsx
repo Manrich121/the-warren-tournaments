@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChevronUpIcon, ChevronDownIcon, TrashIcon, Loader2Icon, PencilIcon } from 'lucide-react';
+import { ChevronUpIcon, ChevronDownIcon, TrashIcon, Loader2Icon, PencilIcon, XIcon } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -20,17 +20,21 @@ import {
   DialogClose,
   DialogDescription
 } from '@/components/ui/dialog';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useMatches } from '@/hooks/useMatches';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useEvents } from '@/hooks/useEvents';
+import { useLeagues } from '@/hooks/useLeagues';
 import { useDeleteMatch } from '@/hooks/useDeleteMatch';
 import { useUpdateMatch } from '@/hooks/useUpdateMatch';
+import { useURLFilters } from '@/hooks/useURLFilters';
+import { FilterDropdown, FilterOption } from '@/components/ui/filter-dropdown';
 import { Match } from '@prisma/client';
 import { genericSort } from '@/lib/utils';
 import { AddMatchDialog } from '@/components/AddMatchDialog';
 
-export default function AdminMatchesPage() {
+function AdminMatchesContent() {
   const router = useRouter();
   const { status } = useSession({
     required: true,
@@ -42,6 +46,7 @@ export default function AdminMatchesPage() {
   const { data: matches, isLoading: matchesLoading, error: matchesError } = useMatches();
   const { data: players, isLoading: playersLoading, error: playersError } = usePlayers();
   const { data: events, isLoading: eventsLoading, error: eventsError } = useEvents();
+  const { data: leagues, isLoading: leaguesLoading, error: leaguesError } = useLeagues();
   const deleteMatchMutation = useDeleteMatch();
   const updateMatchMutation = useUpdateMatch();
 
@@ -61,8 +66,11 @@ export default function AdminMatchesPage() {
   const [sortField, setSortField] = useState<keyof Match>('id');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
-  const isLoading = matchesLoading || playersLoading || eventsLoading || status === 'loading';
-  const error = matchesError || playersError || eventsError;
+  // Filtering
+  const { filters, setFilter, clearFilters, hasActiveFilters } = useURLFilters();
+
+  const isLoading = matchesLoading || playersLoading || eventsLoading || leaguesLoading || status === 'loading';
+  const error = matchesError || playersError || eventsError || leaguesError;
 
   const handleDeleteMatch = () => {
     if (!deleteMatchId) return;
@@ -116,7 +124,74 @@ export default function AdminMatchesPage() {
     }
   };
 
-  const sortedMatches = matches ? genericSort(matches, sortField, sortDirection) : [];
+  // Filter options
+  const eventOptions: FilterOption[] = useMemo(() => {
+    if (!events) return [];
+    return events.map(event => ({
+      value: event.id,
+      label: event.name
+    }));
+  }, [events]);
+
+  const leagueOptions: FilterOption[] = useMemo(() => {
+    if (!leagues) return [];
+    return leagues.map(league => ({
+      value: league.id,
+      label: league.name
+    }));
+  }, [leagues]);
+
+  const playerOptions: FilterOption[] = useMemo(() => {
+    if (!players) return [];
+    return players.map(player => ({
+      value: player.id,
+      label: player.fullName
+    }));
+  }, [players]);
+
+  // Apply filters
+  const filteredMatches = useMemo(() => {
+    if (!matches) return [];
+
+    return matches.filter(match => {
+      // Event filter
+      if (filters.event && match.eventId !== filters.event) {
+        return false;
+      }
+
+      // League filter (via event)
+      if (filters.league && events) {
+        const event = events.find(e => e.id === match.eventId);
+        if (!event || event.leagueId !== filters.league) {
+          return false;
+        }
+      }
+
+      // Player1 filter
+      if (filters.player1 && match.player1Id !== filters.player1) {
+        return false;
+      }
+
+      // Player2 filter
+      if (filters.player2 && match.player2Id !== filters.player2) {
+        return false;
+      }
+
+      // Any player filter (matches either player1 or player2)
+      if (filters.player && match.player1Id !== filters.player && match.player2Id !== filters.player) {
+        return false;
+      }
+
+      // Round filter
+      if (filters.round && match.round.toString() !== filters.round) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [matches, filters, events]);
+
+  const sortedMatches = filteredMatches ? genericSort(filteredMatches, sortField, sortDirection) : [];
 
   const SortableHeader = ({ field, children }: { field: keyof Match; children: React.ReactNode }) => {
     const isActive = sortField === field;
@@ -167,6 +242,70 @@ export default function AdminMatchesPage() {
             <h1 className="text-3xl font-bold">Matches</h1>
             <AddMatchDialog players={players} events={events} />
           </div>
+
+          {/* Filters */}
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="filters" className="border rounded-lg">
+              <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">Filters</span>
+                  {hasActiveFilters && (
+                    <span className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full">Active</span>
+                  )}
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="flex flex-wrap gap-4 items-center p-4 pt-1">
+                  <FilterDropdown
+                    placeholder="Leagues"
+                    value={filters.league}
+                    options={leagueOptions}
+                    onValueChange={value => setFilter('league', value)}
+                    disabled={isLoading}
+                  />
+
+                  <FilterDropdown
+                    placeholder="Events"
+                    value={filters.event}
+                    options={eventOptions}
+                    onValueChange={value => setFilter('event', value)}
+                    disabled={isLoading}
+                  />
+
+                  <FilterDropdown
+                    placeholder="Any Player"
+                    value={filters.player}
+                    options={playerOptions}
+                    onValueChange={value => setFilter('player', value)}
+                    disabled={isLoading}
+                  />
+
+                  <FilterDropdown
+                    placeholder="Player 1"
+                    value={filters.player1}
+                    options={playerOptions}
+                    onValueChange={value => setFilter('player1', value)}
+                    disabled={isLoading}
+                  />
+
+                  <FilterDropdown
+                    placeholder="Player 2"
+                    value={filters.player2}
+                    options={playerOptions}
+                    onValueChange={value => setFilter('player2', value)}
+                    disabled={isLoading}
+                  />
+
+                  {hasActiveFilters && (
+                    <Button variant="outline" size="sm" onClick={clearFilters} className="ml-auto">
+                      <XIcon className="h-4 w-4 mr-2" />
+                      Clear Filters
+                    </Button>
+                  )}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
 
           <Card>
             <CardContent>
@@ -396,5 +535,19 @@ export default function AdminMatchesPage() {
         </div>
       </div>
     </>
+  );
+}
+
+export default function AdminMatchesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="container mx-auto py-8">
+          <div className="text-center">Loading...</div>
+        </div>
+      }
+    >
+      <AdminMatchesContent />
+    </Suspense>
   );
 }

@@ -153,3 +153,16 @@ This document outlines the tasks required to implement the Magic: The Gathering 
 - [X] **T086**: Add prize pool amount field to `AddLeagueDialog` component with currency indicator (R) for creating/editing leagues.
 - [X] **T087**: Create dedicated `PrizePoolDialog` component for quick prize pool editing with form validation and loading states.
 - [X] **T088**: Make Prize Pool card clickable on league detail page to open prize pool editing dialog with hover effects and visual feedback.
+
+---
+
+## Phase 13: Admin Table Filtering System
+
+- [X] **T089**: Create `useURLFilters` hook to manage filter state synchronized with URL search parameters.
+- [X] **T090**: Build reusable `FilterDropdown` component for consistent dropdown filtering across admin tables.
+- [X] **T091**: Implement filtering functionality for Events admin page with League filter and URL synchronization.
+- [X] **T092**: Implement comprehensive filtering for Matches admin page (League, Event, Player1, Player2, Any Player, Round filters).
+- [X] **T093**: Implement search filtering for Players admin page with real-time name/email search functionality.
+- [X] **T094**: Make all filter sections collapsible using accordion component, collapsed by default to save space.
+- [X] **T095**: Add visual indicators ("Active" badges) and clear filters functionality across all admin pages.
+- [X] **T096**: Add Suspense boundaries to handle Next.js SSR requirements for useSearchParams usage.

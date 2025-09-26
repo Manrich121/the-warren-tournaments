@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2Icon, ChevronUpIcon, ChevronDownIcon, TrashIcon, PencilIcon } from 'lucide-react';
+import { Loader2Icon, ChevronUpIcon, ChevronDownIcon, TrashIcon, PencilIcon, XIcon } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -19,16 +19,19 @@ import {
   DialogClose,
   DialogDescription
 } from '@/components/ui/dialog';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useEvents } from '@/hooks/useEvents';
 import { useLeagues } from '@/hooks/useLeagues';
 import { useDeleteEvent } from '@/hooks/useDeleteEvent';
 import { useUpdateEvent } from '@/hooks/useUpdateEvent';
+import { useURLFilters } from '@/hooks/useURLFilters';
+import { FilterDropdown, FilterOption } from '@/components/ui/filter-dropdown';
 import { Event } from '@prisma/client';
 import { AddEventDialog } from '@/components/AddEventDialog';
 import { genericSort } from '@/lib/utils';
 
-export default function AdminEventsPage() {
+function AdminEventsContent() {
   const router = useRouter();
   const { status } = useSession({
     required: true,
@@ -53,6 +56,9 @@ export default function AdminEventsPage() {
 
   const [sortField, setSortField] = useState<keyof Event>('id');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
+  // Filtering
+  const { filters, setFilter, clearFilters, hasActiveFilters } = useURLFilters();
 
   const isLoading = eventsLoading || leaguesLoading || status === 'loading';
   const error = eventsError || leaguesError;
@@ -101,7 +107,30 @@ export default function AdminEventsPage() {
     }
   };
 
-  const sortedEvents = events ? genericSort(events, sortField, sortDirection) : [];
+  // Filter options for leagues
+  const leagueOptions: FilterOption[] = useMemo(() => {
+    if (!leagues) return [];
+    return leagues.map(league => ({
+      value: league.id,
+      label: league.name
+    }));
+  }, [leagues]);
+
+  // Apply filters
+  const filteredEvents = useMemo(() => {
+    if (!events) return [];
+
+    return events.filter(event => {
+      // League filter
+      if (filters.league && event.leagueId !== filters.league) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [events, filters]);
+
+  const sortedEvents = filteredEvents ? genericSort(filteredEvents, sortField, sortDirection) : [];
 
   const SortableHeader = ({ field, children }: { field: keyof Event; children: React.ReactNode }) => {
     const isActive = sortField === field;
@@ -152,6 +181,38 @@ export default function AdminEventsPage() {
             <h1 className="text-3xl font-bold">Events</h1>
             <AddEventDialog leagues={leagues} />
           </div>
+
+          {/* Filters */}
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="filters" className="border rounded-lg">
+              <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">Filters</span>
+                  {hasActiveFilters && (
+                    <span className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full">Active</span>
+                  )}
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="flex flex-wrap gap-4 items-center p-4 pt-1">
+                  <FilterDropdown
+                    placeholder="Leagues"
+                    value={filters.league}
+                    options={leagueOptions}
+                    onValueChange={value => setFilter('league', value)}
+                    disabled={isLoading}
+                  />
+
+                  {hasActiveFilters && (
+                    <Button variant="outline" size="sm" onClick={clearFilters} className="ml-auto">
+                      <XIcon className="h-4 w-4 mr-2" />
+                      Clear Filters
+                    </Button>
+                  )}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
 
           <Card>
             <CardContent>
@@ -308,5 +369,19 @@ export default function AdminEventsPage() {
         </div>
       </div>
     </>
+  );
+}
+
+export default function AdminEventsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="container mx-auto py-8">
+          <div className="text-center">Loading...</div>
+        </div>
+      }
+    >
+      <AdminEventsContent />
+    </Suspense>
   );
 }
