@@ -21,7 +21,7 @@ import { League } from '@prisma/client';
 
 interface AddLeagueDialogProps {
   league?: League;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export function AddLeagueDialog({ league, children }: AddLeagueDialogProps) {

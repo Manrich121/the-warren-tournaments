@@ -19,7 +19,11 @@ import { Loader2Icon } from 'lucide-react';
 import { useAddEvent } from '@/hooks/useAddEvent';
 import { League } from '@prisma/client';
 
-export function AddEventDialog({ leagues }: { leagues: League[] | undefined }) {
+export interface AddEventDialogProps {
+  leagues?: League[] | undefined;
+}
+
+export function AddEventDialog({ leagues }: AddEventDialogProps) {
   const [open, setOpen] = useState(false);
   const addEventMutation = useAddEvent();
 

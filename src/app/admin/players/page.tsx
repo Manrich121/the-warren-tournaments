@@ -117,7 +117,6 @@ export default function AdminPlayersPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <SortableHeader field="id">ID</SortableHeader>
                     <SortableHeader field="fullName">Name</SortableHeader>
                     <SortableHeader field="wizardsEmail">Email</SortableHeader>
                     <SortableHeader field="createdAt">Created</SortableHeader>
@@ -127,7 +126,6 @@ export default function AdminPlayersPage() {
                 <TableBody>
                   {sortedPlayers.map(player => (
                     <TableRow key={player.id}>
-                      <TableCell>{player.id}</TableCell>
                       <TableCell>{player.fullName}</TableCell>
                       <TableCell>{player.wizardsEmail}</TableCell>
                       <TableCell>{new Date(player.createdAt).toLocaleDateString()}</TableCell>

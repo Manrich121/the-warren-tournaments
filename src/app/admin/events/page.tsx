@@ -158,7 +158,6 @@ export default function AdminEventsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <SortableHeader field="id">ID</SortableHeader>
                     <SortableHeader field="name">Name</SortableHeader>
                     <SortableHeader field="leagueId">League</SortableHeader>
                     <SortableHeader field="date">Date</SortableHeader>
@@ -171,7 +170,6 @@ export default function AdminEventsPage() {
                     const league = leagues?.find(l => l.id === event.leagueId);
                     return (
                       <TableRow key={event.id}>
-                        <TableCell>{event.id}</TableCell>
                         <TableCell>{event.name}</TableCell>
                         <TableCell>{league?.name || `League #${event.leagueId}`}</TableCell>
                         <TableCell>{new Date(event.date).toLocaleDateString()}</TableCell>

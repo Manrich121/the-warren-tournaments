@@ -2,18 +2,20 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Pencil } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Trophy, Users, Calendar, Target, Plus, ArrowRight } from 'lucide-react';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useEvents } from '@/hooks/useEvents';
 import { useLeagues } from '@/hooks/useLeagues';
 import { usePrizePools } from '@/hooks/usePrizePools';
 import { useMatches } from '@/hooks/useMatches';
-import { League, Player } from '@prisma/client';
+import type { League, Player } from '@prisma/client';
+import { AddLeagueDialog } from '@/components/AddLeagueDialog';
+import { AddEventDialog } from '@/components/AddEventDialog';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -32,6 +34,7 @@ export default function AdminDashboardPage() {
 
   const events = eventsData || [];
   const leagues = leaguesData || [];
+  const players = playersData || [];
   const prizePools = prizePoolsData || [];
 
   const matches = useMemo(() => {
@@ -56,6 +59,40 @@ export default function AdminDashboardPage() {
     return 'Past';
   };
 
+  const currentLeague = useMemo(() => {
+    return (
+      leagues.find(league => getLeagueStatus(league) === 'Active') ||
+      leagues.find(league => getLeagueStatus(league) === 'Upcoming') ||
+      leagues[0]
+    );
+  }, [leagues]);
+
+  const stats = useMemo(() => {
+    const currentLeagueEvents = currentLeague ? events.filter(e => e.leagueId === currentLeague.id) : [];
+    const currentLeagueMatches = currentLeague
+      ? matches.filter(m => currentLeagueEvents.some(e => e.id === m.eventId))
+      : [];
+    const currentLeaguePlayers = currentLeagueMatches.reduce((acc, match) => {
+      if (match.player1 && !acc.find(p => p?.id === match.player1?.id)) {
+        acc.push(match.player1);
+      }
+      if (match.player2 && !acc.find(p => p?.id === match.player2?.id)) {
+        acc.push(match.player2);
+      }
+      return acc;
+    }, [] as Player[]);
+
+    return {
+      totalLeagues: leagues.length,
+      totalEvents: events.length,
+      totalPlayers: players.length,
+      totalMatches: matches.length,
+      currentLeagueEvents: currentLeagueEvents.length,
+      currentLeaguePlayers: currentLeaguePlayers.length,
+      currentLeagueMatches: currentLeagueMatches.length
+    };
+  }, [leagues, events, players, matches, currentLeague]);
+
   if (isLoading) {
     return (
       <div className="container mx-auto py-8">
@@ -72,116 +109,221 @@ export default function AdminDashboardPage() {
     );
   }
 
+  if (leagues.length === 0) {
+    return (
+      <div className="container mx-auto py-8 space-y-6">
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+
+        <div className="text-center py-12">
+          <Trophy className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
+          <h2 className="text-2xl font-semibold mb-2">Welcome to Tournament Management</h2>
+          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+            Get started by creating your first league. Once you have a league, you can add events and start managing
+            tournaments.
+          </p>
+          <div className="flex gap-4 justify-center">
+            <AddLeagueDialog>
+              <Button size="lg">
+                <Plus className="mr-2 h-4 w-4" />
+                Create Your First League
+              </Button>
+            </AddLeagueDialog>
+            <Link href="/admin/players">
+              <Button variant="outline" size="lg">
+                <Users className="mr-2 h-4 w-4" />
+                Manage Players
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (events.length === 0) {
+    return (
+      <div className="container mx-auto py-8 space-y-6">
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Trophy className="h-5 w-5" />
+              Current League: {currentLeague?.name}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8">
+              <Calendar className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-xl font-semibold mb-2">No Events Yet</h3>
+              <p className="text-muted-foreground mb-4">
+                Create your first event to start organizing tournaments in this league.
+              </p>
+              <AddEventDialog leagues={leagues} />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto py-8 space-y-6">
-      <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-      <Accordion type="multiple" className="w-full space-y-4">
-        {leagues
-          .filter(league => getLeagueStatus(league) !== 'Past')
-          .map(league => {
-            const leaguePrizePool = prizePools.find(p => p.leagueId === league.id);
-            const leagueEvents = events.filter(e => e.leagueId === league.id);
-            const status = getLeagueStatus(league);
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <div className="flex gap-2">
+          <AddLeagueDialog>
+            <Button variant="outline">New League</Button>
+          </AddLeagueDialog>
+          <AddEventDialog />
+        </div>
+      </div>
 
-            return (
-              <AccordionItem value={`league-${league.id}`} key={league.id} className="border rounded-lg">
-                <AccordionTrigger className="p-6">
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center gap-4">
-                      <h2 className="text-xl font-semibold">{league.name}</h2>
-                      <Badge variant={status === 'Active' ? 'default' : 'secondary'}>{status}</Badge>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-lg font-bold">Prize Pool: R{leaguePrizePool?.amount || 0}</span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={e => {
-                          e.stopPropagation();
-                          router.push(`/admin/leagues?edit=${league.id}`);
-                        }}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                    </div>
+      {/* Current League Summary */}
+      {currentLeague && (
+        <Link href="/admin/leagues">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Trophy className="h-5 w-5" />
+                  Current League: {currentLeague.name}
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <Badge variant={getLeagueStatus(currentLeague) === 'Active' ? 'default' : 'secondary'}>
+                    {getLeagueStatus(currentLeague)}
+                  </Badge>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{stats.currentLeagueEvents}</div>
+                  <div className="text-sm text-muted-foreground">Events</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{stats.currentLeaguePlayers}</div>
+                  <div className="text-sm text-muted-foreground">Players</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{stats.currentLeagueMatches}</div>
+                  <div className="text-sm text-muted-foreground">Matches</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold">
+                    R{prizePools.find(p => p.leagueId === currentLeague.id)?.amount || 0}
                   </div>
-                </AccordionTrigger>
-                <AccordionContent className="p-6 pt-0">
-                  <h3 className="text-lg font-semibold mb-4">Events</h3>
-                  <div className="space-y-4">
-                    {leagueEvents.map(event => {
-                      const eventMatches = matches.filter(m => m.eventId === event.id);
-                      const eventPlayers = eventMatches.reduce((acc, match) => {
-                        if (match.player1 && !acc.find(p => p?.id === match.player1?.id)) {
-                          acc.push(match.player1);
-                        }
-                        if (match.player2 && !acc.find(p => p?.id === match.player2?.id)) {
-                          acc.push(match.player2);
-                        }
-                        return acc;
-                      }, [] as Player[]);
+                  <div className="text-sm text-muted-foreground">Prize Pool</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+      )}
 
-                      return (
-                        <Card key={event.id}>
-                          <CardHeader>
-                            <div className="flex items-center justify-between">
-                              <CardTitle>{event.name}</CardTitle>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => router.push(`/admin/events?edit=${event.id}`)}
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </CardHeader>
-                          <CardContent className="space-y-4">
-                            <div>
-                              <h4 className="font-semibold">Players ({eventPlayers.length})</h4>
-                              <ul className="list-disc list-inside">
-                                {eventPlayers.map(player => player && <li key={player.id}>{player.fullName}</li>)}
-                              </ul>
-                            </div>
-                            <div>
-                              <h4 className="font-semibold">Matches</h4>
-                              <div className="space-y-2">
-                                {eventMatches.map(match => (
-                                  <div
-                                    key={match.id}
-                                    className="flex items-center justify-between p-2 border rounded-md"
-                                  >
-                                    <div>
-                                      <span>
-                                        {match.player1?.fullName || 'TBA'} vs {match.player2?.fullName || 'TBA'}
-                                      </span>
-                                      <span className="text-sm text-muted-foreground"> (Round {match.round})</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <span>
-                                        {match.player1Score} - {match.player2Score}
-                                      </span>
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => router.push(`/admin/matches?edit=${match.id}`)}
-                                      >
-                                        <Pencil className="h-4 w-4" />
-                                      </Button>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
+      {/* Quick Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Link href="/admin/leagues">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Leagues</CardTitle>
+              <Trophy className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalLeagues}</div>
+              <p className="text-xs text-muted-foreground">
+                {leagues.filter(l => getLeagueStatus(l) === 'Active').length} active
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/admin/events">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Events</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalEvents}</div>
+              <p className="text-xs text-muted-foreground">Across all leagues</p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/admin/players">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Players</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalPlayers}</div>
+              <p className="text-xs text-muted-foreground">Registered players</p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/admin/matches">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Matches</CardTitle>
+              <Target className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalMatches}</div>
+              <p className="text-xs text-muted-foreground">All time matches</p>
+            </CardContent>
+          </Card>
+        </Link>
+      </div>
+
+      {/* Recent Events */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Recent Events</CardTitle>
+            <Link href="/admin/events">
+              <Button variant="outline" size="sm">
+                View All
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {events.slice(0, 3).map(event => {
+              const eventMatches = matches.filter(m => m.eventId === event.id);
+              const eventPlayers = eventMatches.reduce((acc, match) => {
+                if (match.player1 && !acc.find(p => p?.id === match.player1?.id)) {
+                  acc.push(match.player1);
+                }
+                if (match.player2 && !acc.find(p => p?.id === match.player2?.id)) {
+                  acc.push(match.player2);
+                }
+                return acc;
+              }, [] as Player[]);
+
+              return (
+                <Link key={event.id} href="/admin/events">
+                  <div className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                    <div>
+                      <h4 className="font-semibold">{event.name}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {eventPlayers.length} players • {eventMatches.length} matches
+                      </p>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
                   </div>
-                </AccordionContent>
-              </AccordionItem>
-            );
-          })}
-      </Accordion>
+                </Link>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
