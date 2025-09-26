@@ -20,8 +20,8 @@ export const useAddPlayer = () => {
   const queryClient = useQueryClient();
   return useMutation<Player, Error, Omit<Player, 'id' | 'createdAt' | 'updatedAt'>>({
     mutationFn: addPlayer,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: keys.players() });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: keys.players() });
     }
   });
 };

@@ -130,10 +130,7 @@ export default function AdminLeaguesPage() {
                   {sortedLeagues.map(league => (
                     <TableRow key={league.id}>
                       <TableCell>
-                        <Link 
-                          href={`/admin/leagues/${league.id}`}
-                          className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
-                        >
+                        <Link href={`/admin/leagues/${league.id}`} className="text-primary hover:underline font-medium">
                           {league.name}
                         </Link>
                       </TableCell>

@@ -36,6 +36,8 @@ export default function AdminLoginPage() {
         redirect: false
       });
 
+      console.log(result);
+
       if (result?.error) {
         setError('Invalid email or password');
       } else {
@@ -50,8 +52,7 @@ export default function AdminLoginPage() {
 
   return (
     <>
-      <Header />
-      <div className="container mx-auto py-8">
+      <div className="container mx-auto">
         <div className="flex min-h-screen items-center justify-center">
           <div className="w-full max-w-md space-y-8">
             <div className="text-center">

@@ -20,8 +20,11 @@ export const useUpdateEvent = () => {
   const queryClient = useQueryClient();
   return useMutation<Event, Error, Partial<Event> & { id: string }>({
     mutationFn: updateEvent,
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: keys.event(variables.id) });
+    onSuccess: async (_, variables) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: keys.events() }),
+        queryClient.invalidateQueries({ queryKey: keys.event(variables.id) })
+      ]);
     }
   });
 };

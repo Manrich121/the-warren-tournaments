@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { keys } from '@/hooks/keys';
 
 export function useDeleteMatch() {
   const queryClient = useQueryClient();
@@ -15,8 +16,8 @@ export function useDeleteMatch() {
 
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['matches'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: keys.matches() });
     }
   });
 }

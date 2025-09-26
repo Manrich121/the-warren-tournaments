@@ -144,7 +144,6 @@ export default function AdminDashboardPage() {
     return (
       <div className="container mx-auto py-8 space-y-6">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -178,50 +177,6 @@ export default function AdminDashboardPage() {
           <AddEventDialog />
         </div>
       </div>
-
-      {/* Current League Summary */}
-      {currentLeague && (
-        <Link href={`/admin/leagues/${currentLeague.id}`}>
-          <Card className="cursor-pointer hover:shadow-md transition-shadow">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Trophy className="h-5 w-5" />
-                  Current League: {currentLeague.name}
-                </CardTitle>
-                <div className="flex items-center gap-2">
-                  <Badge variant={getLeagueStatus(currentLeague) === 'Active' ? 'default' : 'secondary'}>
-                    {getLeagueStatus(currentLeague)}
-                  </Badge>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold">{stats.currentLeagueEvents}</div>
-                  <div className="text-sm text-muted-foreground">Events</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold">{stats.currentLeaguePlayers}</div>
-                  <div className="text-sm text-muted-foreground">Players</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold">{stats.currentLeagueMatches}</div>
-                  <div className="text-sm text-muted-foreground">Matches</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold">
-                    R{prizePools.find(p => p.leagueId === currentLeague.id)?.amount || 0}
-                  </div>
-                  <div className="text-sm text-muted-foreground">Prize Pool</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-      )}
 
       {/* Quick Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -279,6 +234,52 @@ export default function AdminDashboardPage() {
           </Card>
         </Link>
       </div>
+
+      {/* Current League Summary */}
+      {currentLeague && (
+        <div>
+          <Link href={`/admin/leagues/${currentLeague.id}`}>
+            <Card className="cursor-pointer hover:shadow-md transition-shadow">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Trophy className="h-5 w-5" />
+                    Current League: {currentLeague.name}
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={getLeagueStatus(currentLeague) === 'Active' ? 'default' : 'secondary'}>
+                      {getLeagueStatus(currentLeague)}
+                    </Badge>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">{stats.currentLeagueEvents}</div>
+                    <div className="text-sm text-muted-foreground">Events</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">{stats.currentLeaguePlayers}</div>
+                    <div className="text-sm text-muted-foreground">Players</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">{stats.currentLeagueMatches}</div>
+                    <div className="text-sm text-muted-foreground">Matches</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">
+                      R{prizePools.find(p => p.leagueId === currentLeague.id)?.amount || 0}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Prize Pool</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
+      )}
 
       {/* Recent Events */}
       <Card>

@@ -14,8 +14,8 @@ export const useDeleteLeague = () => {
   const queryClient = useQueryClient();
   return useMutation<void, Error, string>({
     mutationFn: deleteLeague,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: keys.leagues() });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: keys.leagues() });
     }
   });
 };
