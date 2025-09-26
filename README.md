@@ -2,8 +2,10 @@
 
 A comprehensive tournament management system designed for Magic: The Gathering tournaments and leagues. Built with modern web technologies, this application provides a complete solution for organizing, managing, and tracking tournament events.
 
+### Landing
 <img width="1574" height="575" alt="Screenshot 2025-09-26 at 13 11 14" src="https://github.com/user-attachments/assets/19e99f58-71af-4357-a2d5-f962ce574930" />
 
+### Admin Dashboard
 <img width="1560" height="964" alt="Screenshot 2025-09-26 at 13 11 22" src="https://github.com/user-attachments/assets/583f4978-ecb9-4935-be47-cdd9f6aa4250" />
 
 ## 🚀 Features
