@@ -142,3 +142,14 @@ This document outlines the tasks required to implement the Magic: The Gathering 
 - [X] **T080**: Implement proper loading states, error handling, and 404 pages for league detail view.
 - [X] **T081**: Update leagues list page to make league names clickable links to their respective detail pages.
 - [X] **T082**: Add "Edit" button with pencil icon to league detail page header for easy league modification access.
+
+---
+
+## Phase 12: Prize Pool Management Enhancements
+
+- [X] **T083**: Update `usePrizePools` hook to accept optional `leagueId` parameter for league-specific prize pool queries.
+- [X] **T084**: Enhance prize pool API endpoint (`/api/prize-pool`) to handle `leagueId` query parameter and create/update operations.
+- [X] **T085**: Create `useUpdatePrizePool` hook with proper cache invalidation for prize pool mutations.
+- [X] **T086**: Add prize pool amount field to `AddLeagueDialog` component with currency indicator (R) for creating/editing leagues.
+- [X] **T087**: Create dedicated `PrizePoolDialog` component for quick prize pool editing with form validation and loading states.
+- [X] **T088**: Make Prize Pool card clickable on league detail page to open prize pool editing dialog with hover effects and visual feedback.

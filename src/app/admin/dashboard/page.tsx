@@ -181,7 +181,7 @@ export default function AdminDashboardPage() {
       {/* Quick Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Link href="/admin/leagues">
-          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow hover:bg-accent">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Leagues</CardTitle>
               <Trophy className="h-4 w-4 text-muted-foreground" />
@@ -196,7 +196,7 @@ export default function AdminDashboardPage() {
         </Link>
 
         <Link href="/admin/events">
-          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow hover:bg-accent">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Events</CardTitle>
               <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -209,7 +209,7 @@ export default function AdminDashboardPage() {
         </Link>
 
         <Link href="/admin/players">
-          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow  hover:bg-accent">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Players</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
@@ -222,7 +222,7 @@ export default function AdminDashboardPage() {
         </Link>
 
         <Link href="/admin/matches">
-          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow  hover:bg-accent">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Matches</CardTitle>
               <Target className="h-4 w-4 text-muted-foreground" />
@@ -239,7 +239,7 @@ export default function AdminDashboardPage() {
       {currentLeague && (
         <div>
           <Link href={`/admin/leagues/${currentLeague.id}`}>
-            <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <Card className="cursor-pointer hover:shadow-md transition-shadow  hover:bg-accent">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">

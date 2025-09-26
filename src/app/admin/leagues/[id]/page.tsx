@@ -17,6 +17,7 @@ import { usePrizePools } from '@/hooks/usePrizePools';
 import type { League, Event, Player } from '@prisma/client';
 import { AddEventDialog } from '@/components/AddEventDialog';
 import { AddLeagueDialog } from '@/components/AddLeagueDialog';
+import { PrizePoolDialog } from '@/components/PrizePoolDialog';
 
 interface LeaguePageProps {
   params: Promise<{
@@ -38,7 +39,7 @@ export default function LeaguePage({ params }: LeaguePageProps) {
   const { data: eventsData, isLoading: eventsLoading, error: eventsError } = useEvents({ leagueId });
   const { data: playersData, isLoading: playersLoading, error: playersError } = usePlayers();
   const { data: matchesData, isLoading: matchesLoading, error: matchesError } = useMatches();
-  const { data: prizePoolsData, isLoading: prizePoolsLoading, error: prizePoolsError } = usePrizePools();
+  const { data: prizePoolsData, isLoading: prizePoolsLoading, error: prizePoolsError } = usePrizePools({ leagueId });
 
   const leagues = leaguesData || [];
   const leagueEvents = eventsData || [];
@@ -183,19 +184,13 @@ export default function LeaguePage({ params }: LeaguePageProps) {
     );
   }
 
-  const leaguePrizePool = prizePools.find(p => p.leagueId === league.id);
+  const leaguePrizePool = prizePools.length > 0 ? prizePools[0] : undefined;
 
   return (
     <div className="container mx-auto py-8 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/admin/leagues">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
-            </Button>
-          </Link>
           <div>
             <h1 className="text-3xl font-bold">{league.name}</h1>
             <p className="text-muted-foreground">
@@ -253,16 +248,18 @@ export default function LeaguePage({ params }: LeaguePageProps) {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Prize Pool</CardTitle>
-            <Trophy className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">R{leaguePrizePool?.amount || 0}</div>
-            <p className="text-xs text-muted-foreground">Total prize</p>
-          </CardContent>
-        </Card>
+        <PrizePoolDialog leagueId={leagueId} currentPrizePool={leaguePrizePool}>
+          <Card className="cursor-pointer hover:shadow-md transition-shadow hover:bg-accent">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Prize Pool</CardTitle>
+              <Trophy className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">R{leaguePrizePool?.amount || 0}</div>
+              <p className="text-xs text-muted-foreground">Click to update</p>
+            </CardContent>
+          </Card>
+        </PrizePoolDialog>
       </div>
 
       {/* Events Section */}
@@ -299,7 +296,7 @@ export default function LeaguePage({ params }: LeaguePageProps) {
 
                 return (
                   <Link key={event.id} href={`/admin/events/${event.id}`}>
-                    <Card className="cursor-pointer hover:shadow-md transition-shadow">
+                    <Card className="cursor-pointer hover:shadow-md transition-shadow hover:bg-accent">
                       <CardHeader className="pb-2">
                         <div className="flex items-center justify-between">
                           <CardTitle className="text-lg">{event.name}</CardTitle>
@@ -379,9 +376,9 @@ export default function LeaguePage({ params }: LeaguePageProps) {
                         </div>
                       </TableCell>
                       <TableCell className="text-center">{player.matchesPlayed}</TableCell>
-                      <TableCell className="text-center text-green-600 font-medium">{player.wins}</TableCell>
-                      <TableCell className="text-center text-red-600 font-medium">{player.losses}</TableCell>
-                      <TableCell className="text-center text-yellow-600 font-medium">{player.draws}</TableCell>
+                      <TableCell className="text-center">{player.wins}</TableCell>
+                      <TableCell className="text-center">{player.losses}</TableCell>
+                      <TableCell className="text-center">{player.draws}</TableCell>
                       <TableCell className="text-center font-medium">{winRate}%</TableCell>
                     </TableRow>
                   );

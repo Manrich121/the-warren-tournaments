@@ -54,7 +54,7 @@ export function AddEventDialog({ leagues, selectedLeagueId }: AddEventDialogProp
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Add New Event</Button>
+        <Button className={'cursor-pointer'}>Add New Event</Button>
       </DialogTrigger>
       <DialogContent onPointerDownOutside={e => e.preventDefault()} onEscapeKeyDown={e => e.preventDefault()}>
         <form

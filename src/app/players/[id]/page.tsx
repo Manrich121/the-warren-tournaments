@@ -106,7 +106,7 @@ export default function PlayerStatsPage() {
               <CardTitle className="text-sm font-medium">Wins</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">{stats.wins}</div>
+              <div className="text-2xl font-bold">{stats.wins}</div>
             </CardContent>
           </Card>
           <Card>
@@ -114,7 +114,7 @@ export default function PlayerStatsPage() {
               <CardTitle className="text-sm font-medium">Losses</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">{stats.losses}</div>
+              <div className="text-2xl font-bold">{stats.losses}</div>
             </CardContent>
           </Card>
           <Card>
@@ -122,7 +122,7 @@ export default function PlayerStatsPage() {
               <CardTitle className="text-sm font-medium">Draws</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">{stats.draws}</div>
+              <div className="text-2xl font-bold">{stats.draws}</div>
             </CardContent>
           </Card>
           <Card>
