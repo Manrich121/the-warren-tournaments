@@ -6,7 +6,6 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import logo from '../../public/logo.svg';
 
 export function Header() {
   const router = useRouter();
@@ -29,7 +28,7 @@ export function Header() {
       <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-2">
         <Link href="/">
           <div className="flex gap-2 items-center">
-            <Image src={logo} alt="The Warren logo" className="w-8 h-8" />
+            <Image src={'/logo.svg'} alt="The Warren logo" className="w-8 h-8" width={32} height={32} />
             <h1 className="text-lg font-semibold">The Warren Tournaments</h1>
           </div>
         </Link>

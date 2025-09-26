@@ -8,10 +8,14 @@
     "start": "next start",
     "lint": "next lint",
     "clean": "rm -rf .next node_modules",
+    "test": "jest --watch",
     "format": "prettier --write . --ignore-path .prettierignore",
     "format:check": "prettier --check . --ignore-path .prettierignore",
-    "test": "jest --watch",
-    "create-admin": "ts-node scripts/create-admin.ts"
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:create-admin": "ts-node scripts/create-admin.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
