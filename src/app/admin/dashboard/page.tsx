@@ -181,7 +181,7 @@ export default function AdminDashboardPage() {
 
       {/* Current League Summary */}
       {currentLeague && (
-        <Link href="/admin/leagues">
+        <Link href={`/admin/leagues/${currentLeague.id}`}>
           <Card className="cursor-pointer hover:shadow-md transition-shadow">
             <CardHeader>
               <div className="flex items-center justify-between">

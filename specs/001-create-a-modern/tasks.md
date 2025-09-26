@@ -129,3 +129,16 @@ This document outlines the tasks required to implement the Magic: The Gathering 
 - [X] **T072**: Update business logic functions to handle string IDs (e.g., calculatePlayerStats).
 - [~] **T073**: Fix all TypeScript compilation errors related to ID type changes (mostly complete, some minor issues remain).
 - [ ] **T074**: Test all CRUD operations with the new CUID-based schema.
+
+---
+
+## Phase 11: Navigation Improvements and League Detail Pages
+
+- [X] **T075**: Replace all `onClick` navigation handlers with proper Next.js `Link` components across admin dashboard for better SEO and accessibility.
+- [X] **T076**: Create dynamic league detail page at `/admin/leagues/[id]` with comprehensive league information.
+- [X] **T077**: Implement league events display as responsive card grid with status badges and participant/match counts.
+- [X] **T078**: Build league standings table showing player statistics (wins, losses, draws, win rate) sorted by performance.
+- [X] **T079**: Add league statistics dashboard with events, players, matches, and prize pool metrics.
+- [X] **T080**: Implement proper loading states, error handling, and 404 pages for league detail view.
+- [X] **T081**: Update leagues list page to make league names clickable links to their respective detail pages.
+- [X] **T082**: Add "Edit" button with pencil icon to league detail page header for easy league modification access.

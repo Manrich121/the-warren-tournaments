@@ -21,15 +21,16 @@ import { League } from '@prisma/client';
 
 export interface AddEventDialogProps {
   leagues?: League[] | undefined;
+  selectedLeagueId?: string;
 }
 
-export function AddEventDialog({ leagues }: AddEventDialogProps) {
+export function AddEventDialog({ leagues, selectedLeagueId }: AddEventDialogProps) {
   const [open, setOpen] = useState(false);
   const addEventMutation = useAddEvent();
 
   const [newEventName, setNewEventName] = useState('');
   const [newEventDate, setNewEventDate] = useState('');
-  const [newEventLeagueId, setNewEventLeagueId] = useState('');
+  const [newEventLeagueId, setNewEventLeagueId] = useState(selectedLeagueId || '');
 
   const handleAddEvent = () => {
     if (!newEventName || !newEventDate || !newEventLeagueId) return;

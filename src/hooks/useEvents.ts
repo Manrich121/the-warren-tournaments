@@ -10,10 +10,17 @@ const fetchEvents = async (): Promise<Event[]> => {
   return res.json();
 };
 
-export const useEvents = () => {
+export const useEvents = (params?: { leagueId: string }) => {
+  const leagueId = params?.leagueId;
   return useQuery<Event[], Error>({
     queryKey: keys.events(),
     queryFn: fetchEvents,
-    select: data => data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) // Sort by date descending
+    select: data => {
+      const sortedData = data.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      if (leagueId) {
+        return sortedData.filter(event => event.leagueId === leagueId);
+      }
+      return sortedData;
+    }
   });
 };

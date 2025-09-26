@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -128,7 +129,14 @@ export default function AdminLeaguesPage() {
                 <TableBody>
                   {sortedLeagues.map(league => (
                     <TableRow key={league.id}>
-                      <TableCell>{league.name}</TableCell>
+                      <TableCell>
+                        <Link 
+                          href={`/admin/leagues/${league.id}`}
+                          className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                        >
+                          {league.name}
+                        </Link>
+                      </TableCell>
                       <TableCell>{new Date(league.startDate).toLocaleDateString()}</TableCell>
                       <TableCell>{new Date(league.endDate).toLocaleDateString()}</TableCell>
                       <TableCell>{new Date(league.createdAt).toLocaleDateString()}</TableCell>
