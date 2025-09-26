@@ -15,9 +15,7 @@ export default function NotFound() {
             <CardTitle className="text-2xl font-bold">Page Not Found</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-muted-foreground">
-              The page you&#39;re looking for doesn&#39;t exist or the player ID is invalid.
-            </p>
+            <p className="text-muted-foreground">The page you&#39;re looking for doesn&#39;t exist.</p>
             <Link href="/">
               <Button className="w-full">
                 <Home className="h-4 w-4 mr-2" />
