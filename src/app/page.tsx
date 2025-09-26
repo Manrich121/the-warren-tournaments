@@ -4,7 +4,7 @@ import { Leaderboard } from '@/components/Leaderboard';
 export default function Home() {
   return (
     <>
-      <Header title="The Warren Tournaments" />
+      <Header />
       <main>
         <Leaderboard />
       </main>

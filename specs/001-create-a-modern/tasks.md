@@ -22,6 +22,7 @@ This document outlines the tasks required to implement the Magic: The Gathering 
 
 - [X] **T006**: Create the Prisma schema based on `data-model.md`.
 - [X] **T007**: Generate the Prisma client.
+- [X] **T045**: Add `round` to `Match` model and migrate the database.
 
 ---
 
@@ -67,3 +68,77 @@ This document outlines the tasks required to implement the Magic: The Gathering 
 
 - [X] **T031**: Implement API route for `POST /players` and wire up the "Add New Player" form in the admin dashboard.
 - [X] **T032**: Move the "Add New Player" form on admin dashboard to a dialog.
+- [X] **T033**: Implement API route for `POST /leagues` and wire up the "Add New League" form in the admin dashboard.
+- [X] **T034**: Implement API route for `POST /events` and wire up the "Add New Event" form in the admin dashboard.
+- [X] **T035**: Implement API route for `DELETE /leagues/{id}` and wire up the "Delete" button in the admin dashboard.
+- [X] **T036**: Implement API route for `PUT /leagues/{id}` and wire up the "Edit" button in the admin dashboard.
+- [X] **T037**: Implement API route for `DELETE /events/{id}` and wire up the "Delete" button in the admin dashboard.
+- [X] **T038**: Implement API route for `PUT /events/{id}` and wire up the "Edit" button in the admin dashboard.
+- [X] **T043**: Implement API route for `POST /matches` and wire up the "Add New Match" form in the admin dashboard.
+
+---
+
+## Phase 7: Admin Dashboard Refactor
+
+- [X] **T039**: Refactor the admin dashboard into separate pages for players, leagues, events, and matches.
+- [X] **T040**: Create a new dashboard page with overview cards for key metrics.
+- [X] **T041**: Create a shared admin layout with navigation.
+- [X] **T042**: Update the main `Header` component and add it to the root layout.
+- [X] **T044**: Fix data loading for matches on the admin dashboard to correctly display player information and improve UI resilience.
+- [X] **T050**: Update "Add new Match" form to use a toggle-group for score entry.
+- [X] **T051**: Refactor "Add New Match" form into a dialog component.
+- [X] **T052**: Move the `AddMatchDialog` component to a separate file for better code organization.
+- [X] **T053**: Refactor `Add New Player` dialog to a separate component and update players page layout.
+- [X] **T054**: Refactor `Add New League` dialog to a separate component and update leagues page layout.
+- [X] **T055**: Refactor `Add New Event` dialog to a separate component and update events page layout.
+
+---
+
+## Phase 8: Data Fetching Refactor
+
+- [X] **T046**: Setup `@tanstack/react-query` for client-side data fetching.
+- [X] **T047**: Create reusable hooks for all API resources (`players`, `leagues`, `events`, `matches`, `prize-pools`).
+- [X] **T048**: Create reusable mutation hooks for all `POST`, `PUT`, `DELETE` API endpoints.
+- [X] **T049**: Refactor all pages and components to use the new data fetching and mutation hooks.
+
+---
+
+## Phase 9: UI/UX Improvements and Complete CRUD Operations
+
+- [X] **T056**: Update dialog animations to use simple fade in with grow from 95% to 100%.
+- [X] **T057**: Convert Delete buttons to icon buttons using TrashIcon across all admin pages.
+- [X] **T058**: Add proper button alignment using flex containers with consistent gap spacing.
+- [X] **T059**: Install and configure shadcn/ui tooltip component.
+- [X] **T060**: Convert Edit buttons to icon buttons using PencilIcon across all admin pages.
+- [X] **T061**: Add tooltips for both Edit and Delete buttons on hover across all admin pages.
+- [X] **T062**: Create `useDeleteMatch` and `useUpdateMatch` hooks with corresponding API endpoints.
+- [X] **T063**: Add complete Edit and Delete functionality to matches admin page with form dialogs.
+- [X] **T064**: Create `useDeletePlayer` and `useUpdatePlayer` hooks with corresponding API endpoints.
+- [X] **T065**: Update `AddPlayerDialog` component to function as both add and edit dialog.
+- [X] **T066**: Add complete Edit and Delete functionality to players admin page with consistent UI.
+
+---
+
+## Phase 10: Database Schema Migration to CUID
+
+- [X] **T067**: Remove previous database migrations and update Prisma schema to use CUID for all ID fields.
+- [X] **T068**: Reset database and create new initial migration with CUID-based schema.
+- [X] **T069**: Replace manual TypeScript types with Prisma-generated types across the application.
+- [X] **T070**: Update all API routes to handle string IDs instead of numeric IDs (remove parseInt calls).
+- [X] **T071**: Update frontend components and hooks to work with string IDs instead of numeric IDs.
+- [X] **T072**: Update business logic functions to handle string IDs (e.g., calculatePlayerStats).
+- [~] **T073**: Fix all TypeScript compilation errors related to ID type changes (mostly complete, some minor issues remain).
+- [ ] **T074**: Test all CRUD operations with the new CUID-based schema.
+
+---
+
+## Phase 11: Navigation Improvements and League Detail Pages
+
+- [X] **T075**: Replace all `onClick` navigation handlers with proper Next.js `Link` components across admin dashboard for better SEO and accessibility.
+- [X] **T076**: Create dynamic league detail page at `/admin/leagues/[id]` with comprehensive league information.
+- [X] **T077**: Implement league events display as responsive card grid with status badges and participant/match counts.
+- [X] **T078**: Build league standings table showing player statistics (wins, losses, draws, win rate) sorted by performance.
+- [X] **T079**: Add league statistics dashboard with events, players, matches, and prize pool metrics.
+- [X] **T080**: Implement proper loading states, error handling, and 404 pages for league detail view.
+- [X] **T081**: Update leagues list page to make league names clickable links to their respective detail pages.
+- [X] **T082**: Add "Edit" button with pencil icon to league detail page header for easy league modification access.

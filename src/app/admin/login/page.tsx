@@ -50,7 +50,7 @@ export default function AdminLoginPage() {
 
   return (
     <>
-      <Header title="Admin Login" />
+      <Header />
       <div className="container mx-auto py-8">
         <div className="flex min-h-screen items-center justify-center">
           <div className="w-full max-w-md space-y-8">

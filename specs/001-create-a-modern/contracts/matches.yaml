@@ -48,6 +48,8 @@ components:
           type: integer
         player2Score:
           type: integer
+        round:
+          type: integer
         draw:
           type: boolean
         createdAt:

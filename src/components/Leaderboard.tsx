@@ -1,66 +1,38 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Trophy, Users, BanknoteIcon } from 'lucide-react';
-
-interface Player {
-  id: number;
-  fullName: string;
-  wizardsEmail: string;
-  wins?: number;
-  losses?: number;
-  winRate?: number;
-  totalMatches?: number;
-}
-
-interface PrizePool {
-  amount: number;
-}
+import { usePlayers } from '@/hooks/usePlayers';
+import { usePrizePools } from '@/hooks/usePrizePools';
+import { useMatches } from '@/hooks/useMatches';
+import { calculatePlayerStats } from '@/lib/playerStats';
+import { Player } from '@prisma/client';
 
 export function Leaderboard() {
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [prizePool, setPrizePool] = useState<PrizePool | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: playersData, isLoading: playersLoading, error: playersError } = usePlayers();
+  const { data: prizePoolsData, isLoading: prizePoolsLoading, error: prizePoolsError } = usePrizePools();
+  const { data: matchesData, isLoading: matchesLoading, error: matchesError } = useMatches();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch players
-        const playersRes = await fetch('/api/players');
-        if (!playersRes.ok) throw new Error('Failed to fetch players');
-        const playersData = await playersRes.json();
+  const isLoading = playersLoading || prizePoolsLoading || matchesLoading;
+  const error = playersError || prizePoolsError || matchesError;
 
-        // Fetch prize pool
-        const prizePoolRes = await fetch('/api/prize-pool');
-        if (!prizePoolRes.ok) throw new Error('Failed to fetch prize pool');
-        const prizePoolData = await prizePoolRes.json();
+  const playersWithStats = useMemo(() => {
+    if (!playersData || !matchesData) return [];
+    return playersData.map(player => {
+      const stats = calculatePlayerStats(player.id, matchesData);
+      return { ...player, ...stats };
+    });
+  }, [playersData, matchesData]);
 
-        // Calculate stats for each player (this would ideally be done on the backend)
-        const playersWithStats = playersData.map((player: Player) => ({
-          ...player,
-          wins: 0, // Placeholder - would calculate from matches
-          losses: 0, // Placeholder - would calculate from matches
-          totalMatches: 0, // Placeholder - would calculate from matches
-          winRate: 0 // Placeholder - would calculate from matches
-        }));
+  const totalPrizePool = useMemo(() => {
+    if (!prizePoolsData) return 0;
+    return prizePoolsData.reduce((total, pool) => total + pool.amount, 0);
+  }, [prizePoolsData]);
 
-        setPlayers(playersWithStats);
-        setPrizePool(prizePoolData);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="container mx-auto py-8">
         <div className="text-center">Loading...</div>
@@ -71,7 +43,7 @@ export function Leaderboard() {
   if (error) {
     return (
       <div className="container mx-auto py-8">
-        <div className="text-center text-red-500">Error: {error}</div>
+        <div className="text-center text-red-500">Error: {error.message}</div>
       </div>
     );
   }
@@ -83,20 +55,17 @@ export function Leaderboard() {
         <h1 className="text-4xl font-bold mb-2">The Warren Tournaments</h1>
         <p className="text-muted-foreground">Magic: The Gathering League Tracker</p>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {/* Prize Pool */}
-        {prizePool && (
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Current Prize Pool</CardTitle>
-              <BanknoteIcon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <span className="text-3xl font-bold">R{prizePool.amount?.toFixed(2)}</span>
-            </CardContent>
-          </Card>
-        )}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Current Prize Pool</CardTitle>
+            <BanknoteIcon className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <span className="text-3xl font-bold">R{totalPrizePool.toFixed(2)}</span>
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -104,7 +73,7 @@ export function Leaderboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{players.length}</div>
+            <div className="text-2xl font-bold">{playersData?.length || 0}</div>
           </CardContent>
         </Card>
         <Card>
@@ -117,14 +86,13 @@ export function Leaderboard() {
           </CardContent>
         </Card>
       </div>
-
       {/* Leaderboard */}
       <Card>
         <CardHeader className={'text-xl'}>
           <CardTitle>League Leaderboard</CardTitle>
         </CardHeader>
         <CardContent>
-          {players.length === 0 ? (
+          {playersWithStats.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">No players registered yet.</div>
           ) : (
             <Table>
@@ -139,7 +107,7 @@ export function Leaderboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {players
+                {playersWithStats
                   .sort((a, b) => (b.winRate || 0) - (a.winRate || 0))
                   .map((player, index) => (
                     <TableRow key={player.id}>

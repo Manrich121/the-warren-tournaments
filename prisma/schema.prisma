@@ -11,7 +11,7 @@ datasource db {
 }
 
 model Player {
-  id           Int      @id @default(autoincrement())
+  id           String   @id @default(cuid())
   fullName     String
   wizardsEmail String   @unique
   createdAt    DateTime @default(now())
@@ -22,24 +22,25 @@ model Player {
 }
 
 model Match {
-  id           Int      @id @default(autoincrement())
+  id           String   @id @default(cuid())
   event        Event    @relation(fields: [eventId], references: [id])
-  eventId      Int
+  eventId      String
   player1      Player   @relation("Player1", fields: [player1Id], references: [id])
-  player1Id    Int
+  player1Id    String
   player2      Player   @relation("Player2", fields: [player2Id], references: [id])
-  player2Id    Int
+  player2Id    String
   player1Score Int
   player2Score Int
+  round        Int
   draw         Boolean
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
 
 model Event {
-  id           Int      @id @default(autoincrement())
+  id           String   @id @default(cuid())
   league       League   @relation(fields: [leagueId], references: [id])
-  leagueId     Int
+  leagueId     String
   name         String
   date         DateTime
   participants Player[] @relation("EventParticipants")
@@ -49,7 +50,7 @@ model Event {
 }
 
 model League {
-  id        Int       @id @default(autoincrement())
+  id        String    @id @default(cuid())
   name      String
   startDate DateTime
   endDate   DateTime
@@ -60,7 +61,7 @@ model League {
 }
 
 model Admin {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(cuid())
   email     String   @unique
   password  String
   createdAt DateTime @default(now())
@@ -68,9 +69,9 @@ model Admin {
 }
 
 model PrizePool {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(cuid())
   league    League   @relation(fields: [leagueId], references: [id])
-  leagueId  Int
+  leagueId  String
   amount    Float
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

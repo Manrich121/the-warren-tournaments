@@ -1,291 +1,99 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { getSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Header } from '@/components/Header';
-import { Loader2Icon, ChevronUpIcon, ChevronDownIcon } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogClose,
-  DialogDescription
-} from '@/components/ui/dialog';
-
-interface Player {
-  id: number;
-  fullName: string;
-  wizardsEmail: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface Match {
-  id: number;
-  eventId: number;
-  player1Id: number;
-  player2Id: number;
-  player1Score: number;
-  player2Score: number;
-  draw: boolean;
-  createdAt: string;
-}
-
-interface Event {
-  id: number;
-  leagueId: number;
-  name: string;
-  date: string;
-  createdAt: string;
-}
-
-interface League {
-  id: number;
-  name: string;
-  startDate: string;
-  endDate: string;
-  createdAt: string;
-}
+import { Badge } from '@/components/ui/badge';
+import { Trophy, Users, Calendar, Target, Plus, ArrowRight } from 'lucide-react';
+import { usePlayers } from '@/hooks/usePlayers';
+import { useEvents } from '@/hooks/useEvents';
+import { useLeagues } from '@/hooks/useLeagues';
+import { usePrizePools } from '@/hooks/usePrizePools';
+import { useMatches } from '@/hooks/useMatches';
+import type { League, Player } from '@prisma/client';
+import { AddLeagueDialog } from '@/components/AddLeagueDialog';
+import { AddEventDialog } from '@/components/AddEventDialog';
 
 export default function AdminDashboardPage() {
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('players');
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [events, setEvents] = useState<Event[]>([]);
-  const [leagues, setLeagues] = useState<League[]>([]);
   const router = useRouter();
-
-  // Form states
-  const [newPlayerName, setNewPlayerName] = useState('');
-  const [newPlayerEmail, setNewPlayerEmail] = useState('');
-  const [addPlayerLoading, setAddPlayerLoading] = useState(false);
-  const [addPlayerOpen, setAddPlayerOpen] = useState(false);
-  const [newMatchPlayer1, setNewMatchPlayer1] = useState('');
-  const [newMatchPlayer2, setNewMatchPlayer2] = useState('');
-  const [newMatchEvent, setNewMatchEvent] = useState('');
-  const [newMatchP1Score, setNewMatchP1Score] = useState('');
-  const [newMatchP2Score, setNewMatchP2Score] = useState('');
-  const [newMatchDraw, setNewMatchDraw] = useState(false);
-
-  // Sorting states for all tables
-  const [playerSortField, setPlayerSortField] = useState<keyof Player>('id');
-  const [playerSortDirection, setPlayerSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [matchSortField, setMatchSortField] = useState<keyof Match>('id');
-  const [matchSortDirection, setMatchSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [eventSortField, setEventSortField] = useState<keyof Event>('id');
-  const [eventSortDirection, setEventSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [leagueSortField, setLeagueSortField] = useState<keyof League>('id');
-  const [leagueSortDirection, setLeagueSortDirection] = useState<'asc' | 'desc'>('asc');
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const session = await getSession();
-      if (!session) {
-        router.push('/admin/login');
-        return;
-      }
-      await fetchData();
-      setLoading(false);
-    };
-    checkAuth();
-  }, [router]);
-
-  const fetchData = async () => {
-    try {
-      const [playersRes, matchesRes, eventsRes, leaguesRes] = await Promise.all([
-        fetch('/api/players'),
-        fetch('/api/matches'),
-        fetch('/api/events'),
-        fetch('/api/leagues')
-      ]);
-
-      if (playersRes.ok) setPlayers(await playersRes.json());
-      if (matchesRes.ok) setMatches(await matchesRes.json());
-      if (eventsRes.ok) setEvents(await eventsRes.json());
-      if (leaguesRes.ok) setLeagues(await leaguesRes.json());
-    } catch (error) {
-      console.error('Failed to fetch data:', error);
+  const { status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push('/admin/login');
     }
+  });
+
+  const { data: playersData, isLoading: playersLoading, error: playersError } = usePlayers();
+  const { data: eventsData, isLoading: eventsLoading, error: eventsError } = useEvents();
+  const { data: leaguesData, isLoading: leaguesLoading, error: leaguesError } = useLeagues();
+  const { data: prizePoolsData, isLoading: prizePoolsLoading, error: prizePoolsError } = usePrizePools();
+  const { data: matchesData, isLoading: matchesLoading, error: matchesError } = useMatches();
+
+  const events = eventsData || [];
+  const leagues = leaguesData || [];
+  const players = playersData || [];
+  const prizePools = prizePoolsData || [];
+
+  const matches = useMemo(() => {
+    if (!matchesData || !playersData) return [];
+    return matchesData.map(match => ({
+      ...match,
+      player1: playersData.find(p => p.id === match.player1Id),
+      player2: playersData.find(p => p.id === match.player2Id)
+    }));
+  }, [matchesData, playersData]);
+
+  const isLoading =
+    playersLoading || eventsLoading || leaguesLoading || prizePoolsLoading || matchesLoading || status === 'loading';
+  const error = playersError || eventsError || leaguesError || prizePoolsError || matchesError;
+
+  const getLeagueStatus = (league: League) => {
+    const now = new Date();
+    const startDate = new Date(league.startDate);
+    const endDate = new Date(league.endDate);
+    if (startDate > now) return 'Upcoming';
+    if (startDate <= now && endDate >= now) return 'Active';
+    return 'Past';
   };
 
-  const addPlayer = async () => {
-    if (!newPlayerName || !newPlayerEmail) return;
-
-    setAddPlayerLoading(true);
-    try {
-      const response = await fetch('/api/players', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fullName: newPlayerName,
-          wizardsEmail: newPlayerEmail
-        })
-      });
-
-      if (response.ok) {
-        setNewPlayerName('');
-        setNewPlayerEmail('');
-        setAddPlayerOpen(false);
-        setAddPlayerLoading(false);
-        await fetchData();
-      }
-    } catch (error) {
-      console.error('Failed to add player:', error);
-    } finally {
-      setAddPlayerOpen(false);
-      setAddPlayerLoading(false);
-    }
-  };
-
-  const addMatch = async () => {
-    if (!newMatchPlayer1 || !newMatchPlayer2 || !newMatchEvent) return;
-
-    try {
-      const response = await fetch('/api/matches', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          eventId: parseInt(newMatchEvent),
-          player1Id: parseInt(newMatchPlayer1),
-          player2Id: parseInt(newMatchPlayer2),
-          player1Score: parseInt(newMatchP1Score) || 0,
-          player2Score: parseInt(newMatchP2Score) || 0,
-          draw: newMatchDraw
-        })
-      });
-
-      if (response.ok) {
-        setNewMatchPlayer1('');
-        setNewMatchPlayer2('');
-        setNewMatchEvent('');
-        setNewMatchP1Score('');
-        setNewMatchP2Score('');
-        setNewMatchDraw(false);
-        await fetchData();
-      }
-    } catch (error) {
-      console.error('Failed to add match:', error);
-    }
-  };
-
-  // Generic sorting function
-  const genericSort = <T,>(array: T[], field: keyof T, direction: 'asc' | 'desc') => {
-    return [...array].sort((a, b) => {
-      const aValue = a[field];
-      const bValue = b[field];
-      
-      let comparison = 0;
-      
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        comparison = aValue.localeCompare(bValue);
-      } else if (typeof aValue === 'number' && typeof bValue === 'number') {
-        comparison = aValue - bValue;
-      } else if (aValue instanceof Date && bValue instanceof Date) {
-        comparison = aValue.getTime() - bValue.getTime();
-      } else {
-        // Handle date strings
-        const dateA = new Date(aValue as string);
-        const dateB = new Date(bValue as string);
-        comparison = dateA.getTime() - dateB.getTime();
-      }
-      
-      return direction === 'asc' ? comparison : -comparison;
-    });
-  };
-
-  // Sorting handlers for each table
-  const handlePlayerSort = (field: keyof Player) => {
-    if (field === playerSortField) {
-      setPlayerSortDirection(playerSortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setPlayerSortField(field);
-      setPlayerSortDirection('asc');
-    }
-  };
-
-  const handleMatchSort = (field: keyof Match) => {
-    if (field === matchSortField) {
-      setMatchSortDirection(matchSortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setMatchSortField(field);
-      setMatchSortDirection('asc');
-    }
-  };
-
-  const handleEventSort = (field: keyof Event) => {
-    if (field === eventSortField) {
-      setEventSortDirection(eventSortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setEventSortField(field);
-      setEventSortDirection('asc');
-    }
-  };
-
-  const handleLeagueSort = (field: keyof League) => {
-    if (field === leagueSortField) {
-      setLeagueSortDirection(leagueSortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setLeagueSortField(field);
-      setLeagueSortDirection('asc');
-    }
-  };
-
-  // Sorted data for each table
-  const sortedPlayers = genericSort(players, playerSortField, playerSortDirection);
-  const sortedMatches = genericSort(matches, matchSortField, matchSortDirection);
-  const sortedEvents = genericSort(events, eventSortField, eventSortDirection);
-  const sortedLeagues = genericSort(leagues, leagueSortField, leagueSortDirection);
-
-  // Generic sortable header component
-  const SortableHeader = <T,>({ 
-    field, 
-    currentSortField, 
-    currentSortDirection, 
-    onSort, 
-    children 
-  }: { 
-    field: keyof T;
-    currentSortField: keyof T;
-    currentSortDirection: 'asc' | 'desc';
-    onSort: (field: keyof T) => void;
-    children: React.ReactNode;
-  }) => {
-    const isActive = currentSortField === field;
-    const isAsc = currentSortDirection === 'asc';
-    
+  const currentLeague = useMemo(() => {
     return (
-      <TableHead>
-        <button
-          onClick={() => onSort(field)}
-          className="flex items-center space-x-1 hover:text-foreground font-medium"
-        >
-          <span>{children}</span>
-          {isActive ? (
-            isAsc ? (
-              <ChevronUpIcon className="h-4 w-4" />
-            ) : (
-              <ChevronDownIcon className="h-4 w-4" />
-            )
-          ) : (
-            <div className="h-4 w-4" />
-          )}
-        </button>
-      </TableHead>
+      leagues.find(league => getLeagueStatus(league) === 'Active') ||
+      leagues.find(league => getLeagueStatus(league) === 'Upcoming') ||
+      leagues[0]
     );
-  };
+  }, [leagues]);
 
-  if (loading) {
+  const stats = useMemo(() => {
+    const currentLeagueEvents = currentLeague ? events.filter(e => e.leagueId === currentLeague.id) : [];
+    const currentLeagueMatches = currentLeague
+      ? matches.filter(m => currentLeagueEvents.some(e => e.id === m.eventId))
+      : [];
+    const currentLeaguePlayers = currentLeagueMatches.reduce((acc, match) => {
+      if (match.player1 && !acc.find(p => p?.id === match.player1?.id)) {
+        acc.push(match.player1);
+      }
+      if (match.player2 && !acc.find(p => p?.id === match.player2?.id)) {
+        acc.push(match.player2);
+      }
+      return acc;
+    }, [] as Player[]);
+
+    return {
+      totalLeagues: leagues.length,
+      totalEvents: events.length,
+      totalPlayers: players.length,
+      totalMatches: matches.length,
+      currentLeagueEvents: currentLeagueEvents.length,
+      currentLeaguePlayers: currentLeaguePlayers.length,
+      currentLeagueMatches: currentLeagueMatches.length
+    };
+  }, [leagues, events, players, matches, currentLeague]);
+
+  if (isLoading) {
     return (
       <div className="container mx-auto py-8">
         <div className="text-center">Loading...</div>
@@ -293,464 +101,229 @@ export default function AdminDashboardPage() {
     );
   }
 
-  return (
-    <>
-      <Header title="Admin Dashboard" />
-      <div className="container mx-auto py-8 space-y-6">
-        {/* Header removed from here, now above */}
-        {/* Tabs */}
-        <div className="border-b">
-          <nav className="flex space-x-8">
-            {[
-              { key: 'players', label: 'Players' },
-              { key: 'matches', label: 'Matches' },
-              { key: 'events', label: 'Events' },
-              { key: 'leagues', label: 'Leagues' }
-            ].map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === tab.key
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        {/* Players Tab */}
-        {activeTab === 'players' && (
-          <div className="space-y-6">
-            <Dialog open={addPlayerOpen} onOpenChange={setAddPlayerOpen}>
-              <DialogTrigger asChild>
-                <Button>Add New Player</Button>
-              </DialogTrigger>
-              <DialogContent onPointerDownOutside={e => e.preventDefault()} onEscapeKeyDown={e => e.preventDefault()}>
-                <form
-                  onSubmit={e => {
-                    e.preventDefault();
-                    addPlayer();
-                  }}
-                  className="space-y-4"
-                >
-                  <DialogHeader>
-                    <DialogTitle>Add New Player</DialogTitle>
-                  </DialogHeader>
-                  <DialogDescription>
-                    Enter the full name and Wizards Account email of the new player.
-                  </DialogDescription>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="playerName">Full Name</Label>
-                      <Input
-                        id="playerName"
-                        value={newPlayerName}
-                        onChange={e => setNewPlayerName(e.target.value)}
-                        placeholder="John Doe"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="playerEmail">Email</Label>
-                      <Input
-                        id="playerEmail"
-                        type="email"
-                        value={newPlayerEmail}
-                        onChange={e => setNewPlayerEmail(e.target.value)}
-                        placeholder="john.doe@example.com"
-                      />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <DialogClose asChild>
-                      <Button variant={'outline'} type="button">
-                        Cancel
-                      </Button>
-                    </DialogClose>
-                    <Button type="submit" disabled={addPlayerLoading}>
-                      {addPlayerLoading && <Loader2Icon className="animate-spin" />}
-                      Add Player
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Players ({players.length})</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <SortableHeader 
-                        field="id" 
-                        currentSortField={playerSortField} 
-                        currentSortDirection={playerSortDirection} 
-                        onSort={handlePlayerSort}
-                      >
-                        ID
-                      </SortableHeader>
-                      <SortableHeader 
-                        field="fullName" 
-                        currentSortField={playerSortField} 
-                        currentSortDirection={playerSortDirection} 
-                        onSort={handlePlayerSort}
-                      >
-                        Name
-                      </SortableHeader>
-                      <SortableHeader 
-                        field="wizardsEmail" 
-                        currentSortField={playerSortField} 
-                        currentSortDirection={playerSortDirection} 
-                        onSort={handlePlayerSort}
-                      >
-                        Email
-                      </SortableHeader>
-                      <SortableHeader 
-                        field="createdAt" 
-                        currentSortField={playerSortField} 
-                        currentSortDirection={playerSortDirection} 
-                        onSort={handlePlayerSort}
-                      >
-                        Created
-                      </SortableHeader>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sortedPlayers.map(player => (
-                      <TableRow key={player.id}>
-                        <TableCell>{player.id}</TableCell>
-                        <TableCell>{player.fullName}</TableCell>
-                        <TableCell>{player.wizardsEmail}</TableCell>
-                        <TableCell>{new Date(player.createdAt).toLocaleDateString()}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Matches Tab */}
-        {activeTab === 'matches' && (
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Add New Match</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Player 1</Label>
-                    <Select value={newMatchPlayer1} onValueChange={setNewMatchPlayer1}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Player 1" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {players.map(player => (
-                          <SelectItem key={player.id} value={player.id.toString()}>
-                            {player.fullName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Player 2</Label>
-                    <Select value={newMatchPlayer2} onValueChange={setNewMatchPlayer2}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Player 2" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {players.map(player => (
-                          <SelectItem key={player.id} value={player.id.toString()}>
-                            {player.fullName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label>Event</Label>
-                    <Select value={newMatchEvent} onValueChange={setNewMatchEvent}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Event" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {events.map(event => (
-                          <SelectItem key={event.id} value={event.id.toString()}>
-                            {event.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Player 1 Score</Label>
-                    <Input
-                      type="number"
-                      value={newMatchP1Score}
-                      onChange={e => setNewMatchP1Score(e.target.value)}
-                      placeholder="0"
-                      min="0"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Player 2 Score</Label>
-                    <Input
-                      type="number"
-                      value={newMatchP2Score}
-                      onChange={e => setNewMatchP2Score(e.target.value)}
-                      placeholder="0"
-                      min="0"
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="draw"
-                    checked={newMatchDraw}
-                    onChange={e => setNewMatchDraw(e.target.checked)}
-                  />
-                  <Label htmlFor="draw">Draw</Label>
-                </div>
-                <Button onClick={addMatch}>Add Match</Button>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Matches ({matches.length})</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <SortableHeader 
-                        field="id" 
-                        currentSortField={matchSortField} 
-                        currentSortDirection={matchSortDirection} 
-                        onSort={handleMatchSort}
-                      >
-                        ID
-                      </SortableHeader>
-                      <SortableHeader 
-                        field="eventId" 
-                        currentSortField={matchSortField} 
-                        currentSortDirection={matchSortDirection} 
-                        onSort={handleMatchSort}
-                      >
-                        Event
-                      </SortableHeader>
-                      <SortableHeader 
-                        field="player1Id" 
-                        currentSortField={matchSortField} 
-                        currentSortDirection={matchSortDirection} 
-                        onSort={handleMatchSort}
-                      >
-                        Player 1
-                      </SortableHeader>
-                      <SortableHeader 
-                        field="player2Id" 
-                        currentSortField={matchSortField} 
-                        currentSortDirection={matchSortDirection} 
-                        onSort={handleMatchSort}
-                      >
-                        Player 2
-                      </SortableHeader>
-                      <TableHead>Score</TableHead>
-                      <TableHead>Result</TableHead>
-                      <SortableHeader 
-                        field="createdAt" 
-                        currentSortField={matchSortField} 
-                        currentSortDirection={matchSortDirection} 
-                        onSort={handleMatchSort}
-                      >
-                        Date
-                      </SortableHeader>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sortedMatches.map(match => {
-                      const player1 = players.find(p => p.id === match.player1Id);
-                      const player2 = players.find(p => p.id === match.player2Id);
-                      const event = events.find(e => e.id === match.eventId);
-
-                      return (
-                        <TableRow key={match.id}>
-                          <TableCell>{match.id}</TableCell>
-                          <TableCell>{event?.name || `Event #${match.eventId}`}</TableCell>
-                          <TableCell>{player1?.fullName || `Player #${match.player1Id}`}</TableCell>
-                          <TableCell>{player2?.fullName || `Player #${match.player2Id}`}</TableCell>
-                          <TableCell>
-                            {match.player1Score} - {match.player2Score}
-                          </TableCell>
-                          <TableCell>
-                            {match.draw
-                              ? 'Draw'
-                              : match.player1Score > match.player2Score
-                                ? 'Player 1 Win'
-                                : 'Player 2 Win'}
-                          </TableCell>
-                          <TableCell>{new Date(match.createdAt).toLocaleDateString()}</TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Events Tab */}
-        {activeTab === 'events' && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Events ({events.length})</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <SortableHeader 
-                      field="id" 
-                      currentSortField={eventSortField} 
-                      currentSortDirection={eventSortDirection} 
-                      onSort={handleEventSort}
-                    >
-                      ID
-                    </SortableHeader>
-                    <SortableHeader 
-                      field="name" 
-                      currentSortField={eventSortField} 
-                      currentSortDirection={eventSortDirection} 
-                      onSort={handleEventSort}
-                    >
-                      Name
-                    </SortableHeader>
-                    <SortableHeader 
-                      field="leagueId" 
-                      currentSortField={eventSortField} 
-                      currentSortDirection={eventSortDirection} 
-                      onSort={handleEventSort}
-                    >
-                      League
-                    </SortableHeader>
-                    <SortableHeader 
-                      field="date" 
-                      currentSortField={eventSortField} 
-                      currentSortDirection={eventSortDirection} 
-                      onSort={handleEventSort}
-                    >
-                      Date
-                    </SortableHeader>
-                    <SortableHeader 
-                      field="createdAt" 
-                      currentSortField={eventSortField} 
-                      currentSortDirection={eventSortDirection} 
-                      onSort={handleEventSort}
-                    >
-                      Created
-                    </SortableHeader>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {sortedEvents.map(event => {
-                    const league = leagues.find(l => l.id === event.leagueId);
-                    return (
-                      <TableRow key={event.id}>
-                        <TableCell>{event.id}</TableCell>
-                        <TableCell>{event.name}</TableCell>
-                        <TableCell>{league?.name || `League #${event.leagueId}`}</TableCell>
-                        <TableCell>{new Date(event.date).toLocaleDateString()}</TableCell>
-                        <TableCell>{new Date(event.createdAt).toLocaleDateString()}</TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Leagues Tab */}
-        {activeTab === 'leagues' && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Leagues ({leagues.length})</CardTitle>
-            </CardHeader>
-            <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <SortableHeader 
-                    field="id" 
-                    currentSortField={leagueSortField} 
-                    currentSortDirection={leagueSortDirection} 
-                    onSort={handleLeagueSort}
-                  >
-                    ID
-                  </SortableHeader>
-                  <SortableHeader 
-                    field="name" 
-                    currentSortField={leagueSortField} 
-                    currentSortDirection={leagueSortDirection} 
-                    onSort={handleLeagueSort}
-                  >
-                    Name
-                  </SortableHeader>
-                  <SortableHeader 
-                    field="startDate" 
-                    currentSortField={leagueSortField} 
-                    currentSortDirection={leagueSortDirection} 
-                    onSort={handleLeagueSort}
-                  >
-                    Start Date
-                  </SortableHeader>
-                  <SortableHeader 
-                    field="endDate" 
-                    currentSortField={leagueSortField} 
-                    currentSortDirection={leagueSortDirection} 
-                    onSort={handleLeagueSort}
-                  >
-                    End Date
-                  </SortableHeader>
-                  <SortableHeader 
-                    field="createdAt" 
-                    currentSortField={leagueSortField} 
-                    currentSortDirection={leagueSortDirection} 
-                    onSort={handleLeagueSort}
-                  >
-                    Created
-                  </SortableHeader>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sortedLeagues.map(league => (
-                    <TableRow key={league.id}>
-                      <TableCell>{league.id}</TableCell>
-                      <TableCell>{league.name}</TableCell>
-                      <TableCell>{new Date(league.startDate).toLocaleDateString()}</TableCell>
-                      <TableCell>{new Date(league.endDate).toLocaleDateString()}</TableCell>
-                      <TableCell>{new Date(league.createdAt).toLocaleDateString()}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        )}
+  if (error) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="text-center text-red-500">Failed to load dashboard data.</div>
       </div>
-    </>
+    );
+  }
+
+  if (leagues.length === 0) {
+    return (
+      <div className="container mx-auto py-8 space-y-6">
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+
+        <div className="text-center py-12">
+          <Trophy className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
+          <h2 className="text-2xl font-semibold mb-2">Welcome to Tournament Management</h2>
+          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+            Get started by creating your first league. Once you have a league, you can add events and start managing
+            tournaments.
+          </p>
+          <div className="flex gap-4 justify-center">
+            <AddLeagueDialog>
+              <Button size="lg">
+                <Plus className="mr-2 h-4 w-4" />
+                Create Your First League
+              </Button>
+            </AddLeagueDialog>
+            <Link href="/admin/players">
+              <Button variant="outline" size="lg">
+                <Users className="mr-2 h-4 w-4" />
+                Manage Players
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (events.length === 0) {
+    return (
+      <div className="container mx-auto py-8 space-y-6">
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Trophy className="h-5 w-5" />
+              Current League: {currentLeague?.name}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8">
+              <Calendar className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-xl font-semibold mb-2">No Events Yet</h3>
+              <p className="text-muted-foreground mb-4">
+                Create your first event to start organizing tournaments in this league.
+              </p>
+              <AddEventDialog leagues={leagues} />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto py-8 space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <div className="flex gap-2">
+          <AddLeagueDialog>
+            <Button variant="outline">New League</Button>
+          </AddLeagueDialog>
+          <AddEventDialog />
+        </div>
+      </div>
+
+      {/* Current League Summary */}
+      {currentLeague && (
+        <Link href={`/admin/leagues/${currentLeague.id}`}>
+          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Trophy className="h-5 w-5" />
+                  Current League: {currentLeague.name}
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <Badge variant={getLeagueStatus(currentLeague) === 'Active' ? 'default' : 'secondary'}>
+                    {getLeagueStatus(currentLeague)}
+                  </Badge>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{stats.currentLeagueEvents}</div>
+                  <div className="text-sm text-muted-foreground">Events</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{stats.currentLeaguePlayers}</div>
+                  <div className="text-sm text-muted-foreground">Players</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{stats.currentLeagueMatches}</div>
+                  <div className="text-sm text-muted-foreground">Matches</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold">
+                    R{prizePools.find(p => p.leagueId === currentLeague.id)?.amount || 0}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Prize Pool</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+      )}
+
+      {/* Quick Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Link href="/admin/leagues">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Leagues</CardTitle>
+              <Trophy className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalLeagues}</div>
+              <p className="text-xs text-muted-foreground">
+                {leagues.filter(l => getLeagueStatus(l) === 'Active').length} active
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/admin/events">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Events</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalEvents}</div>
+              <p className="text-xs text-muted-foreground">Across all leagues</p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/admin/players">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Players</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalPlayers}</div>
+              <p className="text-xs text-muted-foreground">Registered players</p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/admin/matches">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Matches</CardTitle>
+              <Target className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalMatches}</div>
+              <p className="text-xs text-muted-foreground">All time matches</p>
+            </CardContent>
+          </Card>
+        </Link>
+      </div>
+
+      {/* Recent Events */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Recent Events</CardTitle>
+            <Link href="/admin/events">
+              <Button variant="outline" size="sm">
+                View All
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {events.slice(0, 3).map(event => {
+              const eventMatches = matches.filter(m => m.eventId === event.id);
+              const eventPlayers = eventMatches.reduce((acc, match) => {
+                if (match.player1 && !acc.find(p => p?.id === match.player1?.id)) {
+                  acc.push(match.player1);
+                }
+                if (match.player2 && !acc.find(p => p?.id === match.player2?.id)) {
+                  acc.push(match.player2);
+                }
+                return acc;
+              }, [] as Player[]);
+
+              return (
+                <Link key={event.id} href="/admin/events">
+                  <div className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                    <div>
+                      <h4 className="font-semibold">{event.name}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {eventPlayers.length} players • {eventMatches.length} matches
+                      </p>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
