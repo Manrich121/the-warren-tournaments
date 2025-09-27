@@ -15,6 +15,7 @@ export const useEvents = (params?: { leagueId: string }) => {
   return useQuery<Event[], Error>({
     queryKey: keys.events(),
     queryFn: fetchEvents,
+    initialData: () => [],
     select: data => {
       const sortedData = data.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
       if (leagueId) {

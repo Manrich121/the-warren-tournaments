@@ -49,12 +49,19 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   try {
     const { id } = await params;
 
-    await prisma.event.delete({
+    const deleteMatches = prisma.match.deleteMany({
+      where: {
+        eventId: id
+      }
+    });
+    const deleteEvent = prisma.event.delete({
       where: { id }
     });
+    await prisma.$transaction([deleteMatches, deleteEvent]);
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
+    console.error('Error deleting event:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

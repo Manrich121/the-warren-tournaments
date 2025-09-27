@@ -13,6 +13,7 @@ const fetchLeagues = async (): Promise<League[]> => {
 export const useLeagues = () => {
   return useQuery<League[], Error>({
     queryKey: keys.leagues(),
-    queryFn: fetchLeagues
+    queryFn: fetchLeagues,
+    initialData: () => []
   });
 };

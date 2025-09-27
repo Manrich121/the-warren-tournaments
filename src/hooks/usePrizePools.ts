@@ -18,6 +18,7 @@ export interface UsePrizePoolParams {
 export const usePrizePools = ({ leagueId }: UsePrizePoolParams = {}) => {
   return useQuery<PrizePool[], Error>({
     queryKey: leagueId ? [...keys.prizePool(), leagueId] : keys.prizePool(),
-    queryFn: () => fetchPrizePool(leagueId)
+    queryFn: () => fetchPrizePool(leagueId),
+    initialData: () => []
   });
 };

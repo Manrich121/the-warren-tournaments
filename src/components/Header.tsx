@@ -16,12 +16,11 @@ export function Header() {
     if (session) {
       signOut({ callbackUrl: '/' });
     } else {
-      router.push('/admin/login');
+      router.push('/login');
     }
   };
 
-  const isOnAdminPage = pathname.startsWith('/admin');
-  const isOnLoginPage = pathname === '/admin/login';
+  const isOnLoginPage = pathname === '/login';
 
   return (
     <header className="border-b">
@@ -33,16 +32,9 @@ export function Header() {
           </div>
         </Link>
         <div className="flex gap-2">
-          {session && (
-            <Link href={isOnAdminPage ? '/' : '/admin/dashboard'}>
-              <Button variant="outline" size="sm">
-                {isOnAdminPage ? 'Public Site' : 'Admin Dashboard'}
-              </Button>
-            </Link>
-          )}
           {!isOnLoginPage && (
             <Button variant="ghost" size="sm" onClick={handleAuthButtonClick} disabled={status === 'loading'}>
-              {status === 'loading' ? '...' : session ? 'Sign Out' : 'Admin'}
+              {status === 'loading' ? '...' : session ? 'Sign Out' : 'Sign In'}
             </Button>
           )}
           <ThemeToggle />
