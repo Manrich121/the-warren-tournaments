@@ -41,18 +41,19 @@ export default function LeaguePage({ params }: LeaguePageProps) {
   const { data: matchesData, isLoading: matchesLoading, error: matchesError } = useMatches();
   const { data: prizePoolsData, isLoading: prizePoolsLoading, error: prizePoolsError } = usePrizePools({ leagueId });
 
-  const leagues = leaguesData || [];
-  const leagueEvents = eventsData || [];
-  const prizePools = prizePoolsData || [];
+  const leagues = useMemo(() => leaguesData || [], [leaguesData]);
+  const leagueEvents = useMemo(() => eventsData || [], [eventsData]);
+  const prizePools = useMemo(() => prizePoolsData || [], [prizePoolsData]);
+  const players = useMemo(() => playersData || [], [playersData]);
+  const allMatches = useMemo(() => matchesData || [], [matchesData]);
 
   const matches = useMemo(() => {
-    if (!matchesData || !playersData) return [];
-    return matchesData.map(match => ({
+    return allMatches.map(match => ({
       ...match,
-      player1: playersData.find(p => p.id === match.player1Id),
-      player2: playersData.find(p => p.id === match.player2Id)
+      player1: players.find(p => p.id === match.player1Id),
+      player2: players.find(p => p.id === match.player2Id)
     }));
-  }, [matchesData, playersData]);
+  }, [allMatches, players]);
 
   const league = useMemo(() => {
     return leagues.find(l => l.id === leagueId);
@@ -226,27 +227,31 @@ export default function LeaguePage({ params }: LeaguePageProps) {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Players</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{leaguePlayers.length}</div>
-            <p className="text-xs text-muted-foreground">Active players</p>
-          </CardContent>
-        </Card>
+        <Link href={'/admin/players?league=' + leagueId}>
+          <Card className={'cursor-pointer hover:shadow-md transition-shadow hover:bg-accent'}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Players</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{leaguePlayers.length}</div>
+              <p className="text-xs text-muted-foreground">Active players</p>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Matches</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{leagueMatches.length}</div>
-            <p className="text-xs text-muted-foreground">Total matches</p>
-          </CardContent>
-        </Card>
+        <Link href={'/admin/matches?league=' + leagueId}>
+          <Card className={'cursor-pointer hover:shadow-md transition-shadow hover:bg-accent'}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Matches</CardTitle>
+              <Target className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{leagueMatches.length}</div>
+              <p className="text-xs text-muted-foreground">Total matches</p>
+            </CardContent>
+          </Card>
+        </Link>
 
         <PrizePoolDialog leagueId={leagueId} currentPrizePool={leaguePrizePool}>
           <Card className="cursor-pointer hover:shadow-md transition-shadow hover:bg-accent">

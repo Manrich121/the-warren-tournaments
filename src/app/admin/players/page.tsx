@@ -24,6 +24,10 @@ import { useURLFilters } from '@/hooks/useURLFilters';
 import { Player } from '@prisma/client';
 import { genericSort } from '@/lib/utils';
 import { AddPlayerDialog } from '@/components/AddPlayerDialog';
+import { useEvents } from '@/hooks/useEvents';
+import { useLeagues } from '@/hooks/useLeagues';
+import { useMatches } from '@/hooks/useMatches';
+import { FilterDropdown, FilterOption } from '@/components/ui/filter-dropdown';
 
 function AdminPlayersContent() {
   const router = useRouter();
@@ -34,7 +38,10 @@ function AdminPlayersContent() {
     }
   });
 
-  const { data: players, isLoading, error } = usePlayers();
+  const { data: players, isLoading: playersLoading, error: playersError } = usePlayers();
+  const { data: events, isLoading: eventsLoading, error: eventsError } = useEvents();
+  const { data: leagues, isLoading: leaguesLoading, error: leaguesError } = useLeagues();
+  const { data: matches, isLoading: matchesLoading, error: matchesError } = useMatches();
   const deletePlayerMutation = useDeletePlayer();
 
   const [deletePlayerId, setDeletePlayerId] = useState<string | null>(null);
@@ -47,6 +54,9 @@ function AdminPlayersContent() {
   // Filtering
   const { filters, setFilter, clearFilters, hasActiveFilters } = useURLFilters();
   const [searchQuery, setSearchQuery] = useState(filters.search || '');
+
+  const isLoading = playersLoading || eventsLoading || leaguesLoading || matchesLoading || status === 'loading';
+  const error = playersError || eventsError || leaguesError || matchesError;
 
   const handleDeletePlayer = () => {
     if (!deletePlayerId) return;
@@ -77,24 +87,66 @@ function AdminPlayersContent() {
     }
   };
 
+  // Filter options
+  const eventOptions: FilterOption[] = useMemo(() => {
+    if (!events) return [];
+    return events.map(event => ({
+      value: event.id,
+      label: event.name
+    }));
+  }, [events]);
+
+  const leagueOptions: FilterOption[] = useMemo(() => {
+    if (!leagues) return [];
+    return leagues.map(league => ({
+      value: league.id,
+      label: league.name
+    }));
+  }, [leagues]);
+
   // Apply filters
   const filteredPlayers = useMemo(() => {
-    if (!players) return [];
+    if (!players || !matches || !events) return [];
 
-    return players.filter(player => {
-      // Search filter
-      if (filters.search) {
-        const query = filters.search.toLowerCase();
+    let filtered = [...players];
+
+    // League filter
+    if (filters.league) {
+      const eventIdsInLeague = new Set(events.filter(e => e.leagueId === filters.league).map(e => e.id));
+      const playerIdsInLeague = new Set<string>();
+      matches
+        .filter(m => eventIdsInLeague.has(m.eventId))
+        .forEach(m => {
+          playerIdsInLeague.add(m.player1Id);
+          playerIdsInLeague.add(m.player2Id);
+        });
+      filtered = filtered.filter(p => playerIdsInLeague.has(p.id));
+    }
+
+    // Event filter
+    if (filters.event) {
+      const playerIdsInEvent = new Set<string>();
+      matches
+        .filter(m => m.eventId === filters.event)
+        .forEach(m => {
+          playerIdsInEvent.add(m.player1Id);
+          playerIdsInEvent.add(m.player2Id);
+        });
+      filtered = filtered.filter(p => playerIdsInEvent.has(p.id));
+    }
+
+    // Search filter
+    if (filters.search) {
+      const query = filters.search.toLowerCase();
+      filtered = filtered.filter(player => {
         const nameMatch = player.fullName.toLowerCase().includes(query);
         const emailMatch = player.wizardsEmail.toLowerCase().includes(query);
-        if (!nameMatch && !emailMatch) {
-          return false;
-        }
-      }
+        return nameMatch || emailMatch;
+      });
+    }
 
-      return true;
-    });
-  }, [players, filters]);
+    return filtered;
+  }, [players, matches, events, filters]);
 
   const sortedPlayers = filteredPlayers ? genericSort(filteredPlayers, sortField, sortDirection) : [];
 
@@ -123,7 +175,7 @@ function AdminPlayersContent() {
     );
   };
 
-  if (isLoading || status === 'loading') {
+  if (isLoading) {
     return (
       <div className="container mx-auto py-8">
         <div className="text-center">Loading...</div>
@@ -170,6 +222,22 @@ function AdminPlayersContent() {
                       className="pl-10"
                     />
                   </div>
+
+                  <FilterDropdown
+                    placeholder="Leagues"
+                    value={filters.league}
+                    options={leagueOptions}
+                    onValueChange={value => setFilter('league', value)}
+                    disabled={isLoading}
+                  />
+
+                  <FilterDropdown
+                    placeholder="Events"
+                    value={filters.event}
+                    options={eventOptions}
+                    onValueChange={value => setFilter('event', value)}
+                    disabled={isLoading}
+                  />
 
                   {hasActiveFilters && (
                     <Button

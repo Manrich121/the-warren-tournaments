@@ -17,20 +17,23 @@ import {
 } from '@/components/ui/dialog';
 import { Loader2Icon } from 'lucide-react';
 import { useAddEvent } from '@/hooks/useAddEvent';
-import { League } from '@prisma/client';
+import { League, Event } from '@prisma/client';
 
 export interface AddEventDialogProps {
   leagues?: League[] | undefined;
   selectedLeagueId?: string;
+  event?: Event;
+  children?: React.ReactNode;
 }
 
-export function AddEventDialog({ leagues, selectedLeagueId }: AddEventDialogProps) {
+export function AddEventDialog({ leagues, event, selectedLeagueId, children }: AddEventDialogProps) {
   const [open, setOpen] = useState(false);
   const addEventMutation = useAddEvent();
 
-  const [newEventName, setNewEventName] = useState('');
-  const [newEventDate, setNewEventDate] = useState('');
-  const [newEventLeagueId, setNewEventLeagueId] = useState(selectedLeagueId || '');
+  const [newEventName, setNewEventName] = useState(event?.name || '');
+  // Set initial value to event?.date YYYY-MM-DD format if event?.date exists
+  const [newEventDate, setNewEventDate] = useState(event?.date ? new Date(event.date).toISOString().split('T')[0] : '');
+  const [newEventLeagueId, setNewEventLeagueId] = useState(selectedLeagueId || event?.leagueId || '');
 
   const handleAddEvent = () => {
     if (!newEventName || !newEventDate || !newEventLeagueId) return;
@@ -53,9 +56,13 @@ export function AddEventDialog({ leagues, selectedLeagueId }: AddEventDialogProp
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className={'cursor-pointer'}>Add New Event</Button>
-      </DialogTrigger>
+      {children ? (
+        <DialogTrigger asChild>{children}</DialogTrigger>
+      ) : (
+        <DialogTrigger asChild>
+          <Button className={'cursor-pointer'}>Add New Event</Button>
+        </DialogTrigger>
+      )}
       <DialogContent onPointerDownOutside={e => e.preventDefault()} onEscapeKeyDown={e => e.preventDefault()}>
         <form
           onSubmit={e => {
@@ -80,7 +87,14 @@ export function AddEventDialog({ leagues, selectedLeagueId }: AddEventDialogProp
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="eventDate">Date</Label>
-              <Input id="eventDate" type="date" value={newEventDate} onChange={e => setNewEventDate(e.target.value)} />
+              <Input
+                id="eventDate"
+                type="date"
+                value={newEventDate}
+                onChange={e => {
+                  setNewEventDate(e.target.value);
+                }}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="eventLeague">League</Label>

@@ -153,6 +153,8 @@ This document outlines the tasks required to implement the Magic: The Gathering 
 - [X] **T086**: Add prize pool amount field to `AddLeagueDialog` component with currency indicator (R) for creating/editing leagues.
 - [X] **T087**: Create dedicated `PrizePoolDialog` component for quick prize pool editing with form validation and loading states.
 - [X] **T088**: Make Prize Pool card clickable on league detail page to open prize pool editing dialog with hover effects and visual feedback.
+- [X] **T098**: Create dynamic event detail page at `/admin/events/[id]` with overview, matches, and participants.
+- [X] **T099**: Add sorting to tables on the event detail page.
 
 ---
 
@@ -166,3 +168,10 @@ This document outlines the tasks required to implement the Magic: The Gathering 
 - [X] **T094**: Make all filter sections collapsible using accordion component, collapsed by default to save space.
 - [X] **T095**: Add visual indicators ("Active" badges) and clear filters functionality across all admin pages.
 - [X] **T096**: Add Suspense boundaries to handle Next.js SSR requirements for useSearchParams usage.
+- [X] **T097**: Add league and event filtering to Players admin page.
+
+---
+
+## Phase 14: Code Quality
+
+- [X] **T100**: Fix all outstanding ESLint warnings.

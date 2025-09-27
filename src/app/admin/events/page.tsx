@@ -30,6 +30,7 @@ import { FilterDropdown, FilterOption } from '@/components/ui/filter-dropdown';
 import { Event } from '@prisma/client';
 import { AddEventDialog } from '@/components/AddEventDialog';
 import { genericSort } from '@/lib/utils';
+import Link from 'next/link';
 
 function AdminEventsContent() {
   const router = useRouter();
@@ -231,7 +232,11 @@ function AdminEventsContent() {
                     const league = leagues?.find(l => l.id === event.leagueId);
                     return (
                       <TableRow key={event.id}>
-                        <TableCell>{event.name}</TableCell>
+                        <TableCell>
+                          <Link href={`/admin/events/${event.id}`} className="text-primary hover:underline font-medium">
+                            {event.name}
+                          </Link>
+                        </TableCell>
                         <TableCell>{league?.name || `League #${event.leagueId}`}</TableCell>
                         <TableCell>{new Date(event.date).toLocaleDateString()}</TableCell>
                         <TableCell>{new Date(event.createdAt).toLocaleDateString()}</TableCell>

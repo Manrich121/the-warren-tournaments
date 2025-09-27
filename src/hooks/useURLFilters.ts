@@ -13,7 +13,7 @@ export function useURLFilters(defaultFilters: Filters = {}) {
   // Get current filters from URL
   const filters = useMemo(() => {
     const currentFilters: Filters = { ...defaultFilters };
-    
+
     searchParams.forEach((value, key) => {
       if (value && value !== 'all') {
         currentFilters[key] = value;
@@ -29,14 +29,14 @@ export function useURLFilters(defaultFilters: Filters = {}) {
   const setFilter = useCallback(
     (key: string, value: FilterValue) => {
       const params = new URLSearchParams(searchParams);
-      
+
       if (value && value !== 'all') {
         params.set(key, value);
       } else {
         params.delete(key);
       }
 
-      router.push(`${window.location.pathname}?${params.toString()}`, { scroll: false });
+      router.replace(`${window.location.pathname}?${params.toString()}`, { scroll: false });
     },
     [router, searchParams]
   );
@@ -45,7 +45,7 @@ export function useURLFilters(defaultFilters: Filters = {}) {
   const setFilters = useCallback(
     (newFilters: Partial<Filters>) => {
       const params = new URLSearchParams(searchParams);
-      
+
       Object.entries(newFilters).forEach(([key, value]) => {
         if (value && value !== 'all') {
           params.set(key, value);
@@ -54,14 +54,14 @@ export function useURLFilters(defaultFilters: Filters = {}) {
         }
       });
 
-      router.push(`${window.location.pathname}?${params.toString()}`, { scroll: false });
+      router.replace(`${window.location.pathname}?${params.toString()}`, { scroll: false });
     },
     [router, searchParams]
   );
 
   // Clear all filters
   const clearFilters = useCallback(() => {
-    router.push(window.location.pathname, { scroll: false });
+    router.replace(window.location.pathname, { scroll: false });
   }, [router]);
 
   // Clear a specific filter
@@ -83,6 +83,6 @@ export function useURLFilters(defaultFilters: Filters = {}) {
     setFilters,
     clearFilter,
     clearFilters,
-    hasActiveFilters,
+    hasActiveFilters
   };
 }

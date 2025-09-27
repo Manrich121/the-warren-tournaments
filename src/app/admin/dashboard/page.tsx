@@ -26,25 +26,22 @@ export default function AdminDashboardPage() {
     }
   });
 
-  const { data: playersData, isLoading: playersLoading, error: playersError } = usePlayers();
-  const { data: eventsData, isLoading: eventsLoading, error: eventsError } = useEvents();
-  const { data: leaguesData, isLoading: leaguesLoading, error: leaguesError } = useLeagues();
-  const { data: prizePoolsData, isLoading: prizePoolsLoading, error: prizePoolsError } = usePrizePools();
+  const { data: players, isLoading: playersLoading, error: playersError } = usePlayers();
+  const { data: events, isLoading: eventsLoading, error: eventsError } = useEvents();
+  const { data: leagues, isLoading: leaguesLoading, error: leaguesError } = useLeagues();
+  const { data: prizePools, isLoading: prizePoolsLoading, error: prizePoolsError } = usePrizePools();
   const { data: matchesData, isLoading: matchesLoading, error: matchesError } = useMatches();
 
-  const events = eventsData || [];
-  const leagues = leaguesData || [];
-  const players = playersData || [];
-  const prizePools = prizePoolsData || [];
-
   const matches = useMemo(() => {
-    if (!matchesData || !playersData) return [];
+    if (!matchesData || !players) {
+      return [];
+    }
     return matchesData.map(match => ({
       ...match,
-      player1: playersData.find(p => p.id === match.player1Id),
-      player2: playersData.find(p => p.id === match.player2Id)
+      player1: players.find(p => p.id === match.player1Id),
+      player2: players.find(p => p.id === match.player2Id)
     }));
-  }, [matchesData, playersData]);
+  }, [matchesData, players]);
 
   const isLoading =
     playersLoading || eventsLoading || leaguesLoading || prizePoolsLoading || matchesLoading || status === 'loading';
@@ -60,6 +57,9 @@ export default function AdminDashboardPage() {
   };
 
   const currentLeague = useMemo(() => {
+    if (!leagues) {
+      return;
+    }
     return (
       leagues.find(league => getLeagueStatus(league) === 'Active') ||
       leagues.find(league => getLeagueStatus(league) === 'Upcoming') ||
@@ -68,7 +68,7 @@ export default function AdminDashboardPage() {
   }, [leagues]);
 
   const stats = useMemo(() => {
-    const currentLeagueEvents = currentLeague ? events.filter(e => e.leagueId === currentLeague.id) : [];
+    const currentLeagueEvents = currentLeague ? events?.filter(e => e.leagueId === currentLeague.id) || [] : [];
     const currentLeagueMatches = currentLeague
       ? matches.filter(m => currentLeagueEvents.some(e => e.id === m.eventId))
       : [];
@@ -83,9 +83,9 @@ export default function AdminDashboardPage() {
     }, [] as Player[]);
 
     return {
-      totalLeagues: leagues.length,
-      totalEvents: events.length,
-      totalPlayers: players.length,
+      totalLeagues: leagues?.length || 0,
+      totalEvents: events?.length || 0,
+      totalPlayers: players?.length,
       totalMatches: matches.length,
       currentLeagueEvents: currentLeagueEvents.length,
       currentLeaguePlayers: currentLeaguePlayers.length,
@@ -109,7 +109,7 @@ export default function AdminDashboardPage() {
     );
   }
 
-  if (leagues.length === 0) {
+  if (!leagues || leagues.length === 0) {
     return (
       <div className="container mx-auto py-8 space-y-6">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
@@ -140,7 +140,7 @@ export default function AdminDashboardPage() {
     );
   }
 
-  if (events.length === 0) {
+  if (!events || events.length === 0) {
     return (
       <div className="container mx-auto py-8 space-y-6">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
@@ -270,7 +270,7 @@ export default function AdminDashboardPage() {
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold">
-                      R{prizePools.find(p => p.leagueId === currentLeague.id)?.amount || 0}
+                      R{prizePools?.find(p => p.leagueId === currentLeague.id)?.amount || 0}
                     </div>
                     <div className="text-sm text-muted-foreground">Prize Pool</div>
                   </div>
