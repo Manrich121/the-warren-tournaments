@@ -175,3 +175,9 @@ This document outlines the tasks required to implement the Magic: The Gathering 
 ## Phase 14: Code Quality
 
 - [X] **T100**: Fix all outstanding ESLint warnings.
+
+---
+
+## Phase 15: API Security
+
+- [X] **T101**: Secure all CRUD API endpoints to require authentication.
