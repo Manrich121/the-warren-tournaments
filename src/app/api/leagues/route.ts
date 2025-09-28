@@ -2,12 +2,12 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 
 const leagueSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   startDate: z.string().datetime('Start date must be a valid date'),
-  endDate: z.string().datetime('End date must be a valid date'),
+  endDate: z.string().datetime('End date must be a valid date')
 });
 
 export async function POST(request: Request) {
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     const validatedData = leagueSchema.parse(json);
 
     const league = await prisma.league.create({
-      data: validatedData,
+      data: validatedData
     });
 
     return NextResponse.json(league, { status: 201 });

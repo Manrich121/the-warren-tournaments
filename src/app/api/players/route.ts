@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 
 export async function GET() {
   const players = await prisma.player.findMany();
@@ -25,8 +25,8 @@ export async function POST(request: Request) {
     const newPlayer = await prisma.player.create({
       data: {
         fullName,
-        wizardsEmail,
-      },
+        wizardsEmail
+      }
     });
 
     return new NextResponse(JSON.stringify(newPlayer), { status: 201 });
