@@ -181,3 +181,11 @@ This document outlines the tasks required to implement the Magic: The Gathering 
 ## Phase 15: API Security
 
 - [X] **T101**: Secure all CRUD API endpoints to require authentication.
+
+---
+
+## Phase 16: Event Page and Match Creation UX Improvements
+
+- [X] **T102**: Update `AddMatchDialog` to prevent the same player from being selected as both Player 1 and Player 2.
+- [X] **T103**: Replace the "Add/Edit Event" button on the event detail page with an "Add New Match" dialog.
+- [X] **T104**: Update the layout of the event detail page to a two-column grid for the leaderboard and matches list.

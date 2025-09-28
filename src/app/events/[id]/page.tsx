@@ -14,7 +14,7 @@ import { useEvents } from '@/hooks/useEvents';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useMatches } from '@/hooks/useMatches';
 import type { League, Event, Player, Match } from '@prisma/client';
-import { AddEventDialog } from '@/components/AddEventDialog';
+import { AddMatchDialog } from '@/components/AddMatchDialog';
 import { genericSort } from '@/lib/utils';
 import { Header } from '@/components/Header';
 import { Nav } from '@/components/Nav';
@@ -106,8 +106,8 @@ export default function EventPage({ params }: EventPageProps) {
       if (!match.draw) {
         result =
           match.player1Score > match.player2Score
-            ? `${player1?.fullName || 'Player 1'} wins`
-            : `${player2?.fullName || 'Player 2'} wins`;
+            ? `${player1?.fullName.split(' ')[0] || 'Player 1'} wins`
+            : `${player2?.fullName.split(' ')[0] || 'Player 2'} wins`;
       }
       return {
         ...match,
@@ -240,7 +240,7 @@ export default function EventPage({ params }: EventPageProps) {
                 </p>
               </div>
             </div>
-            {isAdmin && <AddEventDialog event={event} leagues={leagues} />}
+            {isAdmin && <AddMatchDialog players={players} events={[event]} />}
           </div>
 
           {/* Event Stats */}
@@ -288,153 +288,155 @@ export default function EventPage({ params }: EventPageProps) {
             </Card>
           </div>
 
-          {/* Players Leaderboard */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Players Leaderboard</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {eventPlayersWithStats.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Rank</TableHead>
-                      <SortableHeader
-                        field="fullName"
-                        sortField={playersSortField}
-                        sortDirection={playersSortDirection}
-                        setSortField={setPlayersSortField}
-                        setSortDirection={setPlayersSortDirection}
-                      >
-                        Player
-                      </SortableHeader>
-                      <SortableHeader
-                        field="matchesPlayed"
-                        sortField={playersSortField}
-                        sortDirection={playersSortDirection}
-                        setSortField={setPlayersSortField}
-                        setSortDirection={setPlayersSortDirection}
-                      >
-                        Matches
-                      </SortableHeader>
-                      <SortableHeader
-                        field="wins"
-                        sortField={playersSortField}
-                        sortDirection={playersSortDirection}
-                        setSortField={setPlayersSortField}
-                        setSortDirection={setPlayersSortDirection}
-                      >
-                        Wins
-                      </SortableHeader>
-                      <SortableHeader
-                        field="losses"
-                        sortField={playersSortField}
-                        sortDirection={playersSortDirection}
-                        setSortField={setPlayersSortField}
-                        setSortDirection={setPlayersSortDirection}
-                      >
-                        Losses
-                      </SortableHeader>
-                      <SortableHeader
-                        field="draws"
-                        sortField={playersSortField}
-                        sortDirection={playersSortDirection}
-                        setSortField={setPlayersSortField}
-                        setSortDirection={setPlayersSortDirection}
-                      >
-                        Draws
-                      </SortableHeader>
-                      <SortableHeader
-                        field="winRate"
-                        sortField={playersSortField}
-                        sortDirection={playersSortDirection}
-                        setSortField={setPlayersSortField}
-                        setSortDirection={setPlayersSortDirection}
-                      >
-                        Win Rate
-                      </SortableHeader>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sortedEventPlayers.map((player, index) => (
-                      <TableRow key={player.id}>
-                        <TableCell className="font-medium">#{index + 1}</TableCell>
-                        <TableCell>
-                          <Link href={`/players/${player.id}`} className="text-primary hover:underline">
-                            {player.fullName}
-                          </Link>
-                        </TableCell>
-                        <TableCell>{player.matchesPlayed}</TableCell>
-                        <TableCell>{player.wins}</TableCell>
-                        <TableCell>{player.losses}</TableCell>
-                        <TableCell>{player.draws}</TableCell>
-                        <TableCell>{player.winRate.toFixed(1)}%</TableCell>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Players Leaderboard */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Players Leaderboard</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {eventPlayersWithStats.length > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Rank</TableHead>
+                        <SortableHeader
+                          field="fullName"
+                          sortField={playersSortField}
+                          sortDirection={playersSortDirection}
+                          setSortField={setPlayersSortField}
+                          setSortDirection={setPlayersSortDirection}
+                        >
+                          Player
+                        </SortableHeader>
+                        <SortableHeader
+                          field="matchesPlayed"
+                          sortField={playersSortField}
+                          sortDirection={playersSortDirection}
+                          setSortField={setPlayersSortField}
+                          setSortDirection={setPlayersSortDirection}
+                        >
+                          Matches
+                        </SortableHeader>
+                        <SortableHeader
+                          field="wins"
+                          sortField={playersSortField}
+                          sortDirection={playersSortDirection}
+                          setSortField={setPlayersSortField}
+                          setSortDirection={setPlayersSortDirection}
+                        >
+                          Wins
+                        </SortableHeader>
+                        <SortableHeader
+                          field="losses"
+                          sortField={playersSortField}
+                          sortDirection={playersSortDirection}
+                          setSortField={setPlayersSortField}
+                          setSortDirection={setPlayersSortDirection}
+                        >
+                          Losses
+                        </SortableHeader>
+                        <SortableHeader
+                          field="draws"
+                          sortField={playersSortField}
+                          sortDirection={playersSortDirection}
+                          setSortField={setPlayersSortField}
+                          setSortDirection={setPlayersSortDirection}
+                        >
+                          Draws
+                        </SortableHeader>
+                        <SortableHeader
+                          field="winRate"
+                          sortField={playersSortField}
+                          sortDirection={playersSortDirection}
+                          setSortField={setPlayersSortField}
+                          setSortDirection={setPlayersSortDirection}
+                        >
+                          Win Rate
+                        </SortableHeader>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  No players have participated in this event yet.
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    </TableHeader>
+                    <TableBody>
+                      {sortedEventPlayers.map((player, index) => (
+                        <TableRow key={player.id}>
+                          <TableCell className="font-medium">#{index + 1}</TableCell>
+                          <TableCell>
+                            <Link href={`/players/${player.id}`} className="text-primary hover:underline">
+                              {player.fullName}
+                            </Link>
+                          </TableCell>
+                          <TableCell>{player.matchesPlayed}</TableCell>
+                          <TableCell>{player.wins}</TableCell>
+                          <TableCell>{player.losses}</TableCell>
+                          <TableCell>{player.draws}</TableCell>
+                          <TableCell>{player.winRate.toFixed(1)}%</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No players have participated in this event yet.
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-          {/* Matches */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Matches</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {sortedEventMatches.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <SortableHeader
-                        field="round"
-                        sortField={matchesSortField}
-                        sortDirection={matchesSortDirection}
-                        setSortField={setMatchesSortField}
-                        setSortDirection={setMatchesSortDirection}
-                      >
-                        Round
-                      </SortableHeader>
-                      <TableHead>Player 1</TableHead>
-                      <TableHead>Player 2</TableHead>
-                      <TableHead>Score</TableHead>
-                      <TableHead>Result</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sortedEventMatches.map(match => (
-                      <TableRow key={match.id}>
-                        <TableCell>{match.round}</TableCell>
-                        <TableCell>
-                          <Link href={`/players/${match.player1Id}`} className="text-primary hover:underline">
-                            {match.player1Name}
-                          </Link>
-                        </TableCell>
-                        <TableCell>
-                          <Link href={`/players/${match.player2Id}`} className="text-primary hover:underline">
-                            {match.player2Name}
-                          </Link>
-                        </TableCell>
-                        <TableCell>
-                          {match.player1Score} - {match.player2Score}
-                        </TableCell>
-                        <TableCell>{match.result}</TableCell>
+            {/* Matches */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Matches</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {sortedEventMatches.length > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <SortableHeader
+                          field="round"
+                          sortField={matchesSortField}
+                          sortDirection={matchesSortDirection}
+                          setSortField={setMatchesSortField}
+                          setSortDirection={setMatchesSortDirection}
+                        >
+                          Round
+                        </SortableHeader>
+                        <TableHead>Player 1</TableHead>
+                        <TableHead>Player 2</TableHead>
+                        <TableHead>Score</TableHead>
+                        <TableHead>Result</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  No matches have been played in this event yet.
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    </TableHeader>
+                    <TableBody>
+                      {sortedEventMatches.map(match => (
+                        <TableRow key={match.id}>
+                          <TableCell>{match.round}</TableCell>
+                          <TableCell>
+                            <Link href={`/players/${match.player1Id}`} className="text-primary hover:underline">
+                              {match.player1Name}
+                            </Link>
+                          </TableCell>
+                          <TableCell>
+                            <Link href={`/players/${match.player2Id}`} className="text-primary hover:underline">
+                              {match.player2Name}
+                            </Link>
+                          </TableCell>
+                          <TableCell>
+                            {match.player1Score} - {match.player2Score}
+                          </TableCell>
+                          <TableCell>{match.result}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No matches have been played in this event yet.
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </>

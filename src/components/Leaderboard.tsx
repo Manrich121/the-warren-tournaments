@@ -18,12 +18,11 @@ export interface LeaderboardProps {
 
 export function Leaderboard({ league }: LeaderboardProps) {
   const { data: playersData, isLoading: playersLoading, error: playersError } = usePlayers();
-  const { data: prizePoolsData, isLoading: prizePoolsLoading, error: prizePoolsError } = usePrizePools();
   const { data: matchesData, isLoading: matchesLoading, error: matchesError } = useMatches();
   const { data: eventData, isLoading: eventsLoading, error: eventsError } = useEvents();
 
-  const isLoading = playersLoading || prizePoolsLoading || matchesLoading || eventsLoading;
-  const error = playersError || prizePoolsError || matchesError || eventsError;
+  const isLoading = playersLoading || matchesLoading || eventsLoading;
+  const error = playersError || matchesError || eventsError;
 
   const playersWithStats = useMemo(() => {
     if (!playersData || !matchesData || !eventData) {
@@ -31,7 +30,9 @@ export function Leaderboard({ league }: LeaderboardProps) {
     }
 
     // Filter matches to only include those relevant to the league
-    const leagueEventIds = eventData.filter(event => event.leagueId === league.id).map(event => event.id);
+    const leagueEventIds = (league ? eventData.filter(event => event.leagueId === league.id) : eventData).map(
+      event => event.id
+    );
     const filteredMatches = matchesData.filter(match => leagueEventIds.includes(match.eventId));
 
     return playersData.map(player => {
