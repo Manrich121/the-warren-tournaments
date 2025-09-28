@@ -23,12 +23,13 @@ import { useEvents } from '@/hooks/useEvents';
 import { useLeagues } from '@/hooks/useLeagues';
 import { useDeleteMatch } from '@/hooks/useDeleteMatch';
 import { useURLFilters } from '@/hooks/useURLFilters';
-import { FilterDropdown, FilterOption } from '@/components/ui/filter-dropdown';
+import { FilterDropdown, FilterOption } from '@/components/FilterDropdown';
 import { Match } from '@prisma/client';
 import { genericSort } from '@/lib/utils';
 import { AddMatchDialog } from '@/components/AddMatchDialog';
 import { Header } from '@/components/Header';
 import { Nav } from '@/components/Nav';
+import { GenericSkeletonLoader } from '@/components/ShimmeringLoader';
 
 function MatchesContent() {
   const router = useRouter();
@@ -150,9 +151,16 @@ function MatchesContent() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-8">
-        <div className="text-center">Loading...</div>
-      </div>
+      <>
+        <Header />
+        <div className="container mx-auto space-y-6">
+          <Nav />
+          <div className="py-8 space-y-6">
+            <h1 className="text-3xl font-bold">Matches</h1>
+            <GenericSkeletonLoader />
+          </div>
+        </div>
+      </>
     );
   }
 
@@ -168,7 +176,7 @@ function MatchesContent() {
     <>
       <Header />
       <div className="container mx-auto space-y-6">
-        {isAdmin && <Nav />}
+        <Nav />
         <div className="py-8 space-y-6">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Matches</h1>

@@ -27,7 +27,7 @@ import { AddPlayerDialog } from '@/components/AddPlayerDialog';
 import { useEvents } from '@/hooks/useEvents';
 import { useLeagues } from '@/hooks/useLeagues';
 import { useMatches } from '@/hooks/useMatches';
-import { FilterDropdown, FilterOption } from '@/components/ui/filter-dropdown';
+import { FilterDropdown, FilterOption } from '@/components/FilterDropdown';
 
 function AdminPlayersContent() {
   const router = useRouter();

@@ -26,7 +26,7 @@ import { useLeagues } from '@/hooks/useLeagues';
 import { useDeleteEvent } from '@/hooks/useDeleteEvent';
 import { useUpdateEvent } from '@/hooks/useUpdateEvent';
 import { useURLFilters } from '@/hooks/useURLFilters';
-import { FilterDropdown, FilterOption } from '@/components/ui/filter-dropdown';
+import { FilterDropdown, FilterOption } from '@/components/FilterDropdown';
 import { Event } from '@prisma/client';
 import { AddEventDialog } from '@/components/AddEventDialog';
 import { genericSort } from '@/lib/utils';

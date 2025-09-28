@@ -26,13 +26,14 @@ import { useLeagues } from '@/hooks/useLeagues';
 import { useDeleteEvent } from '@/hooks/useDeleteEvent';
 import { useUpdateEvent } from '@/hooks/useUpdateEvent';
 import { useURLFilters } from '@/hooks/useURLFilters';
-import { FilterDropdown, FilterOption } from '@/components/ui/filter-dropdown';
+import { FilterDropdown, FilterOption } from '@/components/FilterDropdown';
 import { Event } from '@prisma/client';
 import { AddEventDialog } from '@/components/AddEventDialog';
 import { genericSort } from '@/lib/utils';
 import Link from 'next/link';
 import { Header } from '@/components/Header';
 import { Nav } from '@/components/Nav';
+import { GenericSkeletonLoader, ShimmeringLoader } from '@/components/ShimmeringLoader';
 
 function EventsContent() {
   const router = useRouter();
@@ -140,7 +141,7 @@ function EventsContent() {
       <TableHead>
         <button
           onClick={() => handleSort(field)}
-          className="flex items-center space-x-1 hover:text-foreground font-medium"
+          className="cursor-pointer flex items-center space-x-1 hover:text-foreground font-medium"
         >
           <span>{children}</span>
           {isActive ? (
@@ -159,9 +160,16 @@ function EventsContent() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-8">
-        <div className="text-center">Loading...</div>
-      </div>
+      <>
+        <Header />
+        <div className="container mx-auto space-y-6">
+          <Nav />
+          <div className="py-8 space-y-6">
+            <h1 className="text-3xl font-bold">Events</h1>
+            <GenericSkeletonLoader />
+          </div>
+        </div>
+      </>
     );
   }
 
@@ -177,7 +185,7 @@ function EventsContent() {
     <>
       <Header />
       <div className="container mx-auto space-y-6">
-        {isAdmin && <Nav />}
+        <Nav />
         <div className="py-8 space-y-6">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Events</h1>

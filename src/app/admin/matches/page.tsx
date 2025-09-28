@@ -29,7 +29,7 @@ import { useLeagues } from '@/hooks/useLeagues';
 import { useDeleteMatch } from '@/hooks/useDeleteMatch';
 import { useUpdateMatch } from '@/hooks/useUpdateMatch';
 import { useURLFilters } from '@/hooks/useURLFilters';
-import { FilterDropdown, FilterOption } from '@/components/ui/filter-dropdown';
+import { FilterDropdown, FilterOption } from '@/components/FilterDropdown';
 import { Match } from '@prisma/client';
 import { genericSort } from '@/lib/utils';
 import { AddMatchDialog } from '@/components/AddMatchDialog';

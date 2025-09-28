@@ -27,9 +27,10 @@ import { AddPlayerDialog } from '@/components/AddPlayerDialog';
 import { useEvents } from '@/hooks/useEvents';
 import { useLeagues } from '@/hooks/useLeagues';
 import { useMatches } from '@/hooks/useMatches';
-import { FilterDropdown, FilterOption } from '@/components/ui/filter-dropdown';
+import { FilterDropdown, FilterOption } from '@/components/FilterDropdown';
 import { Header } from '@/components/Header';
 import { Nav } from '@/components/Nav';
+import { GenericSkeletonLoader } from '@/components/ShimmeringLoader';
 
 function PlayersContent() {
   const router = useRouter();
@@ -175,9 +176,16 @@ function PlayersContent() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-8">
-        <div className="text-center">Loading...</div>
-      </div>
+      <>
+        <Header />
+        <div className="container mx-auto space-y-6">
+          <Nav />
+          <div className="py-8 space-y-6">
+            <h1 className="text-3xl font-bold">Players</h1>
+            <GenericSkeletonLoader />
+          </div>
+        </div>
+      </>
     );
   }
 
@@ -193,7 +201,7 @@ function PlayersContent() {
     <>
       <Header />
       <div className="container mx-auto space-y-6">
-        {isAdmin && <Nav />}
+        <Nav />
         <div className="py-8 space-y-6">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Players</h1>

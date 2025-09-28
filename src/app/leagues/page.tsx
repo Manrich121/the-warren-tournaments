@@ -24,6 +24,7 @@ import { genericSort } from '@/lib/utils';
 import { AddLeagueDialog } from '@/components/AddLeagueDialog';
 import { Header } from '@/components/Header';
 import { Nav } from '@/components/Nav';
+import { GenericSkeletonLoader } from '@/components/ShimmeringLoader';
 
 export default function LeaguesPage() {
   const router = useRouter();
@@ -87,9 +88,16 @@ export default function LeaguesPage() {
 
   if (isLoading || status === 'loading') {
     return (
-      <div className="container mx-auto py-8">
-        <div className="text-center">Loading...</div>
-      </div>
+      <>
+        <Header />
+        <div className="container mx-auto space-y-6">
+          <Nav />
+          <div className="py-8 space-y-6">
+            <h1 className="text-3xl font-bold">Leagues</h1>
+            <GenericSkeletonLoader />
+          </div>
+        </div>
+      </>
     );
   }
 
