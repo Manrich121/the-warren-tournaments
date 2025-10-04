@@ -301,7 +301,7 @@ export default function EventPage({ params }: EventPageProps) {
                       <TableRow>
                         <TableHead>Rank</TableHead>
                         <SortableHeader
-                          field="fullName"
+                          field="name"
                           sortField={playersSortField}
                           sortDirection={playersSortDirection}
                           setSortField={setPlayersSortField}
