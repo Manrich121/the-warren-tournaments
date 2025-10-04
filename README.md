@@ -173,7 +173,7 @@ tests/                    # Test files
 
 The application uses the following main entities:
 
-- **Player**: Tournament participants with email
+- **Player**: Tournament participants with full name
 - **League**: Tournament leagues with date ranges
 - **Event**: Individual tournament events within leagues  
 - **Match**: Individual matches between players
