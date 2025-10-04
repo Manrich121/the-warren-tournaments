@@ -22,8 +22,8 @@ export const useAddMatch = () => {
   const queryClient = useQueryClient();
   return useMutation<Match, Error, AddMatchParams>({
     mutationFn: addMatch,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: keys.matches() });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: keys.matches() });
     }
   });
 };

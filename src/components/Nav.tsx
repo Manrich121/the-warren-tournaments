@@ -4,14 +4,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const links = [
-  { href: '/admin/dashboard', label: 'Dashboard' },
-  { href: '/admin/players', label: 'Players' },
-  { href: '/admin/leagues', label: 'Leagues' },
-  { href: '/admin/events', label: 'Events' },
-  { href: '/admin/matches', label: 'Matches' }
+  { href: '/', label: 'Home' },
+  { href: '/leagues', label: 'Leagues' },
+  { href: '/events', label: 'Events' },
+  { href: '/matches', label: 'Matches' },
+  { href: '/players', label: 'Players' }
 ];
 
-export function AdminNav() {
+export function Nav() {
   const pathname = usePathname();
 
   return (

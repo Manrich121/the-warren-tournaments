@@ -13,6 +13,7 @@ const fetchMatches = async (): Promise<Match[]> => {
 export const useMatches = () => {
   return useQuery<Match[], Error>({
     queryKey: keys.matches(),
-    queryFn: fetchMatches
+    queryFn: fetchMatches,
+    initialData: () => []
   });
 };

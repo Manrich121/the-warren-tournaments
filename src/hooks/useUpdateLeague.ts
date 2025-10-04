@@ -20,8 +20,11 @@ export const useUpdateLeague = () => {
   const queryClient = useQueryClient();
   return useMutation<League, Error, Partial<League> & { id: string }>({
     mutationFn: updateLeague,
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: keys.league(variables.id) });
+    onSuccess: async (_, variables) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: keys.leagues() }),
+        queryClient.invalidateQueries({ queryKey: keys.league(variables.id) })
+      ]);
     }
   });
 };

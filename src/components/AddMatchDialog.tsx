@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -30,12 +30,24 @@ export function AddMatchDialog({ players, events }: AddMatchDialogProps) {
 
   const [newMatchPlayer1, setNewMatchPlayer1] = useState('');
   const [newMatchPlayer2, setNewMatchPlayer2] = useState('');
-  const [newMatchEvent, setNewMatchEvent] = useState('');
+  const [newMatchEvent, setNewMatchEvent] = useState(events?.[0]?.id || '');
   const [newMatchP1Score, setNewMatchP1Score] = useState('');
   const [newMatchP2Score, setNewMatchP2Score] = useState('');
   const [newMatchDraw, setNewMatchDraw] = useState(false);
   const [round, setRound] = useState('');
   const [scoreSelection, setScoreSelection] = useState('');
+
+  const player1Options = useMemo(() => {
+    if (!players) return [];
+    if (!newMatchPlayer2) return players;
+    return players.filter(player => player.id !== newMatchPlayer2);
+  }, [players, newMatchPlayer2]);
+
+  const player2Options = useMemo(() => {
+    if (!players) return [];
+    if (!newMatchPlayer1) return players;
+    return players.filter(player => player.id !== newMatchPlayer1);
+  }, [players, newMatchPlayer1]);
 
   useEffect(() => {
     let scoreToParse = scoreSelection;
@@ -133,7 +145,7 @@ export function AddMatchDialog({ players, events }: AddMatchDialogProps) {
                   <SelectValue placeholder="Select Player 1" />
                 </SelectTrigger>
                 <SelectContent>
-                  {players?.map(player => (
+                  {player1Options.map(player => (
                     <SelectItem key={player.id} value={player.id}>
                       {player.fullName}
                     </SelectItem>
@@ -148,7 +160,7 @@ export function AddMatchDialog({ players, events }: AddMatchDialogProps) {
                   <SelectValue placeholder="Select Player 2" />
                 </SelectTrigger>
                 <SelectContent>
-                  {players?.map(player => (
+                  {player2Options.map(player => (
                     <SelectItem key={player.id} value={player.id}>
                       {player.fullName}
                     </SelectItem>

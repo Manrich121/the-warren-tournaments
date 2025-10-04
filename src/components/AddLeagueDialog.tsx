@@ -17,6 +17,8 @@ import {
 import { Loader2Icon } from 'lucide-react';
 import { useAddLeague } from '@/hooks/useAddLeague';
 import { useUpdateLeague } from '@/hooks/useUpdateLeague';
+import { usePrizePools } from '@/hooks/usePrizePools';
+import { useUpdatePrizePool } from '@/hooks/useUpdatePrizePool';
 import { League } from '@prisma/client';
 
 interface AddLeagueDialogProps {
@@ -28,10 +30,16 @@ export function AddLeagueDialog({ league, children }: AddLeagueDialogProps) {
   const [open, setOpen] = useState(false);
   const addLeagueMutation = useAddLeague();
   const updateLeagueMutation = useUpdateLeague();
+  const updatePrizePoolMutation = useUpdatePrizePool();
 
   const [name, setName] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [prizePoolAmount, setPrizePoolAmount] = useState<string>('');
+
+  // Fetch existing prize pool when editing a league
+  const { data: prizePools } = usePrizePools({ leagueId: league?.id });
+  const existingPrizePool = prizePools?.[0];
 
   const isEditMode = !!league;
 
@@ -40,12 +48,28 @@ export function AddLeagueDialog({ league, children }: AddLeagueDialogProps) {
       setName(league.name);
       setStartDate(new Date(league.startDate).toISOString().split('T')[0]);
       setEndDate(new Date(league.endDate).toISOString().split('T')[0]);
+      setPrizePoolAmount(existingPrizePool?.amount?.toString() || '');
     } else {
       setName('');
       setStartDate('');
       setEndDate('');
+      setPrizePoolAmount('');
     }
-  }, [league, isEditMode, open]);
+  }, [league, isEditMode, open, existingPrizePool]);
+
+  const handlePrizePoolUpdate = async (leagueId: string) => {
+    if (prizePoolAmount.trim()) {
+      const amount = parseFloat(prizePoolAmount);
+      if (!isNaN(amount) && amount >= 0) {
+        try {
+          await updatePrizePoolMutation.mutateAsync({ leagueId, amount });
+        } catch (error) {
+          console.error('Failed to update prize pool:', error);
+          // You might want to show an error toast here
+        }
+      }
+    }
+  };
 
   const handleSubmit = () => {
     if (isEditMode) {
@@ -57,16 +81,23 @@ export function AddLeagueDialog({ league, children }: AddLeagueDialogProps) {
           startDate: new Date(startDate),
           endDate: new Date(endDate)
         },
-        { onSuccess: () => setOpen(false) }
+        {
+          onSuccess: async () => {
+            await handlePrizePoolUpdate(league.id);
+            setOpen(false);
+          }
+        }
       );
     } else {
       addLeagueMutation.mutate(
         { name, startDate: new Date(startDate), endDate: new Date(endDate) },
         {
-          onSuccess: () => {
+          onSuccess: async newLeague => {
+            await handlePrizePoolUpdate(newLeague.id);
             setName('');
             setStartDate('');
             setEndDate('');
+            setPrizePoolAmount('');
             setOpen(false);
           }
         }
@@ -89,8 +120,8 @@ export function AddLeagueDialog({ league, children }: AddLeagueDialogProps) {
             <DialogTitle>{isEditMode ? 'Edit League' : 'Add New League'}</DialogTitle>
             <DialogDescription>
               {isEditMode
-                ? 'Update the name, start date, and end date for the league.'
-                : 'Enter the name, start date, and end date for the new league.'}
+                ? 'Update the league details including the prize pool.'
+                : 'Enter the league details including the prize pool.'}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
@@ -107,14 +138,37 @@ export function AddLeagueDialog({ league, children }: AddLeagueDialogProps) {
               <Input id="leagueEndDate" type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
             </div>
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="prizePoolAmount">Prize Pool Amount</Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-500">
+                R
+              </span>
+              <Input 
+                id="prizePoolAmount" 
+                type="number" 
+                min="0" 
+                step="0.01" 
+                value={prizePoolAmount} 
+                onChange={e => setPrizePoolAmount(e.target.value)} 
+                placeholder="Enter prize pool amount (optional)" 
+                className="pl-8"
+              />
+            </div>
+          </div>
           <DialogFooter>
             <DialogClose asChild>
               <Button variant={'outline'} type="button">
                 Cancel
               </Button>
             </DialogClose>
-            <Button type="submit" disabled={addLeagueMutation.isPending || updateLeagueMutation.isPending}>
-              {(addLeagueMutation.isPending || updateLeagueMutation.isPending) && (
+            <Button
+              type="submit"
+              disabled={
+                addLeagueMutation.isPending || updateLeagueMutation.isPending || updatePrizePoolMutation.isPending
+              }
+            >
+              {(addLeagueMutation.isPending || updateLeagueMutation.isPending || updatePrizePoolMutation.isPending) && (
                 <Loader2Icon className="animate-spin" />
               )}
               {isEditMode ? 'Update League' : 'Add League'}

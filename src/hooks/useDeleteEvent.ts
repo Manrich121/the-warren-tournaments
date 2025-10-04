@@ -14,8 +14,8 @@ export const useDeleteEvent = () => {
   const queryClient = useQueryClient();
   return useMutation<void, Error, string>({
     mutationFn: deleteEvent,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: keys.events() });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: keys.events() });
     }
   });
 };

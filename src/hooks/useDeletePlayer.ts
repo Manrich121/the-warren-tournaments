@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { keys } from '@/hooks/keys';
 
 export function useDeletePlayer() {
   const queryClient = useQueryClient();
@@ -15,8 +16,8 @@ export function useDeletePlayer() {
 
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['players'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: keys.players() });
     }
   });
 }

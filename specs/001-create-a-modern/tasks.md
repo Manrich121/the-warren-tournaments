@@ -142,3 +142,50 @@ This document outlines the tasks required to implement the Magic: The Gathering 
 - [X] **T080**: Implement proper loading states, error handling, and 404 pages for league detail view.
 - [X] **T081**: Update leagues list page to make league names clickable links to their respective detail pages.
 - [X] **T082**: Add "Edit" button with pencil icon to league detail page header for easy league modification access.
+
+---
+
+## Phase 12: Prize Pool Management Enhancements
+
+- [X] **T083**: Update `usePrizePools` hook to accept optional `leagueId` parameter for league-specific prize pool queries.
+- [X] **T084**: Enhance prize pool API endpoint (`/api/prize-pool`) to handle `leagueId` query parameter and create/update operations.
+- [X] **T085**: Create `useUpdatePrizePool` hook with proper cache invalidation for prize pool mutations.
+- [X] **T086**: Add prize pool amount field to `AddLeagueDialog` component with currency indicator (R) for creating/editing leagues.
+- [X] **T087**: Create dedicated `PrizePoolDialog` component for quick prize pool editing with form validation and loading states.
+- [X] **T088**: Make Prize Pool card clickable on league detail page to open prize pool editing dialog with hover effects and visual feedback.
+- [X] **T098**: Create dynamic event detail page at `/admin/events/[id]` with overview, matches, and participants.
+- [X] **T099**: Add sorting to tables on the event detail page.
+
+---
+
+## Phase 13: Admin Table Filtering System
+
+- [X] **T089**: Create `useURLFilters` hook to manage filter state synchronized with URL search parameters.
+- [X] **T090**: Build reusable `FilterDropdown` component for consistent dropdown filtering across admin tables.
+- [X] **T091**: Implement filtering functionality for Events admin page with League filter and URL synchronization.
+- [X] **T092**: Implement comprehensive filtering for Matches admin page (League, Event, Player1, Player2, Any Player, Round filters).
+- [X] **T093**: Implement search filtering for Players admin page with real-time name/email search functionality.
+- [X] **T094**: Make all filter sections collapsible using accordion component, collapsed by default to save space.
+- [X] **T095**: Add visual indicators ("Active" badges) and clear filters functionality across all admin pages.
+- [X] **T096**: Add Suspense boundaries to handle Next.js SSR requirements for useSearchParams usage.
+- [X] **T097**: Add league and event filtering to Players admin page.
+
+---
+
+## Phase 14: Code Quality
+
+- [X] **T100**: Fix all outstanding ESLint warnings.
+
+---
+
+## Phase 15: API Security
+
+- [X] **T101**: Secure all CRUD API endpoints to require authentication.
+
+---
+
+## Phase 16: Event Page and Match Creation UX Improvements
+
+- [X] **T102**: Update `AddMatchDialog` to prevent the same player from being selected as both Player 1 and Player 2.
+- [X] **T103**: Replace the "Add/Edit Event" button on the event detail page with an "Add New Match" dialog.
+- [X] **T104**: Update the layout of the event detail page to a two-column grid for the leaderboard and matches list.

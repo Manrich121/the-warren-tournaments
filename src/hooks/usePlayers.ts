@@ -13,6 +13,7 @@ const fetchPlayers = async (): Promise<Player[]> => {
 export const usePlayers = () => {
   return useQuery<Player[], Error>({
     queryKey: keys.players(),
-    queryFn: fetchPlayers
+    queryFn: fetchPlayers,
+    initialData: () => []
   });
 };
