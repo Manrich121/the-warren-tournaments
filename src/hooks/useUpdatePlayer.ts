@@ -3,8 +3,7 @@ import { keys } from '@/hooks/keys';
 
 interface UpdatePlayerData {
   id: string;
-  fullName: string;
-  wizardsEmail: string;
+  name: string;
 }
 
 export function useUpdatePlayer() {
@@ -18,8 +17,7 @@ export function useUpdatePlayer() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          fullName: data.fullName,
-          wizardsEmail: data.wizardsEmail
+          name: data.name
         })
       });
 

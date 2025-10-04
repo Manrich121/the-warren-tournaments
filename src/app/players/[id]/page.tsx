@@ -85,7 +85,7 @@ export default function PlayerStatsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">{player.fullName}</h1>
+            <h1 className="text-3xl font-bold">{player.name}</h1>
           </div>
           <Link href="/">
             <Button variant="outline">Back to Leaderboard</Button>
@@ -163,8 +163,7 @@ export default function PlayerStatsPage() {
                       // I need to fetch all players and find the opponent.
                       // This is inefficient. The API should populate the opponent.
                       // For now, I will just display the opponent ID.
-                      const opponentName =
-                        (players || []).find(p => p.id === opponentId)?.fullName || 'Unknown Opponent';
+                      const opponentName = (players || []).find(p => p.id === opponentId)?.name || 'Unknown Opponent';
                       const eventName =
                         (events || []).find(e => e.id === match.eventId)?.name || `Event #${match.eventId}`;
 

@@ -2,8 +2,7 @@
 
 ## Player
 - `id`: Int (Primary Key)
-- `fullName`: String
-- `wizardsEmail`: String (Unique)
+- `name`: String
 - `createdAt`: DateTime
 - `updatedAt`: DateTime
 

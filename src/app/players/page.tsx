@@ -138,9 +138,8 @@ function PlayersContent() {
     if (filters.search) {
       const query = filters.search.toLowerCase();
       filtered = filtered.filter(player => {
-        const nameMatch = player.fullName.toLowerCase().includes(query);
-        const emailMatch = player.wizardsEmail.toLowerCase().includes(query);
-        return nameMatch || emailMatch;
+        const nameMatch = player.name.toLowerCase().includes(query);
+        return nameMatch;
       });
     }
 
@@ -224,7 +223,7 @@ function PlayersContent() {
                   <div className="relative w-[300px]">
                     <SearchIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Search by name or email..."
+                      placeholder="Search by name..."
                       value={searchQuery}
                       onChange={e => handleSearchChange(e.target.value)}
                       className="pl-10"
@@ -271,9 +270,8 @@ function PlayersContent() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <SortableHeader field="fullName">Name</SortableHeader>
-                    <SortableHeader field="wizardsEmail">Email</SortableHeader>
-                    <SortableHeader field="createdAt">Created</SortableHeader>
+                    <SortableHeader field="name">Name</SortableHeader>
+                    {isAdmin && <SortableHeader field="createdAt">Created</SortableHeader>}
                     {isAdmin && <TableHead>Actions</TableHead>}
                   </TableRow>
                 </TableHeader>
@@ -284,9 +282,8 @@ function PlayersContent() {
                       className="cursor-pointer"
                       onClick={() => router.push(`/players/${player.id}`)}
                     >
-                      <TableCell>{player.fullName}</TableCell>
-                      <TableCell>{player.wizardsEmail}</TableCell>
-                      <TableCell>{new Date(player.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell>{player.name}</TableCell>
+                      {isAdmin && <TableCell>{new Date(player.createdAt).toLocaleDateString()}</TableCell>}
                       {isAdmin && (
                         <TableCell onClick={e => e.stopPropagation()}>
                           <div className="flex items-center gap-2">

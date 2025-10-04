@@ -32,8 +32,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         id
       },
       data: {
-        fullName: data.fullName,
-        wizardsEmail: data.wizardsEmail
+        name: data.name
       }
     });
 

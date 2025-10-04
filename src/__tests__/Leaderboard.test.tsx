@@ -44,13 +44,11 @@ describe('Leaderboard Component', () => {
         json: async () => [
           {
             id: 1,
-            fullName: 'John Doe',
-            wizardsEmail: 'john@example.com'
+            name: 'John Doe'
           },
           {
             id: 2,
-            fullName: 'Jane Smith',
-            wizardsEmail: 'jane@example.com'
+            name: 'Jane Smith'
           }
         ]
       })
@@ -98,8 +96,7 @@ describe('Leaderboard Component', () => {
         json: async () => [
           {
             id: 1,
-            fullName: 'John Doe',
-            wizardsEmail: 'john@example.com'
+            name: 'John Doe'
           }
         ]
       })
