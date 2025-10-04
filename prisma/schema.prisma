@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,23 +8,19 @@ datasource db {
 }
 
 model Player {
-  id           String   @id @default(cuid())
-  fullName     String
-  wizardsEmail String   @unique
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  events       Event[]  @relation("EventParticipants")
-  matchesAsPlayer1 Match[] @relation("Player1")
-  matchesAsPlayer2 Match[] @relation("Player2")
+  id               String   @id @default(cuid())
+  name             String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  matchesAsPlayer1 Match[]  @relation("Player1")
+  matchesAsPlayer2 Match[]  @relation("Player2")
+  events           Event[]  @relation("EventParticipants")
 }
 
 model Match {
   id           String   @id @default(cuid())
-  event        Event    @relation(fields: [eventId], references: [id])
   eventId      String
-  player1      Player   @relation("Player1", fields: [player1Id], references: [id])
   player1Id    String
-  player2      Player   @relation("Player2", fields: [player2Id], references: [id])
   player2Id    String
   player1Score Int
   player2Score Int
@@ -35,29 +28,32 @@ model Match {
   draw         Boolean
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  event        Event    @relation(fields: [eventId], references: [id])
+  player1      Player   @relation("Player1", fields: [player1Id], references: [id])
+  player2      Player   @relation("Player2", fields: [player2Id], references: [id])
 }
 
 model Event {
   id           String   @id @default(cuid())
-  league       League   @relation(fields: [leagueId], references: [id])
   leagueId     String
   name         String
   date         DateTime
-  participants Player[] @relation("EventParticipants")
-  matches      Match[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  league       League   @relation(fields: [leagueId], references: [id])
+  matches      Match[]
+  participants Player[] @relation("EventParticipants")
 }
 
 model League {
-  id        String    @id @default(cuid())
+  id        String      @id @default(cuid())
   name      String
   startDate DateTime
   endDate   DateTime
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
   events    Event[]
   prizePool PrizePool[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
 }
 
 model Admin {
@@ -70,9 +66,9 @@ model Admin {
 
 model PrizePool {
   id        String   @id @default(cuid())
-  league    League   @relation(fields: [leagueId], references: [id])
   leagueId  String
   amount    Float
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  league    League   @relation(fields: [leagueId], references: [id])
 }

@@ -106,13 +106,13 @@ export default function EventPage({ params }: EventPageProps) {
       if (!match.draw) {
         result =
           match.player1Score > match.player2Score
-            ? `${player1?.fullName.split(' ')[0] || 'Player 1'} wins`
-            : `${player2?.fullName.split(' ')[0] || 'Player 2'} wins`;
+            ? `${player1?.name.split(' ')[0] || 'Player 1'} wins`
+            : `${player2?.name.split(' ')[0] || 'Player 2'} wins`;
       }
       return {
         ...match,
-        player1Name: player1?.fullName || 'N/A',
-        player2Name: player2?.fullName || 'N/A',
+        player1Name: player1?.name || 'N/A',
+        player2Name: player2?.name || 'N/A',
         result
       };
     });
@@ -362,7 +362,7 @@ export default function EventPage({ params }: EventPageProps) {
                           <TableCell className="font-medium">#{index + 1}</TableCell>
                           <TableCell>
                             <Link href={`/players/${player.id}`} className="text-primary hover:underline">
-                              {player.fullName}
+                              {player.name}
                             </Link>
                           </TableCell>
                           <TableCell>{player.matchesPlayed}</TableCell>

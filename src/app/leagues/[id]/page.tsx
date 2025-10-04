@@ -397,7 +397,7 @@ export default function LeaguePage({ params }: LeaguePageProps) {
                           <TableCell className="font-medium">#{index + 1}</TableCell>
                           <TableCell>
                             <Link href={`/players/${player.id}`} className="text-primary hover:underline">
-                              {player.fullName}
+                              {player.name}
                             </Link>
                           </TableCell>
                           <TableCell>{player.matchesPlayed}</TableCell>

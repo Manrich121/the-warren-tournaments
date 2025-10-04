@@ -30,29 +30,25 @@ export function AddPlayerDialog({ player, children }: AddPlayerDialogProps) {
   const updatePlayerMutation = useUpdatePlayer();
 
   const [newPlayerName, setNewPlayerName] = useState('');
-  const [newPlayerEmail, setNewPlayerEmail] = useState('');
 
   const isEditMode = !!player;
 
   useEffect(() => {
     if (player) {
-      setNewPlayerName(player.fullName);
-      setNewPlayerEmail(player.wizardsEmail);
+      setNewPlayerName(player.name);
     } else {
       setNewPlayerName('');
-      setNewPlayerEmail('');
     }
   }, [player]);
 
   const handleSubmit = async () => {
-    if (!newPlayerName || !newPlayerEmail) return;
+    if (!newPlayerName) return;
 
     if (isEditMode && player) {
       updatePlayerMutation.mutate(
         {
           id: player.id,
-          fullName: newPlayerName,
-          wizardsEmail: newPlayerEmail
+          name: newPlayerName
         },
         {
           onSuccess: () => {
@@ -62,11 +58,10 @@ export function AddPlayerDialog({ player, children }: AddPlayerDialogProps) {
       );
     } else {
       addPlayerMutation.mutate(
-        { fullName: newPlayerName, wizardsEmail: newPlayerEmail },
+        { name: newPlayerName },
         {
           onSuccess: () => {
             setNewPlayerName('');
-            setNewPlayerEmail('');
             setOpen(false);
           }
         }
@@ -79,9 +74,7 @@ export function AddPlayerDialog({ player, children }: AddPlayerDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {children ? (
-        <DialogTrigger asChild>
-          {children}
-        </DialogTrigger>
+        <DialogTrigger asChild>{children}</DialogTrigger>
       ) : (
         <DialogTrigger asChild>
           <Button>Add New Player</Button>
@@ -99,9 +92,7 @@ export function AddPlayerDialog({ player, children }: AddPlayerDialogProps) {
             <DialogTitle>{isEditMode ? 'Edit Player' : 'Add New Player'}</DialogTitle>
           </DialogHeader>
           <DialogDescription>
-            {isEditMode 
-              ? 'Update the player information below.' 
-              : 'Enter the full name and Wizards Account email of the new player.'}
+            {isEditMode ? 'Update the player information below.' : 'Enter the full name the new player.'}
           </DialogDescription>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -111,16 +102,6 @@ export function AddPlayerDialog({ player, children }: AddPlayerDialogProps) {
                 value={newPlayerName}
                 onChange={e => setNewPlayerName(e.target.value)}
                 placeholder="John Doe"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="playerEmail">Email</Label>
-              <Input
-                id="playerEmail"
-                type="email"
-                value={newPlayerEmail}
-                onChange={e => setNewPlayerEmail(e.target.value)}
-                placeholder="john.doe@example.com"
               />
             </div>
           </div>

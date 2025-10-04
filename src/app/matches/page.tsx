@@ -141,7 +141,7 @@ function MatchesContent() {
 
   const getPlayerName = (playerId: string) => {
     const player = players?.find(p => p.id === playerId);
-    return player?.fullName.split(' ')[0] || 'Unknown Player';
+    return player?.name.split(' ')[0] || 'Unknown Player';
   };
 
   const getEventName = (eventId: string) => {

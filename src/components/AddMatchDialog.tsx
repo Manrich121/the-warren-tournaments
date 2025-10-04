@@ -147,7 +147,7 @@ export function AddMatchDialog({ players, events }: AddMatchDialogProps) {
                 <SelectContent>
                   {player1Options.map(player => (
                     <SelectItem key={player.id} value={player.id}>
-                      {player.fullName}
+                      {player.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -162,7 +162,7 @@ export function AddMatchDialog({ players, events }: AddMatchDialogProps) {
                 <SelectContent>
                   {player2Options.map(player => (
                     <SelectItem key={player.id} value={player.id}>
-                      {player.fullName}
+                      {player.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -23,7 +23,7 @@ A comprehensive tournament management system designed for Magic: The Gathering t
 - Event-specific statistics and reporting
 
 ### 👥 Player Management
-- Player registration with Wizards email validation
+- Player registration
 - Comprehensive player profiles
 - Win/loss/draw statistics tracking
 - League-specific player standings
@@ -173,7 +173,7 @@ tests/                    # Test files
 
 The application uses the following main entities:
 
-- **Player**: Tournament participants with Wizards email
+- **Player**: Tournament participants with email
 - **League**: Tournament leagues with date ranges
 - **Event**: Individual tournament events within leagues  
 - **Match**: Individual matches between players
@@ -193,7 +193,7 @@ The application uses NextAuth.js for secure authentication:
 
 1. **Login as Admin**: Navigate to `/admin/login` and use your admin credentials
 2. **Create League**: Start by creating your first tournament league
-3. **Add Players**: Register players with their Wizards email addresses
+3. **Add Players**: Register players with their full name
 4. **Schedule Events**: Create tournament events within your leagues
 5. **Record Matches**: Enter match results as tournaments progress
 6. **Track Progress**: Monitor league standings and statistics

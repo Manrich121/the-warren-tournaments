@@ -49,13 +49,11 @@ describe('Quickstart User Scenarios - Integration Tests', () => {
       const mockPlayers = [
         {
           id: 1,
-          fullName: 'John Doe',
-          wizardsEmail: 'john@example.com'
+          name: 'John Doe'
         },
         {
           id: 2,
-          fullName: 'Jane Smith',
-          wizardsEmail: 'jane@example.com'
+          name: 'Jane Smith'
         }
       ];
 
@@ -93,8 +91,7 @@ describe('Quickstart User Scenarios - Integration Tests', () => {
       const mockPlayers = [
         {
           id: 1,
-          fullName: 'John Doe',
-          wizardsEmail: 'john@example.com'
+          name: 'John Doe'
         }
       ];
 
@@ -182,13 +179,11 @@ describe('Quickstart User Scenarios - Integration Tests', () => {
       const mockPlayers = [
         {
           id: 1,
-          fullName: 'Alice Cooper',
-          wizardsEmail: 'alice@example.com'
+          name: 'Alice Cooper'
         },
         {
           id: 2,
-          fullName: 'Bob Wilson',
-          wizardsEmail: 'bob@example.com'
+          name: 'Bob Wilson'
         }
       ];
 

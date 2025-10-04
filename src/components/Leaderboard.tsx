@@ -13,7 +13,7 @@ import { League, Player } from '@prisma/client';
 import { useEvents } from '@/hooks/useEvents';
 
 export interface LeaderboardProps {
-  league: League;
+  league?: League;
 }
 
 export function Leaderboard({ league }: LeaderboardProps) {
@@ -85,7 +85,7 @@ export function Leaderboard({ league }: LeaderboardProps) {
                     <TableCell className="font-medium">#{index + 1}</TableCell>
                     <TableCell>
                       <Link href={`/players/${player.id}`} className="text-primary hover:underline font-medium">
-                        {player.fullName}
+                        {player.name}
                       </Link>
                     </TableCell>
                     <TableCell className="text-right">{player.wins}</TableCell>

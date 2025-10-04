@@ -76,12 +76,12 @@ As an admin, I want to log in to a secure dashboard to manage player data, match
 - **FR-004**: The system MUST provide a separate, secure admin dashboard.
 - **FR-005**: Admins MUST be able to log in to the dashboard.
 - **FR-006**: Admins MUST be able to manage leagues, events, players, and match results.
-- **FR-007**: Admins MUST be able to register players using their full name and Wizards email address.
+- **FR-007**: Admins MUST be able to register players using their full name.
 - **FR-008**: The system MUST automatically calculate and award match points and league points.
 - **FR-009**: The system MUST calculate and display a dynamic prize pool on the main page.
 
 ### Key Entities *(include if feature involves data)*
-- **Player**: Represents a league participant. Attributes: full name, Wizards email, points, match history.
+- **Player**: Represents a league participant. Attributes: full name, points, match history.
 - **Match**: Represents a single game. Attributes: players involved, result (e.g., 2-1), date played.
 - **Event**: Represents a single tournament. Attributes: name, date, participants, match results.
 - **League**: Represents a collection of events over a season.

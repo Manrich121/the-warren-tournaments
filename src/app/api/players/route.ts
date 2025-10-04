@@ -16,16 +16,15 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { fullName, wizardsEmail } = body;
+    const { name } = body;
 
-    if (!fullName || !wizardsEmail) {
-      return new NextResponse(JSON.stringify({ error: 'Full name and Wizards email are required' }), { status: 400 });
+    if (!name) {
+      return new NextResponse(JSON.stringify({ error: 'Full name is required' }), { status: 400 });
     }
 
     const newPlayer = await prisma.player.create({
       data: {
-        fullName,
-        wizardsEmail
+        name
       }
     });
 
