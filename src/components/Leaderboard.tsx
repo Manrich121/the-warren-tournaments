@@ -4,12 +4,10 @@ import Link from 'next/link';
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Trophy, Users, BanknoteIcon } from 'lucide-react';
 import { usePlayers } from '@/hooks/usePlayers';
-import { usePrizePools } from '@/hooks/usePrizePools';
 import { useMatches } from '@/hooks/useMatches';
 import { calculatePlayerStats } from '@/lib/playerStats';
-import { League, Player } from '@prisma/client';
+import { League } from '@prisma/client';
 import { useEvents } from '@/hooks/useEvents';
 
 export interface LeaderboardProps {
@@ -33,6 +31,7 @@ export function Leaderboard({ league }: LeaderboardProps) {
     const leagueEventIds = (league ? eventData.filter(event => event.leagueId === league.id) : eventData).map(
       event => event.id
     );
+
     const filteredMatches = matchesData.filter(match => leagueEventIds.includes(match.eventId));
 
     return playersData.map(player => {
