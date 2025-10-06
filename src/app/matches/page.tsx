@@ -43,7 +43,7 @@ function MatchesContent() {
   const [deleteMatchId, setDeleteMatchId] = useState<string | null>(null);
   const [deleteMatchOpen, setDeleteMatchOpen] = useState(false);
 
-  const [sortField, setSortField] = useState<keyof Match>('id');
+  const [sortField, setSortField] = useState<keyof Match>('eventId');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   // Filtering
@@ -161,9 +161,9 @@ function MatchesContent() {
     return player?.name.split(' ')[0] || 'Unknown Player';
   };
 
-  const getEventName = (eventId: string) => {
+  const getEventData = (eventId: string) => {
     const event = events?.find(e => e.id === eventId);
-    return event?.name || 'Unknown Event';
+    return { eventName: event?.name || 'Unknown Event', eventDate: event?.date };
   };
 
   if (isLoading) {
@@ -267,7 +267,7 @@ function MatchesContent() {
                   {sortedMatches.map(match => {
                     const player1Name = getPlayerName(match.player1Id);
                     const player2Name = getPlayerName(match.player2Id);
-                    const eventName = getEventName(match.eventId);
+                    const { eventName, eventDate } = getEventData(match.eventId);
 
                     let result = 'Draw';
 
@@ -289,7 +289,7 @@ function MatchesContent() {
                           {match.player1Score} - {match.player2Score}
                         </TableCell>
                         <TableCell>{result}</TableCell>
-                        <TableCell>{new Date(match.createdAt).toLocaleDateString()}</TableCell>
+                        <TableCell>{new Date(eventDate ?? match.createdAt).toLocaleDateString()}</TableCell>
                         {isAdmin && (
                           <TableCell>
                             <div className="flex items-center gap-2">
