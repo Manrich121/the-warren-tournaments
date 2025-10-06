@@ -10,31 +10,17 @@ export function useURLFilters<T extends Record<string, FilterValue>>(defaultFilt
   const searchParams = useSearchParams();
 
   const filters: T = useMemo(() => {
-    const newFilters: any = {};
+    const currentFilters: any = { ...defaultFilters };
 
-    if (!defaultFilters) {
-      return newFilters as T;
-    }
-
-    for (const key in defaultFilters) {
-      if (searchParams.has(key)) {
-        const value = searchParams.get(key);
-        if (value && value !== 'all') {
-          const defaultValue = defaultFilters[key];
-          if (typeof defaultValue === 'number') {
-            const numValue = Number(value);
-            newFilters[key] = isNaN(numValue) ? defaultValue : numValue;
-          } else {
-            newFilters[key] = value;
-          }
-        } else {
-          newFilters[key] = null;
-        }
+    searchParams.forEach((value, key) => {
+      if (value && value !== 'all') {
+        currentFilters[key] = value;
       } else {
-        newFilters[key] = defaultFilters[key];
+        currentFilters[key] = null;
       }
-    }
-    return newFilters as T;
+    });
+
+    return currentFilters as T;
   }, [searchParams, defaultFilters]);
 
   const setFilter = useCallback(
@@ -80,17 +66,10 @@ export function useURLFilters<T extends Record<string, FilterValue>>(defaultFilt
     [setFilter]
   );
 
+  // Check if any filters are active
   const hasActiveFilters = useMemo(() => {
-    for (const key in defaultFilters) {
-      if (searchParams.has(key)) {
-        const value = searchParams.get(key);
-        if (value && value !== 'all') {
-          return true;
-        }
-      }
-    }
-    return false;
-  }, [searchParams, defaultFilters]);
+    return Object.values(filters).some(value => value !== null);
+  }, [filters]);
 
   return {
     filters,
