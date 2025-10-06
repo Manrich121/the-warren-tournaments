@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,25 +17,31 @@ import {
 import { Loader2Icon } from 'lucide-react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useAddMatch } from '@/hooks/useAddMatch';
-import { Player, Event } from '@prisma/client';
+import { useUpdateMatch } from '@/hooks/useUpdateMatch';
+import { Player, Event, Match } from '@prisma/client';
 
 export interface AddMatchDialogProps {
-  players: Player[] | undefined;
-  events: Event[] | undefined;
+  match?: Match;
+  players?: Player[];
+  events?: Event[];
+  children?: React.ReactNode;
 }
 
-export function AddMatchDialog({ players, events }: AddMatchDialogProps) {
+export function AddMatchDialog({ match, players, events, children }: AddMatchDialogProps) {
   const [open, setOpen] = useState(false);
   const addMatchMutation = useAddMatch();
+  const updateMatchMutation = useUpdateMatch();
 
   const [newMatchPlayer1, setNewMatchPlayer1] = useState('');
   const [newMatchPlayer2, setNewMatchPlayer2] = useState('');
-  const [newMatchEvent, setNewMatchEvent] = useState(events?.[0]?.id || '');
+  const [newMatchEvent, setNewMatchEvent] = useState('');
   const [newMatchP1Score, setNewMatchP1Score] = useState('');
   const [newMatchP2Score, setNewMatchP2Score] = useState('');
   const [newMatchDraw, setNewMatchDraw] = useState(false);
   const [round, setRound] = useState('');
   const [scoreSelection, setScoreSelection] = useState('');
+
+  const isEditMode = !!match;
 
   const player1Options = useMemo(() => {
     if (!players) return [];
@@ -63,7 +69,7 @@ export function AddMatchDialog({ players, events }: AddMatchDialogProps) {
     }
   }, [scoreSelection]);
 
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setNewMatchPlayer1('');
     setNewMatchPlayer2('');
     setNewMatchEvent('');
@@ -72,47 +78,70 @@ export function AddMatchDialog({ players, events }: AddMatchDialogProps) {
     setNewMatchDraw(false);
     setRound('');
     setScoreSelection('');
-  };
+  }, []);
 
-  const handleAddMatch = () => {
+  useEffect(() => {
+    if (open) {
+      if (isEditMode && match) {
+        setNewMatchPlayer1(match.player1Id);
+        setNewMatchPlayer2(match.player2Id);
+        setNewMatchEvent(match.eventId);
+        setNewMatchP1Score(String(match.player1Score));
+        setNewMatchP2Score(String(match.player2Score));
+        setNewMatchDraw(match.draw);
+        setRound(String(match.round));
+        setScoreSelection(`${match.player1Score}-${match.player2Score}`);
+      } else {
+        resetForm();
+        setNewMatchEvent(events?.[0]?.id || '');
+      }
+    }
+  }, [open, isEditMode, match, events, resetForm]);
+
+  const handleSave = () => {
     if (!newMatchPlayer1 || !newMatchPlayer2 || !newMatchEvent || !round) return;
 
-    addMatchMutation.mutate(
-      {
-        eventId: newMatchEvent,
-        player1Id: newMatchPlayer1,
-        player2Id: newMatchPlayer2,
-        player1Score: parseInt(newMatchP1Score) || 0,
-        player2Score: parseInt(newMatchP2Score) || 0,
-        draw: newMatchDraw,
-        round: parseInt(round)
-      },
-      {
-        onSuccess: () => {
-          resetForm();
-          setOpen(false);
-        }
+    const mutationOptions = {
+      onSuccess: () => {
+        resetForm();
+        setOpen(false);
       }
-    );
+    };
+
+    const matchData = {
+      eventId: newMatchEvent,
+      player1Id: newMatchPlayer1,
+      player2Id: newMatchPlayer2,
+      player1Score: parseInt(newMatchP1Score) || 0,
+      player2Score: parseInt(newMatchP2Score) || 0,
+      draw: newMatchDraw,
+      round: parseInt(round)
+    };
+
+    if (isEditMode && match) {
+      updateMatchMutation.mutate({ ...matchData, id: match.id }, mutationOptions);
+    } else {
+      addMatchMutation.mutate(matchData, mutationOptions);
+    }
   };
+
+  const isPending = addMatchMutation.isPending || updateMatchMutation.isPending;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>Add New Match</Button>
-      </DialogTrigger>
+      <DialogTrigger asChild>{children ? children : <Button>Add New Match</Button>}</DialogTrigger>
       <DialogContent
         className="sm:max-w-[625px]"
         onPointerDownOutside={e => e.preventDefault()}
         onEscapeKeyDown={e => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle>Add New Match</DialogTitle>
+          <DialogTitle>{isEditMode ? 'Edit Match' : 'Add New Match'}</DialogTitle>
         </DialogHeader>
         <form
           onSubmit={e => {
             e.preventDefault();
-            handleAddMatch();
+            handleSave();
           }}
           className="space-y-4 py-4"
         >
@@ -203,9 +232,9 @@ export function AddMatchDialog({ players, events }: AddMatchDialogProps) {
                 Cancel
               </Button>
             </DialogClose>
-            <Button type="submit" disabled={addMatchMutation.isPending}>
-              {addMatchMutation.isPending && <Loader2Icon className="animate-spin" />}
-              Add Match
+            <Button type="submit" disabled={isPending}>
+              {isPending && <Loader2Icon className="animate-spin" />}
+              {isEditMode ? 'Save Changes' : 'Add Match'}
             </Button>
           </DialogFooter>
         </form>

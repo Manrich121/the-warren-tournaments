@@ -271,6 +271,20 @@ function MatchesContent() {
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
+                                    <AddMatchDialog players={players} events={events} match={match}>
+                                      <Button variant="outline" size="sm" className="p-2">
+                                        <PencilIcon className="h-4 w-4" />
+                                      </Button>
+                                    </AddMatchDialog>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Edit Match</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
                                     <Button
                                       variant="outline"
                                       size="sm"

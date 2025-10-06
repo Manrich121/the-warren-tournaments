@@ -29,17 +29,9 @@ export function AddPlayerDialog({ player, children }: AddPlayerDialogProps) {
   const addPlayerMutation = useAddPlayer();
   const updatePlayerMutation = useUpdatePlayer();
 
-  const [newPlayerName, setNewPlayerName] = useState('');
+  const [newPlayerName, setNewPlayerName] = useState(player?.name ?? '');
 
   const isEditMode = !!player;
-
-  useEffect(() => {
-    if (player) {
-      setNewPlayerName(player.name);
-    } else {
-      setNewPlayerName('');
-    }
-  }, [player]);
 
   const handleSubmit = async () => {
     if (!newPlayerName) return;
@@ -73,13 +65,7 @@ export function AddPlayerDialog({ player, children }: AddPlayerDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {children ? (
-        <DialogTrigger asChild>{children}</DialogTrigger>
-      ) : (
-        <DialogTrigger asChild>
-          <Button>Add New Player</Button>
-        </DialogTrigger>
-      )}
+      <DialogTrigger asChild>{children ? children : <Button>Add New Player</Button>}</DialogTrigger>
       <DialogContent onPointerDownOutside={e => e.preventDefault()} onEscapeKeyDown={e => e.preventDefault()}>
         <form
           onSubmit={e => {
