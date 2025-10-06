@@ -1,13 +1,12 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Users, Calendar, Target, Plus, ArrowRight } from 'lucide-react';
+import { Trophy, Users, Calendar, Target, ArrowRight } from 'lucide-react';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useEvents } from '@/hooks/useEvents';
 import { useLeagues } from '@/hooks/useLeagues';
@@ -21,7 +20,7 @@ import { Nav } from '@/components/Nav';
 import { Leaderboard } from '@/components/Leaderboard';
 
 export default function DashboardPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const isAdmin = status === 'authenticated';
 
   const { data: players, isLoading: playersLoading, error: playersError } = usePlayers();

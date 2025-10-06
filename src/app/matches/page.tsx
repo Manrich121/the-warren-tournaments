@@ -2,7 +2,6 @@
 
 import { useState, useMemo, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -32,7 +31,7 @@ import { Nav } from '@/components/Nav';
 import { GenericSkeletonLoader } from '@/components/ShimmeringLoader';
 
 function MatchesContent() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const isAdmin = status === 'authenticated';
 
   const { data: matches, isLoading: matchesLoading, error: matchesError } = useMatches();
@@ -48,7 +47,11 @@ function MatchesContent() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   // Filtering
-  const { filters, setFilter, clearFilters, hasActiveFilters } = useURLFilters();
+  const { filters, setFilter, clearFilters, hasActiveFilters } = useURLFilters<{
+    league?: string;
+    event?: string;
+    round?: number;
+  }>();
 
   const isLoading = matchesLoading || playersLoading || eventsLoading || leaguesLoading || status === 'loading';
   const error = matchesError || playersError || eventsError || leaguesError;
@@ -228,7 +231,7 @@ function MatchesContent() {
 
                   <FilterDropdown
                     placeholder="Round"
-                    value={filters.round}
+                    value={filters.round ? String(filters.round) : null}
                     options={roundOptions}
                     onValueChange={value => setFilter('round', value)}
                     disabled={isLoading}

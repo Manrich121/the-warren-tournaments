@@ -58,7 +58,7 @@ function EventsContent() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   // Filtering
-  const { filters, setFilter, clearFilters, hasActiveFilters } = useURLFilters();
+  const { filters, setFilter, clearFilters, hasActiveFilters } = useURLFilters<{ league?: string }>();
 
   const isLoading = eventsLoading || leaguesLoading || status === 'loading';
   const error = eventsError || leaguesError;

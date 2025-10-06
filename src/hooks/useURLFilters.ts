@@ -3,37 +3,48 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
 
-export type FilterValue = string | null;
-export type Filters = Record<string, FilterValue>;
+export type FilterValue = string | number | undefined | null;
 
-export function useURLFilters(defaultFilters: Filters = {}) {
+export function useURLFilters<T extends Record<string, FilterValue>>(defaultFilters?: T) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Get current filters from URL
-  const filters = useMemo(() => {
-    const currentFilters: Filters = { ...defaultFilters };
+  const filters: T = useMemo(() => {
+    const newFilters: any = {};
 
-    searchParams.forEach((value, key) => {
-      if (value && value !== 'all') {
-        currentFilters[key] = value;
+    if (!defaultFilters) {
+      return newFilters as T;
+    }
+
+    for (const key in defaultFilters) {
+      if (searchParams.has(key)) {
+        const value = searchParams.get(key);
+        if (value && value !== 'all') {
+          const defaultValue = defaultFilters[key];
+          if (typeof defaultValue === 'number') {
+            const numValue = Number(value);
+            newFilters[key] = isNaN(numValue) ? defaultValue : numValue;
+          } else {
+            newFilters[key] = value;
+          }
+        } else {
+          newFilters[key] = null;
+        }
       } else {
-        currentFilters[key] = null;
+        newFilters[key] = defaultFilters[key];
       }
-    });
-
-    return currentFilters;
+    }
+    return newFilters as T;
   }, [searchParams, defaultFilters]);
 
-  // Update a specific filter
   const setFilter = useCallback(
-    (key: string, value: FilterValue) => {
+    (key: keyof T, value: FilterValue) => {
       const params = new URLSearchParams(searchParams);
 
-      if (value && value !== 'all') {
-        params.set(key, value);
+      if (value !== null && value !== undefined && value !== 'all') {
+        params.set(key as string, String(value));
       } else {
-        params.delete(key);
+        params.delete(key as string);
       }
 
       router.replace(`${window.location.pathname}?${params.toString()}`, { scroll: false });
@@ -41,14 +52,13 @@ export function useURLFilters(defaultFilters: Filters = {}) {
     [router, searchParams]
   );
 
-  // Update multiple filters at once
   const setFilters = useCallback(
-    (newFilters: Partial<Filters>) => {
+    (newFilters: Partial<T>) => {
       const params = new URLSearchParams(searchParams);
 
       Object.entries(newFilters).forEach(([key, value]) => {
-        if (value && value !== 'all') {
-          params.set(key, value);
+        if (value !== null && value !== undefined && value !== 'all') {
+          params.set(key, String(value));
         } else {
           params.delete(key);
         }
@@ -59,23 +69,28 @@ export function useURLFilters(defaultFilters: Filters = {}) {
     [router, searchParams]
   );
 
-  // Clear all filters
   const clearFilters = useCallback(() => {
     router.replace(window.location.pathname, { scroll: false });
   }, [router]);
 
-  // Clear a specific filter
   const clearFilter = useCallback(
-    (key: string) => {
+    (key: keyof T) => {
       setFilter(key, null);
     },
     [setFilter]
   );
 
-  // Check if any filters are active
   const hasActiveFilters = useMemo(() => {
-    return Object.values(filters).some(value => value !== null);
-  }, [filters]);
+    for (const key in defaultFilters) {
+      if (searchParams.has(key)) {
+        const value = searchParams.get(key);
+        if (value && value !== 'all') {
+          return true;
+        }
+      }
+    }
+    return false;
+  }, [searchParams, defaultFilters]);
 
   return {
     filters,

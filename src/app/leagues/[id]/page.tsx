@@ -1,14 +1,13 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import { useMemo, use } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Trophy, Users, Calendar, Target, ArrowLeft, ArrowRight, Plus, MapPin, PencilIcon } from 'lucide-react';
+import { Trophy, Users, Calendar, Target, ArrowLeft, Plus, PencilIcon } from 'lucide-react';
 import { useLeagues } from '@/hooks/useLeagues';
 import { useEvents } from '@/hooks/useEvents';
 import { usePlayers } from '@/hooks/usePlayers';
@@ -29,8 +28,7 @@ interface LeaguePageProps {
 
 export default function LeaguePage({ params }: LeaguePageProps) {
   const { id: leagueId } = use(params);
-  const { data: session, status } = useSession();
-  const router = useRouter();
+  const { status } = useSession();
   const isAdmin = status === 'authenticated';
 
   const { data: leaguesData, isLoading: leaguesLoading, error: leaguesError } = useLeagues();

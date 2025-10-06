@@ -56,7 +56,7 @@ export function AddMatchDialog({ match, players, events, children }: AddMatchDia
   }, [players, newMatchPlayer1]);
 
   useEffect(() => {
-    let scoreToParse = scoreSelection;
+    const scoreToParse = scoreSelection;
     if (scoreToParse) {
       const [p1, p2] = scoreToParse.split('-').map(s => parseInt(s, 10));
       setNewMatchP1Score(String(p1));
