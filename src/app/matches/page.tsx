@@ -32,7 +32,6 @@ import { Nav } from '@/components/Nav';
 import { GenericSkeletonLoader } from '@/components/ShimmeringLoader';
 
 function MatchesContent() {
-  const router = useRouter();
   const { data: session, status } = useSession();
   const isAdmin = status === 'authenticated';
 
@@ -74,14 +73,6 @@ function MatchesContent() {
   };
 
   // Filter options
-  const eventOptions: FilterOption[] = useMemo(() => {
-    if (!events) return [];
-    return events.map(event => ({
-      value: event.id,
-      label: event.name
-    }));
-  }, [events]);
-
   const leagueOptions: FilterOption[] = useMemo(() => {
     if (!leagues) return [];
     return leagues.map(league => ({
@@ -89,6 +80,15 @@ function MatchesContent() {
       label: league.name
     }));
   }, [leagues]);
+
+  const eventOptions: FilterOption[] = useMemo(() => {
+    if (!events) return [];
+    const filteredEvents = filters.league ? events.filter(e => e.leagueId === filters.league) : events;
+    return filteredEvents.map(event => ({
+      value: event.id,
+      label: event.name
+    }));
+  }, [events, filters]);
 
   // Apply filters
   const filteredMatches = useMemo(() => {
@@ -108,9 +108,23 @@ function MatchesContent() {
         }
       }
 
+      // Round filter
+      if (filters.round && match.round !== Number(filters.round)) {
+        return false;
+      }
+
       return true;
     });
   }, [matches, filters, events]);
+
+  const roundOptions: FilterOption[] = useMemo(() => {
+    if (!filteredMatches) return [];
+    const rounds = Array.from(new Set(filteredMatches.map(match => match.round)));
+    return rounds.map(round => ({
+      value: String(round),
+      label: `Round ${round}`
+    }));
+  }, [filteredMatches]);
 
   const sortedMatches = filteredMatches ? genericSort(filteredMatches, sortField, sortDirection) : [];
 
@@ -209,6 +223,14 @@ function MatchesContent() {
                     value={filters.event}
                     options={eventOptions}
                     onValueChange={value => setFilter('event', value)}
+                    disabled={isLoading}
+                  />
+
+                  <FilterDropdown
+                    placeholder="Round"
+                    value={filters.round}
+                    options={roundOptions}
+                    onValueChange={value => setFilter('round', value)}
                     disabled={isLoading}
                   />
 
