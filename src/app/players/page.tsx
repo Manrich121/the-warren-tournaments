@@ -34,7 +34,7 @@ import { GenericSkeletonLoader } from '@/components/ShimmeringLoader';
 
 function PlayersContent() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const isAdmin = status === 'authenticated';
 
   const { data: players, isLoading: playersLoading, error: playersError } = usePlayers();
@@ -51,7 +51,11 @@ function PlayersContent() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   // Filtering
-  const { filters, setFilter, clearFilters, hasActiveFilters } = useURLFilters();
+  const { filters, setFilter, clearFilters, hasActiveFilters } = useURLFilters<{
+    league?: string;
+    event?: string;
+    search?: string;
+  }>();
   const [searchQuery, setSearchQuery] = useState(filters.search || '');
 
   const isLoading = playersLoading || eventsLoading || leaguesLoading || matchesLoading || status === 'loading';

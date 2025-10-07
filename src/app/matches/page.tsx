@@ -2,7 +2,6 @@
 
 import { useState, useMemo, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -32,8 +31,7 @@ import { Nav } from '@/components/Nav';
 import { GenericSkeletonLoader } from '@/components/ShimmeringLoader';
 
 function MatchesContent() {
-  const router = useRouter();
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const isAdmin = status === 'authenticated';
 
   const { data: matches, isLoading: matchesLoading, error: matchesError } = useMatches();
@@ -45,11 +43,15 @@ function MatchesContent() {
   const [deleteMatchId, setDeleteMatchId] = useState<string | null>(null);
   const [deleteMatchOpen, setDeleteMatchOpen] = useState(false);
 
-  const [sortField, setSortField] = useState<keyof Match>('id');
+  const [sortField, setSortField] = useState<keyof Match>('eventId');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   // Filtering
-  const { filters, setFilter, clearFilters, hasActiveFilters } = useURLFilters();
+  const { filters, setFilter, clearFilters, hasActiveFilters } = useURLFilters<{
+    league?: string;
+    event?: string;
+    round?: number;
+  }>();
 
   const isLoading = matchesLoading || playersLoading || eventsLoading || leaguesLoading || status === 'loading';
   const error = matchesError || playersError || eventsError || leaguesError;
@@ -74,14 +76,6 @@ function MatchesContent() {
   };
 
   // Filter options
-  const eventOptions: FilterOption[] = useMemo(() => {
-    if (!events) return [];
-    return events.map(event => ({
-      value: event.id,
-      label: event.name
-    }));
-  }, [events]);
-
   const leagueOptions: FilterOption[] = useMemo(() => {
     if (!leagues) return [];
     return leagues.map(league => ({
@@ -89,6 +83,15 @@ function MatchesContent() {
       label: league.name
     }));
   }, [leagues]);
+
+  const eventOptions: FilterOption[] = useMemo(() => {
+    if (!events) return [];
+    const filteredEvents = filters.league ? events.filter(e => e.leagueId === filters.league) : events;
+    return filteredEvents.map(event => ({
+      value: event.id,
+      label: event.name
+    }));
+  }, [events, filters]);
 
   // Apply filters
   const filteredMatches = useMemo(() => {
@@ -108,9 +111,23 @@ function MatchesContent() {
         }
       }
 
+      // Round filter
+      if (filters.round && match.round !== Number(filters.round)) {
+        return false;
+      }
+
       return true;
     });
   }, [matches, filters, events]);
+
+  const roundOptions: FilterOption[] = useMemo(() => {
+    if (!filteredMatches) return [];
+    const rounds = Array.from(new Set(filteredMatches.map(match => match.round)));
+    return rounds.map(round => ({
+      value: String(round),
+      label: `Round ${round}`
+    }));
+  }, [filteredMatches]);
 
   const sortedMatches = filteredMatches ? genericSort(filteredMatches, sortField, sortDirection) : [];
 
@@ -144,9 +161,9 @@ function MatchesContent() {
     return player?.name.split(' ')[0] || 'Unknown Player';
   };
 
-  const getEventName = (eventId: string) => {
+  const getEventData = (eventId: string) => {
     const event = events?.find(e => e.id === eventId);
-    return event?.name || 'Unknown Event';
+    return { eventName: event?.name || 'Unknown Event', eventDate: event?.date };
   };
 
   if (isLoading) {
@@ -212,6 +229,14 @@ function MatchesContent() {
                     disabled={isLoading}
                   />
 
+                  <FilterDropdown
+                    placeholder="Round"
+                    value={filters.round ? String(filters.round) : null}
+                    options={roundOptions}
+                    onValueChange={value => setFilter('round', value)}
+                    disabled={isLoading}
+                  />
+
                   {hasActiveFilters && (
                     <Button variant="outline" size="sm" onClick={clearFilters} className="ml-auto">
                       <XIcon className="h-4 w-4 mr-2" />
@@ -242,7 +267,7 @@ function MatchesContent() {
                   {sortedMatches.map(match => {
                     const player1Name = getPlayerName(match.player1Id);
                     const player2Name = getPlayerName(match.player2Id);
-                    const eventName = getEventName(match.eventId);
+                    const { eventName, eventDate } = getEventData(match.eventId);
 
                     let result = 'Draw';
 
@@ -264,10 +289,24 @@ function MatchesContent() {
                           {match.player1Score} - {match.player2Score}
                         </TableCell>
                         <TableCell>{result}</TableCell>
-                        <TableCell>{new Date(match.createdAt).toLocaleDateString()}</TableCell>
+                        <TableCell>{new Date(eventDate ?? match.createdAt).toLocaleDateString()}</TableCell>
                         {isAdmin && (
                           <TableCell>
                             <div className="flex items-center gap-2">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <AddMatchDialog players={players} events={events} match={match}>
+                                      <Button variant="outline" size="sm" className="p-2">
+                                        <PencilIcon className="h-4 w-4" />
+                                      </Button>
+                                    </AddMatchDialog>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Edit Match</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>

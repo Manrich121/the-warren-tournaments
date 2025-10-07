@@ -1,19 +1,18 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import { useMemo, use, useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Trophy, Users, Calendar, Target, ArrowLeft, PencilIcon, ChevronUpIcon, ChevronDownIcon } from 'lucide-react';
+import { Trophy, Users, Calendar, Target, ArrowLeft, ChevronUpIcon, ChevronDownIcon } from 'lucide-react';
 import { useLeagues } from '@/hooks/useLeagues';
 import { useEvents } from '@/hooks/useEvents';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useMatches } from '@/hooks/useMatches';
-import type { League, Event, Player, Match } from '@prisma/client';
+import type { Event, Player, Match } from '@prisma/client';
 import { AddMatchDialog } from '@/components/AddMatchDialog';
 import { genericSort } from '@/lib/utils';
 import { Header } from '@/components/Header';
@@ -30,8 +29,7 @@ type MatchWithPlayers = Match & { player1Name: string; player2Name: string; resu
 
 export default function EventPage({ params }: EventPageProps) {
   const { id: eventId } = use(params);
-  const router = useRouter();
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const isAdmin = status === 'authenticated';
 
   const { data: eventsData, isLoading: eventsLoading, error: eventsError } = useEvents();
@@ -221,10 +219,12 @@ export default function EventPage({ params }: EventPageProps) {
       <div className="container mx-auto space-y-6">
         <div className="py-8 space-y-6">
           <div>
-            <Button variant="outline" size="sm" onClick={() => router.back()}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
-            </Button>
+            <Link href={'/events'}>
+              <Button variant="outline" size="sm">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Events
+              </Button>
+            </Link>
           </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">

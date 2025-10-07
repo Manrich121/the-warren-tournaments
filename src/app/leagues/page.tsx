@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -28,7 +27,7 @@ import { GenericSkeletonLoader } from '@/components/ShimmeringLoader';
 
 export default function LeaguesPage() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const isAdmin = status === 'authenticated';
 
   const { data: leagues, isLoading, error } = useLeagues();
