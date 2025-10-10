@@ -85,8 +85,7 @@ Before running this application, make sure you have:
    Update the `.env` file with your database credentials and other configuration:
    ```
    DATABASE_URL="postgresql://username:password@localhost:5432/warren_tournaments"
-   NEXTAUTH_SECRET="your-secret-key"
-   NEXTAUTH_URL="http://localhost:3000"
+   AUTH_SECRET="your-secret-key"
    ```
 
 4. **Database Setup**
