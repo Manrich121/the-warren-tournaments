@@ -41,32 +41,32 @@
 - Paths shown below assume single project - adjust based on plan.md structure
 
 ## Phase 3.1: Setup & Quality Tools
-- [ ] T001 Create the file `src/lib/playerStats.ts` for the calculation logic.
-- [ ] T002 Create the test file `src/__tests__/playerStats.test.ts` for the calculation logic.
+- [x] T001 Create the file `src/lib/playerStats.ts` for the calculation logic.
+- [x] T002 Create the test file `src/__tests__/playerStats.test.ts` for the calculation logic.
 
 ## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
-- [ ] T003 [P] Write a failing unit test in `src/__tests__/playerStats.test.ts` for the `calculateMatchPoints` function.
-- [ ] T004 [P] Write a failing unit test in `src/__tests__/playerStats.test.ts` for the `calculateGamePoints` function.
-- [ ] T005 [P] Write a failing unit test in `src/__tests__/playerStats.test.ts` for the `calculateMatchWinPercentage` function.
-- [ ] T006 [P] Write a failing unit test in `src/__tests__/playerStats.test.ts` for the `calculateGameWinPercentage` function.
-- [ ] T007 [P] Write a failing unit test in `src/__tests__/playerStats.test.ts` for the `calculateOpponentMatchWinPercentage` function.
-- [ ] T008 [P] Write a failing unit test in `src/__tests__/playerStats.test.ts` for the `calculateOpponentGameWinPercentage` function.
-- [ ] T009 [P] Write a failing unit test in `src/__tests__/playerStats.test.ts` for the `calculateEventRanking` function.
-- [ ] T010 [P] Write a failing unit test in `src/__tests__/playerStats.test.ts` for the `calculateLeagueRanking` function.
-- [ ] T011 [P] Create a failing integration test for the event leaderboard API endpoint `/api/events/[id]/leaderboard`.
-- [ ] T012 [P] Create a failing integration test for the league leaderboard API endpoint `/api/leagues/[id]/leaderboard`.
-- [ ] T012a [P] Create a failing integration test for the active league API endpoint `/api/leagues/active`.
+- [x] T003 [P] Write a failing unit test in `src/__tests__/playerStats.test.ts` for the `calculateMatchPoints` function.
+- [x] T004 [P] Write a failing unit test in `src/__tests__/playerStats.test.ts` for the `calculateGamePoints` function.
+- [x] T005 [P] Write a failing unit test in `src/__tests__/playerStats.test.ts` for the `calculateMatchWinPercentage` function.
+- [x] T006 [P] Write a failing unit test in `src/__tests__/playerStats.test.ts` for the `calculateGameWinPercentage` function.
+- [x] T007 [P] Write a failing unit test in `src/__tests__/playerStats.test.ts` for the `calculateOpponentMatchWinPercentage` function.
+- [x] T008 [P] Write a failing unit test in `src/__tests__/playerStats.test.ts` for the `calculateOpponentGameWinPercentage` function.
+- [x] T009 [P] Write a failing unit test in `src/__tests__/playerStats.test.ts` for the `calculateEventRanking` function.
+- [x] T010 [P] Write a failing unit test in `src/__tests__/playerStats.test.ts` for the `calculateLeagueRanking` function.
+- [x] T011 [P] Create a failing integration test for the event leaderboard API endpoint `/api/events/[id]/leaderboard`.
+- [x] T012 [P] Create a failing integration test for the league leaderboard API endpoint `/api/leagues/[id]/leaderboard`.
+- [x] T012a [P] Create a failing integration test for the active league API endpoint `/api/leagues/active`.
 
 ## Phase 3.3: Core Implementation (ONLY after tests are failing)
-- [ ] T013 Implement the `calculateMatchPoints` function in `src/lib/playerStats.ts` (Note: This function assumes input match data correctly reflects the outcome based on the 'best-of-3' games rule).
-- [ ] T014 Implement the `calculateGamePoints` function in `src/lib/playerStats.ts`.
-- [ ] T015 Implement the `calculateMatchWinPercentage` function in `src/lib/playerStats.ts`.
-- [ ] T016 Implement the `calculateGameWinPercentage` function in `src/lib/playerStats.ts`.
-- [ ] T017 Implement the `calculateOpponentMatchWinPercentage` function in `src/lib/playerStats.ts`.
-- [ ] T018 Implement the `calculateOpponentGameWinPercentage` function in `src/lib/playerStats.ts`.
-- [ ] T019 Implement the `calculateEventRanking` function in `src/lib/playerStats.ts`.
-- [ ] T020 Implement the `calculateLeagueRanking` function in `src/lib/playerStats.ts`.
+- [x] T013 Implement the `calculateMatchPoints` function in `src/lib/playerStats.ts` (Note: This function assumes input match data correctly reflects the outcome based on the 'best-of-3' games rule).
+- [x] T014 Implement the `calculateGamePoints` function in `src/lib/playerStats.ts`.
+- [x] T015 Implement the `calculateMatchWinPercentage` function in `src/lib/playerStats.ts`.
+- [x] T016 Implement the `calculateGameWinPercentage` function in `src/lib/playerStats.ts`.
+- [x] T017 Implement the `calculateOpponentMatchWinPercentage` function in `src/lib/playerStats.ts`.
+- [x] T018 Implement the `calculateOpponentGameWinPercentage` function in `src/lib/playerStats.ts`.
+- [x] T019 Implement the `calculateEventRanking` function in `src/lib/playerStats.ts`.
+- [x] T020 Implement the `calculateLeagueRanking` function in `src/lib/playerStats.ts`.
 - [ ] T021 Create the API route `src/app/api/events/[id]/leaderboard/route.ts` and implement the event leaderboard endpoint.
 - [ ] T022 Create the API route `src/app/api/leagues/[id]/leaderboard/route.ts` and implement the league leaderboard endpoint.
 - [ ] T022a Create the API route `src/app/api/leagues/active/route.ts` and implement the active league endpoint.
