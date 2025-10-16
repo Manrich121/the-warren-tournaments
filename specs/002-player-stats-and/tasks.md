@@ -56,9 +56,10 @@
 - [ ] T010 [P] Write a failing unit test in `src/__tests__/playerStats.test.ts` for the `calculateLeagueRanking` function.
 - [ ] T011 [P] Create a failing integration test for the event leaderboard API endpoint `/api/events/[id]/leaderboard`.
 - [ ] T012 [P] Create a failing integration test for the league leaderboard API endpoint `/api/leagues/[id]/leaderboard`.
+- [ ] T012a [P] Create a failing integration test for the active league API endpoint `/api/leagues/active`.
 
 ## Phase 3.3: Core Implementation (ONLY after tests are failing)
-- [ ] T013 Implement the `calculateMatchPoints` function in `src/lib/playerStats.ts`.
+- [ ] T013 Implement the `calculateMatchPoints` function in `src/lib/playerStats.ts` (Note: This function assumes input match data correctly reflects the outcome based on the 'best-of-3' games rule).
 - [ ] T014 Implement the `calculateGamePoints` function in `src/lib/playerStats.ts`.
 - [ ] T015 Implement the `calculateMatchWinPercentage` function in `src/lib/playerStats.ts`.
 - [ ] T016 Implement the `calculateGameWinPercentage` function in `src/lib/playerStats.ts`.
@@ -68,19 +69,29 @@
 - [ ] T020 Implement the `calculateLeagueRanking` function in `src/lib/playerStats.ts`.
 - [ ] T021 Create the API route `src/app/api/events/[id]/leaderboard/route.ts` and implement the event leaderboard endpoint.
 - [ ] T022 Create the API route `src/app/api/leagues/[id]/leaderboard/route.ts` and implement the league leaderboard endpoint.
+- [ ] T022a Create the API route `src/app/api/leagues/active/route.ts` and implement the active league endpoint.
 
-## Phase 3.4: Integration
+## Phase 3.4: UI Implementation
+- [ ] T026 [P] Create a new reusable `Leaderboard` component in `src/components/Leaderboard.tsx`.
+- [ ] T027 [P] Create a new hook `src/hooks/useLeagueLeaderboard.ts` to fetch league leaderboard data.
+- [ ] T028 [P] Create a new hook `src/hooks/useEventLeaderboard.ts` to fetch event leaderboard data.
+- [ ] T029 Display the active league leaderboard on the dashboard page (`src/app/page.tsx`) using the new component and hook.
+- [ ] T030 Display the league leaderboard on the league details page (`src/app/leagues/[id]/page.tsx`) using the new component and hook.
+- [ ] T031 Display the event leaderboard on the event details page (`src/app/events/[id]/page.tsx`) using the new component and hook.
+
+## Phase 3.5: Integration
 - [ ] T023 Integrate the calculation functions from `src/lib/playerStats.ts` into the API endpoints.
 
-## Phase 3.5: Polish
+## Phase 3.6: Polish
 - [ ] T024 [P] Add comprehensive unit tests for all calculation functions in `src/__tests__/playerStats.test.ts`.
 - [ ] T025 [P] Update the API documentation with the new leaderboard endpoints.
 
 ## Dependencies
-- T001, T002 before T003-T012
-- T003-T012 before T013-T022
-- T013-T022 before T023
-- T023 before T024, T025
+- T001, T002 before T003-T012a
+- T003-T012a before T013-T022a
+- T013-T022a before T023
+- T023 before T026-T031
+- T026-T031 before T024, T025
 
 ## Parallel Example
 ```

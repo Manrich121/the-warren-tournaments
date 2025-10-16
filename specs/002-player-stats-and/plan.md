@@ -82,23 +82,20 @@ specs/002-player-stats-and/
 
 ### Source Code (repository root)
 ```
-# Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
+# Monolithic Next.js Application
+src/
+├── app/
+│   ├── api/
+│   ├── (pages)/
+│   └── layout.tsx
+├── components/
+│   └── ui/
+├── hooks/
+├── lib/
+└── __tests__/
 ```
 
-**Structure Decision**: Option 2: Web Application
+**Structure Decision**: Monolithic Next.js Application
 
 ## Phase 0: Outline & Research
 1. **Extract unknowns from Technical Context** above:
