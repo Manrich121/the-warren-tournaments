@@ -34,7 +34,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         round: data.round,
         player1Score: data.player1Score,
         player2Score: data.player2Score,
-        draw: data.draw,
+        draw: data.player1Score === data.player2Score,
         eventId: data.eventId,
         player1Id: data.player1Id,
         player2Id: data.player2Id

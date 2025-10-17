@@ -1,104 +1,64 @@
-'use client';
-
-import Link from 'next/link';
-import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { usePlayers } from '@/hooks/usePlayers';
-import { useMatches } from '@/hooks/useMatches';
-import { calculatePlayerStats } from '@/lib/playerStats';
-import { League } from '@prisma/client';
-import { useEvents } from '@/hooks/useEvents';
+import { LeagueRankedPlayer, RankedPlayer } from '@/lib/playerStats';
 
-export interface LeaderboardProps {
-  league?: League;
+interface LeaderboardProps {
+  title: string;
+  players: (RankedPlayer | LeagueRankedPlayer)[];
 }
 
-export function Leaderboard({ league }: LeaderboardProps) {
-  const { data: playersData, isLoading: playersLoading, error: playersError } = usePlayers();
-  const { data: matchesData, isLoading: matchesLoading, error: matchesError } = useMatches();
-  const { data: eventData, isLoading: eventsLoading, error: eventsError } = useEvents();
-
-  const isLoading = playersLoading || matchesLoading || eventsLoading;
-  const error = playersError || matchesError || eventsError;
-
-  const playersWithStats = useMemo(() => {
-    if (!playersData || !matchesData || !eventData) {
-      return [];
-    }
-
-    // Filter matches to only include those relevant to the league
-    const leagueEventIds = (league ? eventData.filter(event => event.leagueId === league.id) : eventData).map(
-      event => event.id
-    );
-
-    const filteredMatches = matchesData.filter(match => leagueEventIds.includes(match.eventId));
-
-    return playersData.map(player => {
-      const stats = calculatePlayerStats(player.id, filteredMatches);
-      return { ...player, ...stats };
-    });
-  }, [league, playersData, matchesData, eventData]);
-
-  if (isLoading) {
-    return (
-      <div className="container mx-auto py-8">
-        <div className="text-center">Loading...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto py-8">
-        <div className="text-center text-red-500">Error: {error.message}</div>
-      </div>
-    );
-  }
+const Leaderboard = ({ title, players }: LeaderboardProps) => {
+  const isLeagueLeaderboard = 'totalEventPoints' in players[0];
 
   return (
     <Card>
-      <CardHeader className={'text-xl'}>
-        <CardTitle>League Leaderboard</CardTitle>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        {playersWithStats.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">No players registered yet.</div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Rank</TableHead>
-                <TableHead>Player</TableHead>
-                <TableHead className="text-right">Wins</TableHead>
-                <TableHead className="text-right">Losses</TableHead>
-                <TableHead className="text-right">Win Rate</TableHead>
-                <TableHead className="text-right">Total Matches</TableHead>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Rank</TableHead>
+              <TableHead>Player</TableHead>
+              {isLeagueLeaderboard ? (
+                <TableHead>Total Points</TableHead>
+              ) : (
+                <>
+                  <TableHead>Match Points</TableHead>
+                  <TableHead>Game Points</TableHead>
+                  <TableHead>Match Win %</TableHead>
+                  <TableHead>Game Win %</TableHead>
+                  <TableHead>Opponent Match Win %</TableHead>
+                  <TableHead>Opponent Game Win %</TableHead>
+                </>
+              )}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {players.map(player => (
+              <TableRow key={player.player.id}>
+                <TableCell>{player.rank}</TableCell>
+                <TableCell>{player.player.name}</TableCell>
+                {isLeagueLeaderboard ? (
+                  <TableCell>{(player as LeagueRankedPlayer).totalEventPoints}</TableCell>
+                ) : (
+                  <>
+                    <TableCell>{(player as RankedPlayer).matchPoints}</TableCell>
+                    <TableCell>{(player as RankedPlayer).gamePoints}</TableCell>
+                    <TableCell>{(player as RankedPlayer).matchWinPercentage.toFixed(2)}%</TableCell>
+                    <TableCell>{(player as RankedPlayer).gameWinPercentage.toFixed(2)}%</TableCell>
+                    <TableCell>{(player as RankedPlayer).opponentsMatchWinPercentage.toFixed(2)}%</TableCell>
+                    <TableCell>{(player as RankedPlayer).opponentsGameWinPercentage.toFixed(2)}%</TableCell>
+                  </>
+                )}
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {playersWithStats
-                .sort((a, b) => (b.winRate || 0) - (a.winRate || 0))
-                .map((player, index) => (
-                  <TableRow key={player.id}>
-                    <TableCell className="font-medium">#{index + 1}</TableCell>
-                    <TableCell>
-                      <Link href={`/players/${player.id}`} className="text-primary hover:underline font-medium">
-                        {player.name}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="text-right">{player.wins}</TableCell>
-                    <TableCell className="text-right">{player.losses}</TableCell>
-                    <TableCell className="text-right">
-                      {player.totalMatches === 0 ? '0%' : `${(player.winRate || 0).toFixed(1)}%`}
-                    </TableCell>
-                    <TableCell className="text-right">{player.totalMatches}</TableCell>
-                  </TableRow>
-                ))}
-            </TableBody>
-          </Table>
-        )}
+            ))}
+          </TableBody>
+        </Table>
       </CardContent>
     </Card>
   );
-}
+};
+
+export default Leaderboard;

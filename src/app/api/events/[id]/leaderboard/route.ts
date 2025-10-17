@@ -1,16 +1,13 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '../../../../../../prisma';
-import { calculateEventRanking } from '../../../../../../lib/playerStats';
+import { prisma } from '@/prisma';
+import { calculateEventRanking } from '@/lib/playerStats';
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const event = await prisma.event.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
-        participants: true,
         matches: true,
       },
     });
@@ -19,11 +16,23 @@ export async function GET(
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
-    const rankedPlayers = calculateEventRanking(event.participants, event.matches);
+    const playerIds = new Set<string>();
+    event.matches.forEach(match => {
+      playerIds.add(match.player1Id);
+      playerIds.add(match.player2Id);
+    });
+
+    const players = await prisma.player.findMany({
+      where: {
+        id: { in: Array.from(playerIds) },
+      },
+    });
+
+    const rankedPlayers = calculateEventRanking(players, event.matches);
 
     return NextResponse.json(rankedPlayers);
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('Error fetching event leaderboard:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

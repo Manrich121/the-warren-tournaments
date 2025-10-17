@@ -19,6 +19,8 @@ import { AddLeagueDialog } from '@/components/AddLeagueDialog';
 import { PrizePoolDialog } from '@/components/PrizePoolDialog';
 import { Header } from '@/components/Header';
 import { Nav } from '@/components/Nav';
+import Leaderboard from '@/components/Leaderboard';
+import { useLeagueLeaderboard } from '@/hooks/useLeagueLeaderboard';
 
 interface LeaguePageProps {
   params: Promise<{
@@ -36,6 +38,7 @@ export default function LeaguePage({ params }: LeaguePageProps) {
   const { data: playersData, isLoading: playersLoading, error: playersError } = usePlayers();
   const { data: matchesData, isLoading: matchesLoading, error: matchesError } = useMatches();
   const { data: prizePoolsData, isLoading: prizePoolsLoading, error: prizePoolsError } = usePrizePools();
+  const { data: leaderboard, isLoading: leaderboardLoading, error: leaderboardError } = useLeagueLeaderboard(leagueId);
 
   const leagues = useMemo(() => leaguesData || [], [leaguesData]);
   const allEvents = useMemo(() => eventsData || [], [eventsData]);
@@ -64,62 +67,16 @@ export default function LeaguePage({ params }: LeaguePageProps) {
   }, [matches, leagueEvents]);
 
   const leaguePlayers = useMemo(() => {
-    const playerMap = new Map<
-      string,
-      Player & { wins: number; losses: number; draws: number; matchesPlayed: number }
-    >();
-
+    const playerMap = new Map<string, Player>();
     leagueMatches.forEach(match => {
       if (match.player1) {
-        const existing = playerMap.get(match.player1.id) || {
-          ...match.player1,
-          wins: 0,
-          losses: 0,
-          draws: 0,
-          matchesPlayed: 0
-        };
-
-        existing.matchesPlayed++;
-
-        if (match.draw) {
-          existing.draws++;
-        } else if (match.player1Score > match.player2Score) {
-          existing.wins++;
-        } else {
-          existing.losses++;
-        }
-
-        playerMap.set(match.player1.id, existing);
+        playerMap.set(match.player1.id, match.player1);
       }
-
       if (match.player2) {
-        const existing = playerMap.get(match.player2.id) || {
-          ...match.player2,
-          wins: 0,
-          losses: 0,
-          draws: 0,
-          matchesPlayed: 0
-        };
-
-        existing.matchesPlayed++;
-
-        if (match.draw) {
-          existing.draws++;
-        } else if (match.player2Score > match.player1Score) {
-          existing.wins++;
-        } else {
-          existing.losses++;
-        }
-
-        playerMap.set(match.player2.id, existing);
+        playerMap.set(match.player2.id, match.player2);
       }
     });
-
-    return Array.from(playerMap.values()).sort((a, b) => {
-      const aWinRate = a.matchesPlayed > 0 ? a.wins / a.matchesPlayed : 0;
-      const bWinRate = b.matchesPlayed > 0 ? b.wins / b.matchesPlayed : 0;
-      return bWinRate - aWinRate; // Sort by win rate descending
-    });
+    return Array.from(playerMap.values());
   }, [leagueMatches]);
 
   const getLeagueStatus = (league: League) => {
@@ -148,9 +105,15 @@ export default function LeaguePage({ params }: LeaguePageProps) {
   };
 
   const isLoading =
-    leaguesLoading || eventsLoading || playersLoading || matchesLoading || prizePoolsLoading || status === 'loading';
+    leaguesLoading ||
+    eventsLoading ||
+    playersLoading ||
+    matchesLoading ||
+    prizePoolsLoading ||
+    leaderboardLoading ||
+    status === 'loading';
 
-  const error = leaguesError || eventsError || playersError || matchesError || prizePoolsError;
+  const error = leaguesError || eventsError || playersError || matchesError || prizePoolsError || leaderboardError;
 
   if (isLoading) {
     return (
@@ -369,52 +332,7 @@ export default function LeaguePage({ params }: LeaguePageProps) {
           </Card>
 
           {/* Leaderboard */}
-          <Card>
-            <CardHeader>
-              <CardTitle>League Leaderboard</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {leaguePlayers.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Rank</TableHead>
-                      <TableHead>Player</TableHead>
-                      <TableHead>Matches</TableHead>
-                      <TableHead>Wins</TableHead>
-                      <TableHead>Losses</TableHead>
-                      <TableHead>Draws</TableHead>
-                      <TableHead>Win Rate</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {leaguePlayers.map((player, index) => {
-                      const winRate = player.matchesPlayed > 0 ? (player.wins / player.matchesPlayed) * 100 : 0;
-                      return (
-                        <TableRow key={player.id}>
-                          <TableCell className="font-medium">#{index + 1}</TableCell>
-                          <TableCell>
-                            <Link href={`/players/${player.id}`} className="text-primary hover:underline">
-                              {player.name}
-                            </Link>
-                          </TableCell>
-                          <TableCell>{player.matchesPlayed}</TableCell>
-                          <TableCell>{player.wins}</TableCell>
-                          <TableCell>{player.losses}</TableCell>
-                          <TableCell>{player.draws}</TableCell>
-                          <TableCell>{winRate.toFixed(1)}%</TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  No players have participated in this league yet.
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          {leaderboard && <Leaderboard title="League Leaderboard" players={leaderboard} />}
         </div>
       </div>
     </>

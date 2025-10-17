@@ -17,6 +17,8 @@ import { AddMatchDialog } from '@/components/AddMatchDialog';
 import { genericSort } from '@/lib/utils';
 import { Header } from '@/components/Header';
 import { Nav } from '@/components/Nav';
+import Leaderboard from '@/components/Leaderboard';
+import { useEventLeaderboard } from '@/hooks/useEventLeaderboard';
 
 interface EventPageProps {
   params: Promise<{
@@ -24,7 +26,6 @@ interface EventPageProps {
   }>;
 }
 
-type PlayerWithStats = Player & { wins: number; losses: number; draws: number; matchesPlayed: number; winRate: number };
 type MatchWithPlayers = Match & { player1Name: string; player2Name: string; result: string };
 
 export default function EventPage({ params }: EventPageProps) {
@@ -36,6 +37,7 @@ export default function EventPage({ params }: EventPageProps) {
   const { data: leaguesData, isLoading: leaguesLoading, error: leaguesError } = useLeagues();
   const { data: playersData, isLoading: playersLoading, error: playersError } = usePlayers();
   const { data: matchesData, isLoading: matchesLoading, error: matchesError } = useMatches();
+  const { data: leaderboard, isLoading: leaderboardLoading, error: leaderboardError } = useEventLeaderboard(eventId);
 
   const events = useMemo(() => eventsData || [], [eventsData]);
   const leagues = useMemo(() => leaguesData || [], [leaguesData]);
@@ -43,8 +45,6 @@ export default function EventPage({ params }: EventPageProps) {
   const eventMatches = useMemo(() => (matchesData || []).filter(m => m.eventId === eventId), [matchesData, eventId]);
 
   // Sorting state
-  const [playersSortField, setPlayersSortField] = useState<keyof PlayerWithStats>('winRate');
-  const [playersSortDirection, setPlayersSortDirection] = useState<'asc' | 'desc'>('desc');
   const [matchesSortField, setMatchesSortField] = useState<keyof MatchWithPlayers>('round');
   const [matchesSortDirection, setMatchesSortDirection] = useState<'asc' | 'desc'>('asc');
 
@@ -56,45 +56,6 @@ export default function EventPage({ params }: EventPageProps) {
     if (!event) return undefined;
     return leagues.find(l => l.id === event.leagueId);
   }, [leagues, event]);
-
-  const eventPlayersWithStats = useMemo(() => {
-    const playerMap = new Map<
-      string,
-      Player & { wins: number; losses: number; draws: number; matchesPlayed: number }
-    >();
-
-    eventMatches.forEach(match => {
-      const player1 = players.find(p => p.id === match.player1Id);
-      const player2 = players.find(p => p.id === match.player2Id);
-
-      if (player1) {
-        const existing = playerMap.get(player1.id) || { ...player1, wins: 0, losses: 0, draws: 0, matchesPlayed: 0 };
-        existing.matchesPlayed++;
-        if (match.draw) existing.draws++;
-        else if (match.player1Score > match.player2Score) existing.wins++;
-        else existing.losses++;
-        playerMap.set(player1.id, existing);
-      }
-
-      if (player2) {
-        const existing = playerMap.get(player2.id) || { ...player2, wins: 0, losses: 0, draws: 0, matchesPlayed: 0 };
-        existing.matchesPlayed++;
-        if (match.draw) existing.draws++;
-        else if (match.player2Score > match.player1Score) existing.wins++;
-        else existing.losses++;
-        playerMap.set(player2.id, existing);
-      }
-    });
-
-    return Array.from(playerMap.values()).map(p => ({
-      ...p,
-      winRate: p.matchesPlayed > 0 ? (p.wins / p.matchesPlayed) * 100 : 0
-    }));
-  }, [eventMatches, players]);
-
-  const sortedEventPlayers = useMemo(() => {
-    return genericSort(eventPlayersWithStats, playersSortField, playersSortDirection);
-  }, [eventPlayersWithStats, playersSortField, playersSortDirection]);
 
   const eventMatchesWithPlayers = useMemo(() => {
     return eventMatches.map(match => {
@@ -132,55 +93,8 @@ export default function EventPage({ params }: EventPageProps) {
     return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   };
 
-  const isLoading = eventsLoading || leaguesLoading || playersLoading || matchesLoading || status === 'loading';
-  const error = eventsError || leaguesError || playersError || matchesError;
-
-  const SortableHeader = <T,>({
-    field,
-    sortField,
-    sortDirection,
-    setSortField,
-    setSortDirection,
-    children,
-    className
-  }: {
-    field: keyof T;
-    sortField: keyof T;
-    sortDirection: 'asc' | 'desc';
-    setSortField: (field: keyof T) => void;
-    setSortDirection: (direction: 'asc' | 'desc') => void;
-    children: React.ReactNode;
-    className?: string;
-  }) => {
-    const isActive = sortField === field;
-    const isAsc = sortDirection === 'asc';
-
-    const handleSort = () => {
-      if (field === sortField) {
-        setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-      } else {
-        setSortField(field);
-        setSortDirection('asc');
-      }
-    };
-
-    return (
-      <TableHead className={className}>
-        <button onClick={handleSort} className="flex items-center space-x-1 hover:text-foreground font-medium">
-          <span>{children}</span>
-          {isActive ? (
-            isAsc ? (
-              <ChevronUpIcon className="h-4 w-4" />
-            ) : (
-              <ChevronDownIcon className="h-4 w-4" />
-            )
-          ) : (
-            <div className="h-4 w-4" />
-          )}
-        </button>
-      </TableHead>
-    );
-  };
+  const isLoading = eventsLoading || leaguesLoading || playersLoading || matchesLoading || leaderboardLoading || status === 'loading';
+  const error = eventsError || leaguesError || playersError || matchesError || leaderboardError;
 
   if (isLoading) {
     return <div className="container mx-auto py-8 text-center">Loading...</div>;
@@ -251,7 +165,7 @@ export default function EventPage({ params }: EventPageProps) {
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{eventPlayersWithStats.length}</div>
+                <div className="text-2xl font-bold">{leaderboard?.length || 0}</div>
               </CardContent>
             </Card>
 
@@ -290,97 +204,7 @@ export default function EventPage({ params }: EventPageProps) {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Players Leaderboard */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Players Leaderboard</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {eventPlayersWithStats.length > 0 ? (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Rank</TableHead>
-                        <SortableHeader
-                          field="name"
-                          sortField={playersSortField}
-                          sortDirection={playersSortDirection}
-                          setSortField={setPlayersSortField}
-                          setSortDirection={setPlayersSortDirection}
-                        >
-                          Player
-                        </SortableHeader>
-                        <SortableHeader
-                          field="matchesPlayed"
-                          sortField={playersSortField}
-                          sortDirection={playersSortDirection}
-                          setSortField={setPlayersSortField}
-                          setSortDirection={setPlayersSortDirection}
-                        >
-                          Matches
-                        </SortableHeader>
-                        <SortableHeader
-                          field="wins"
-                          sortField={playersSortField}
-                          sortDirection={playersSortDirection}
-                          setSortField={setPlayersSortField}
-                          setSortDirection={setPlayersSortDirection}
-                        >
-                          Wins
-                        </SortableHeader>
-                        <SortableHeader
-                          field="losses"
-                          sortField={playersSortField}
-                          sortDirection={playersSortDirection}
-                          setSortField={setPlayersSortField}
-                          setSortDirection={setPlayersSortDirection}
-                        >
-                          Losses
-                        </SortableHeader>
-                        <SortableHeader
-                          field="draws"
-                          sortField={playersSortField}
-                          sortDirection={playersSortDirection}
-                          setSortField={setPlayersSortField}
-                          setSortDirection={setPlayersSortDirection}
-                        >
-                          Draws
-                        </SortableHeader>
-                        <SortableHeader
-                          field="winRate"
-                          sortField={playersSortField}
-                          sortDirection={playersSortDirection}
-                          setSortField={setPlayersSortField}
-                          setSortDirection={setPlayersSortDirection}
-                        >
-                          Win Rate
-                        </SortableHeader>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {sortedEventPlayers.map((player, index) => (
-                        <TableRow key={player.id}>
-                          <TableCell className="font-medium">#{index + 1}</TableCell>
-                          <TableCell>
-                            <Link href={`/players/${player.id}`} className="text-primary hover:underline">
-                              {player.name}
-                            </Link>
-                          </TableCell>
-                          <TableCell>{player.matchesPlayed}</TableCell>
-                          <TableCell>{player.wins}</TableCell>
-                          <TableCell>{player.losses}</TableCell>
-                          <TableCell>{player.draws}</TableCell>
-                          <TableCell>{player.winRate.toFixed(1)}%</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No players have participated in this event yet.
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            {leaderboard && <Leaderboard title="Event Leaderboard" players={leaderboard} />}
 
             {/* Matches */}
             <Card>
@@ -392,15 +216,7 @@ export default function EventPage({ params }: EventPageProps) {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <SortableHeader
-                          field="round"
-                          sortField={matchesSortField}
-                          sortDirection={matchesSortDirection}
-                          setSortField={setMatchesSortField}
-                          setSortDirection={setMatchesSortDirection}
-                        >
-                          Round
-                        </SortableHeader>
+                        <TableHead>Round</TableHead>
                         <TableHead>Player 1</TableHead>
                         <TableHead>Player 2</TableHead>
                         <TableHead>Score</TableHead>

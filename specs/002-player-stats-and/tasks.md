@@ -67,17 +67,17 @@
 - [x] T018 Implement the `calculateOpponentGameWinPercentage` function in `src/lib/playerStats.ts`.
 - [x] T019 Implement the `calculateEventRanking` function in `src/lib/playerStats.ts`.
 - [x] T020 Implement the `calculateLeagueRanking` function in `src/lib/playerStats.ts`.
-- [ ] T021 Create the API route `src/app/api/events/[id]/leaderboard/route.ts` and implement the event leaderboard endpoint.
-- [ ] T022 Create the API route `src/app/api/leagues/[id]/leaderboard/route.ts` and implement the league leaderboard endpoint.
-- [ ] T022a Create the API route `src/app/api/leagues/active/route.ts` and implement the active league endpoint.
+- [x] T021 Create the API route `src/app/api/events/[id]/leaderboard/route.ts` and implement the event leaderboard endpoint.
+- [x] T022 Create the API route `src/app/api/leagues/[id]/leaderboard/route.ts` and implement the league leaderboard endpoint.
+- [x] T022a Create the API route `src/app/api/leagues/active/route.ts` and implement the active league endpoint.
 
 ## Phase 3.4: UI Implementation
-- [ ] T026 [P] Create a new reusable `Leaderboard` component in `src/components/Leaderboard.tsx`.
-- [ ] T027 [P] Create a new hook `src/hooks/useLeagueLeaderboard.ts` to fetch league leaderboard data.
-- [ ] T028 [P] Create a new hook `src/hooks/useEventLeaderboard.ts` to fetch event leaderboard data.
-- [ ] T029 Display the active league leaderboard on the dashboard page (`src/app/page.tsx`) using the new component and hook.
-- [ ] T030 Display the league leaderboard on the league details page (`src/app/leagues/[id]/page.tsx`) using the new component and hook.
-- [ ] T031 Display the event leaderboard on the event details page (`src/app/events/[id]/page.tsx`) using the new component and hook.
+- [x] T026 [P] Create a new reusable `Leaderboard` component in `src/components/Leaderboard.tsx`.
+- [x] T027 [P] Create a new hook `src/hooks/useLeagueLeaderboard.ts` to fetch league leaderboard data.
+- [x] T028 [P] Create a new hook `src/hooks/useEventLeaderboard.ts` to fetch event leaderboard data.
+- [x] T029 Display the active league leaderboard on the dashboard page (`src/app/page.tsx`) using the new component and hook.
+- [x] T030 Display the league leaderboard on the league details page (`src/app/leagues/[id]/page.tsx`) using the new component and hook.
+- [x] T031 Display the event leaderboard on the event details page (`src/app/events/[id]/page.tsx`) using the new component and hook.
 
 ## Phase 3.5: Integration
 - [ ] T023 Integrate the calculation functions from `src/lib/playerStats.ts` into the API endpoints.
