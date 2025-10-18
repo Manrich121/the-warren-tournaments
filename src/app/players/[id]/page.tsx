@@ -8,7 +8,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { usePlayer } from '@/hooks/usePlayer';
 import { useMatches } from '@/hooks/useMatches';
-import { calculatePlayerStats } from '@/lib/playerStats';
+import { 
+  calculateMatchPoints, 
+  calculateGamePoints, 
+  calculateMatchWinPercentage, 
+  calculateGameWinPercentage, 
+  calculateOpponentMatchWinPercentage 
+} from '@/lib/playerStats';
 import { Match } from '@prisma/client';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useEvents } from '@/hooks/useEvents';
@@ -32,9 +38,67 @@ export default function PlayerStatsPage() {
   }, [matchesData, playerId]);
 
   const stats = useMemo(() => {
-    if (!playerId || !playerMatches) return { wins: 0, losses: 0, draws: 0, totalMatches: 0, winRate: 0 };
-    return calculatePlayerStats(playerId, playerMatches);
-  }, [playerId, playerMatches]);
+    if (!playerId || !playerMatches || !matchesData) {
+      return { 
+        wins: 0, 
+        losses: 0, 
+        draws: 0, 
+        totalMatches: 0, 
+        winRate: 0,
+        matchPoints: 0,
+        gamePoints: 0,
+        matchWinPercentage: 0,
+        gameWinPercentage: 0,
+        opponentMatchWinPercentage: 0
+      };
+    }
+
+    // Calculate basic match results
+    let wins = 0;
+    let losses = 0;
+    let draws = 0;
+
+    for (const match of playerMatches) {
+      if (match.draw) {
+        draws++;
+      } else if (match.player1Id === playerId) {
+        if (match.player1Score > match.player2Score) {
+          wins++;
+        } else {
+          losses++;
+        }
+      } else if (match.player2Id === playerId) {
+        if (match.player2Score > match.player1Score) {
+          wins++;
+        } else {
+          losses++;
+        }
+      }
+    }
+
+    const totalMatches = wins + losses + draws;
+    const winRate = totalMatches > 0 ? (wins / totalMatches) * 100 : 0;
+
+    // Calculate tournament-style stats using existing functions
+    const matchPoints = calculateMatchPoints(playerId, playerMatches);
+    const gamePoints = calculateGamePoints(playerId, playerMatches);
+    const matchWinPercentage = calculateMatchWinPercentage(playerId, matchPoints, playerMatches);
+    const gameWinPercentage = calculateGameWinPercentage(playerId, gamePoints, playerMatches);
+    const opponentMatchWinPercentage = calculateOpponentMatchWinPercentage(playerId, playerMatches, matchesData);
+
+    return {
+      wins,
+      losses,
+      draws,
+      totalMatches,
+      winRate,
+      matchPoints,
+      gamePoints,
+      matchWinPercentage,
+      gameWinPercentage,
+      opponentMatchWinPercentage
+    };
+  }, [playerId, playerMatches, matchesData]);
 
   if (!playerId) {
     return (
@@ -91,7 +155,7 @@ export default function PlayerStatsPage() {
             <Button variant="outline">Back to Leaderboard</Button>
           </Link>
         </div>
-        {/* Statistics */}
+        {/* Basic Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <Card>
             <CardHeader className="pb-3">
@@ -131,6 +195,46 @@ export default function PlayerStatsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-primary">{stats.winRate.toFixed(1)}%</div>
+            </CardContent>
+          </Card>
+        </div>
+        
+        {/* Tournament Statistics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium">Match Points</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.matchPoints}</div>
+              <div className="text-xs text-muted-foreground">Tournament scoring</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium">Game Points</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.gamePoints}</div>
+              <div className="text-xs text-muted-foreground">Individual games won</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium">Match Win %</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.matchWinPercentage.toFixed(1)}%</div>
+              <div className="text-xs text-muted-foreground">Min 33.3% floor</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium">Opponent Match Win %</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.opponentMatchWinPercentage.toFixed(1)}%</div>
+              <div className="text-xs text-muted-foreground">Strength of schedule</div>
             </CardContent>
           </Card>
         </div>
