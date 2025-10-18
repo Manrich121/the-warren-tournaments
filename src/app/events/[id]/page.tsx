@@ -93,7 +93,8 @@ export default function EventPage({ params }: EventPageProps) {
     return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   };
 
-  const isLoading = eventsLoading || leaguesLoading || playersLoading || matchesLoading || leaderboardLoading || status === 'loading';
+  const isLoading =
+    eventsLoading || leaguesLoading || playersLoading || matchesLoading || leaderboardLoading || status === 'loading';
   const error = eventsError || leaguesError || playersError || matchesError || leaderboardError;
 
   if (isLoading) {
@@ -208,8 +209,13 @@ export default function EventPage({ params }: EventPageProps) {
 
             {/* Matches */}
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <CardTitle>Matches</CardTitle>
+                <Link href={`/matches?event=${eventId}`}>
+                  <Button variant="outline" size="sm">
+                    View Matches
+                  </Button>
+                </Link>
               </CardHeader>
               <CardContent>
                 {sortedEventMatches.length > 0 ? (
