@@ -19,17 +19,15 @@ const Leaderboard = ({ title, players }: LeaderboardProps) => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Rank</TableHead>
               <TableHead>Player</TableHead>
               {isLeagueLeaderboard ? (
                 <TableHead>Total Points</TableHead>
               ) : (
                 <>
                   <TableHead>Match Points</TableHead>
-                  <TableHead>Game Points</TableHead>
                   <TableHead>Match Win %</TableHead>
-                  <TableHead>Game Win %</TableHead>
                   <TableHead>Opponent Match Win %</TableHead>
+                  <TableHead>Game Win %</TableHead>
                   <TableHead>Opponent Game Win %</TableHead>
                 </>
               )}
@@ -38,17 +36,15 @@ const Leaderboard = ({ title, players }: LeaderboardProps) => {
           <TableBody>
             {players.map(player => (
               <TableRow key={player.player.id}>
-                <TableCell>{player.rank}</TableCell>
                 <TableCell>{player.player.name}</TableCell>
                 {isLeagueLeaderboard ? (
                   <TableCell>{(player as LeagueRankedPlayer).totalEventPoints}</TableCell>
                 ) : (
                   <>
                     <TableCell>{(player as RankedPlayer).matchPoints}</TableCell>
-                    <TableCell>{(player as RankedPlayer).gamePoints}</TableCell>
                     <TableCell>{(player as RankedPlayer).matchWinPercentage.toFixed(2)}%</TableCell>
-                    <TableCell>{(player as RankedPlayer).gameWinPercentage.toFixed(2)}%</TableCell>
                     <TableCell>{(player as RankedPlayer).opponentsMatchWinPercentage.toFixed(2)}%</TableCell>
+                    <TableCell>{(player as RankedPlayer).gameWinPercentage.toFixed(2)}%</TableCell>
                     <TableCell>{(player as RankedPlayer).opponentsGameWinPercentage.toFixed(2)}%</TableCell>
                   </>
                 )}

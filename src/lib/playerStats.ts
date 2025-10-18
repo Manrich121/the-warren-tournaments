@@ -18,40 +18,41 @@ export const calculateMatchPoints = (playerId: string, matches: Match[]): number
 export const calculateGamePoints = (playerId: string, matches: Match[]): number => {
   let points = 0;
   for (const match of matches) {
-    if (match.player1Id === playerId) {
-      points += match.player1Score;
-    } else if (match.player2Id === playerId) {
-      points += match.player2Score;
+      if(match.draw && (match.player1Id === playerId || match.player2Id === playerId)) {
+        points += 1;
+      }else if (match.player1Id === playerId) {
+        points += 3*match.player1Score;
+      } else if (match.player2Id === playerId) {
+        points += 3*match.player2Score;
+      }
     }
-  }
+
   return points;
 };
 
-export const calculateMatchWinPercentage = (playerId: string, matches: Match[]): number => {
-  if (matches.length === 0) {
-    return 0;
-  }
+export const calculateMatchWinPercentage = (playerId: string, matchPoints: number, matches: Match[]): number => {
+  let numRounds = 0;
 
-  let wins = 0;
   for (const match of matches) {
-    if (!match.draw && ((match.player1Id === playerId && match.player1Score > match.player2Score) || (match.player2Id === playerId && match.player2Score > match.player1Score))) {
-      wins++;
+    if(playerId === match.player1Id || playerId === match.player2Id){
+      numRounds += 1
     }
   }
 
-  return (wins / matches.length) * 100;
+  if (numRounds === 0) {
+    return 0;
+  }
+
+  return Math.max(0.33, (matchPoints / (numRounds * 3))) * 100;
 };
 
-export const calculateGameWinPercentage = (playerId: string, matches: Match[]): number => {
-  let gamesWon = 0;
+
+export const calculateGameWinPercentage = (playerId: string, gamePoints: number, matches: Match[]): number => {
   let totalGames = 0;
 
   for (const match of matches) {
-    totalGames += match.player1Score + match.player2Score;
-    if (match.player1Id === playerId) {
-      gamesWon += match.player1Score;
-    } else if (match.player2Id === playerId) {
-      gamesWon += match.player2Score;
+    if(playerId === match.player1Id || playerId === match.player2Id){
+      totalGames += match.player1Score + match.player2Score;
     }
   }
 
@@ -59,7 +60,7 @@ export const calculateGameWinPercentage = (playerId: string, matches: Match[]): 
     return 0;
   }
 
-  return (gamesWon / totalGames) * 100;
+  return Math.max(0.33, gamePoints / (totalGames * 3)) * 100;
 };
 
 export const calculateOpponentMatchWinPercentage = (playerId: string, playerMatches: Match[], allMatches: Match[]): number => {
@@ -79,7 +80,8 @@ export const calculateOpponentMatchWinPercentage = (playerId: string, playerMatc
   let totalOpponentWinPercentage = 0;
   for (const opponentId of Array.from(opponents)) {
     const opponentMatches = allMatches.filter(m => m.player1Id === opponentId || m.player2Id === opponentId);
-    totalOpponentWinPercentage += calculateMatchWinPercentage(opponentId, opponentMatches);
+    const opponentMatchPoints = calculateMatchPoints(opponentId, opponentMatches);
+    totalOpponentWinPercentage += calculateMatchWinPercentage(opponentId, opponentMatchPoints, opponentMatches);
   }
 
   return totalOpponentWinPercentage / opponents.size;
@@ -102,7 +104,8 @@ export const calculateOpponentGameWinPercentage = (playerId: string, playerMatch
   let totalOpponentWinPercentage = 0;
   for (const opponentId of opponents) {
     const opponentMatches = allMatches.filter(m => m.player1Id === opponentId || m.player2Id === opponentId);
-    totalOpponentWinPercentage += calculateGameWinPercentage(opponentId, opponentMatches);
+    const opponentGamePoints = calculateGamePoints(opponentId, opponentMatches);
+    totalOpponentWinPercentage += calculateGameWinPercentage(opponentId, opponentGamePoints, opponentMatches);
   }
 
   return totalOpponentWinPercentage / opponents.size;
@@ -125,12 +128,14 @@ export interface RankedPlayer extends PlayerStats {
 export const calculateEventRanking = (players: Player[], allMatches: Match[]): RankedPlayer[] => {
   const playerStats: PlayerStats[] = players.map(player => {
     const playerMatches = allMatches.filter(m => m.player1Id === player.id || m.player2Id === player.id);
+    const matchPoints = calculateMatchPoints(player.id, playerMatches);
+    const gamePoints = calculateGamePoints(player.id, playerMatches);
     return {
       player,
-      matchPoints: calculateMatchPoints(player.id, playerMatches),
-      gamePoints: calculateGamePoints(player.id, playerMatches),
-      matchWinPercentage: calculateMatchWinPercentage(player.id, playerMatches),
-      gameWinPercentage: calculateGameWinPercentage(player.id, playerMatches),
+      matchPoints,
+      gamePoints,
+      matchWinPercentage: calculateMatchWinPercentage(player.id, matchPoints, playerMatches),
+      gameWinPercentage: calculateGameWinPercentage(player.id, gamePoints, playerMatches),
       opponentsMatchWinPercentage: calculateOpponentMatchWinPercentage(player.id, playerMatches, allMatches),
       opponentsGameWinPercentage: calculateOpponentGameWinPercentage(player.id, playerMatches, allMatches),
     };
@@ -173,13 +178,10 @@ export interface LeagueRankedPlayer {
 }
 
 export const getEventPoints = (rank: number): number => {
-  if (rank === 1) return 10;
-  if (rank === 2) return 8;
-  if (rank === 3) return 6;
-  if (rank === 4) return 5;
-  if (rank >= 5 && rank <= 8) return 3;
-  if (rank >= 9 && rank <= 16) return 1;
-  return 0;
+  if (rank === 1) return 1+3;
+  if (rank === 2) return 1+2;
+  if (rank === 3) return 1+1;
+  return 1;
 };
 
 export const calculateLeagueRanking = (players: Player[], eventRankings: RankedPlayer[][]): LeagueRankedPlayer[] => {

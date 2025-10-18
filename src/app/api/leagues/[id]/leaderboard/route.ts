@@ -10,10 +10,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       include: {
         events: {
           include: {
-            matches: true,
-          },
-        },
-      },
+            matches: true
+          }
+        }
+      }
     });
 
     if (!league) {
@@ -30,8 +30,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
     const players = await prisma.player.findMany({
       where: {
-        id: { in: Array.from(playerIds) },
-      },
+        id: { in: Array.from(playerIds) }
+      }
     });
 
     const eventRankings = league.events.map(event => {
