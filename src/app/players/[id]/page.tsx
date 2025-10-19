@@ -8,12 +8,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { usePlayer } from '@/hooks/usePlayer';
 import { useMatches } from '@/hooks/useMatches';
-import { 
-  calculateMatchPoints, 
-  calculateGamePoints, 
-  calculateMatchWinPercentage, 
-  calculateGameWinPercentage, 
-  calculateOpponentMatchWinPercentage 
+import {
+  calculateMatchPoints,
+  calculateGamePoints,
+  calculateMatchWinPercentage,
+  calculateGameWinPercentage,
+  calculateOpponentMatchWinPercentage
 } from '@/lib/playerStats';
 import { Match } from '@prisma/client';
 import { usePlayers } from '@/hooks/usePlayers';
@@ -39,11 +39,11 @@ export default function PlayerStatsPage() {
 
   const stats = useMemo(() => {
     if (!playerId || !playerMatches || !matchesData) {
-      return { 
-        wins: 0, 
-        losses: 0, 
-        draws: 0, 
-        totalMatches: 0, 
+      return {
+        wins: 0,
+        losses: 0,
+        draws: 0,
+        totalMatches: 0,
         winRate: 0,
         matchPoints: 0,
         gamePoints: 0,
@@ -82,8 +82,8 @@ export default function PlayerStatsPage() {
     // Calculate tournament-style stats using existing functions
     const matchPoints = calculateMatchPoints(playerId, playerMatches);
     const gamePoints = calculateGamePoints(playerId, playerMatches);
-    const matchWinPercentage = calculateMatchWinPercentage(playerId, matchPoints, playerMatches);
-    const gameWinPercentage = calculateGameWinPercentage(playerId, gamePoints, playerMatches);
+    const matchWinPercentage = calculateMatchWinPercentage(playerId, playerMatches);
+    const gameWinPercentage = calculateGameWinPercentage(playerId, playerMatches);
     const opponentMatchWinPercentage = calculateOpponentMatchWinPercentage(playerId, playerMatches, matchesData);
 
     return {
@@ -198,7 +198,7 @@ export default function PlayerStatsPage() {
             </CardContent>
           </Card>
         </div>
-        
+
         {/* Tournament Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>

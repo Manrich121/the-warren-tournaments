@@ -80,16 +80,175 @@ describe('Player Stats Calculations', () => {
   });
 
   describe('calculateMatchWinPercentage', () => {
-    it('should calculate player1 match win percentage correctly', () => {
-      const matchPoints = calculateMatchPoints(playerId, matches);
-      const percentage = calculateMatchWinPercentage(playerId, matchPoints, matches);
+    it('should calculate player1 match win percentage', () => {
+      const percentage = calculateMatchWinPercentage(playerId, matches);
       expect(percentage).toBe((4 / (3 * 3)) * 100);
+    });
+
+    it('should calculate player1 match win percentage 5-2-1', () => {
+      const matches: Match[] = [
+        {
+          id: 'm1',
+          eventId: 'e1',
+          player1Id: 'player1',
+          player2Id: 'player2',
+          player1Score: 2,
+          player2Score: 1,
+          round: 1,
+          draw: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        {
+          id: 'm2',
+          eventId: 'e1',
+          player1Id: 'player1',
+          player2Id: 'player2',
+          player1Score: 2,
+          player2Score: 0,
+          round: 2,
+          draw: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        {
+          id: 'm3',
+          eventId: 'e1',
+          player1Id: 'player1',
+          player2Id: 'player2',
+          player1Score: 0,
+          player2Score: 0,
+          round: 3,
+          draw: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        {
+          id: 'm4',
+          eventId: 'e1',
+          player1Id: 'player1',
+          player2Id: 'player2',
+          player1Score: 0,
+          player2Score: 2,
+          round: 4,
+          draw: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        {
+          id: 'm5',
+          eventId: 'e1',
+          player1Id: 'player1',
+          player2Id: 'player2',
+          player1Score: 2,
+          player2Score: 0,
+          round: 5,
+          draw: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        {
+          id: 'm6',
+          eventId: 'e1',
+          player1Id: 'player1',
+          player2Id: 'player2',
+          player1Score: 0,
+          player2Score: 2,
+          round: 6,
+          draw: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        {
+          id: 'm7',
+          eventId: 'e1',
+          player1Id: 'player1',
+          player2Id: 'player2',
+          player1Score: 2,
+          player2Score: 0,
+          round: 7,
+          draw: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        {
+          id: 'm8',
+          eventId: 'e1',
+          player1Id: 'player1',
+          player2Id: 'player2',
+          player1Score: 2,
+          player2Score: 0,
+          round: 8,
+          draw: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      ];
+
+      const percentage = calculateMatchWinPercentage(playerId, matches);
+      expect(percentage).toBe((16 / (8 * 3)) * 100);
+    });
+
+    it('should calculate player1 match win percentage 1-3-0', () => {
+      const matches: Match[] = [
+        {
+          id: 'm1',
+          eventId: 'e1',
+          player1Id: 'player1',
+          player2Id: 'player2',
+          player1Score: 2,
+          player2Score: 1,
+          round: 1,
+          draw: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        {
+          id: 'm2',
+          eventId: 'e1',
+          player1Id: 'player1',
+          player2Id: 'player2',
+          player1Score: 0,
+          player2Score: 2,
+          round: 2,
+          draw: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        {
+          id: 'm3',
+          eventId: 'e1',
+          player1Id: 'player1',
+          player2Id: 'player2',
+          player1Score: 0,
+          player2Score: 2,
+          round: 3,
+          draw: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        {
+          id: 'm4',
+          eventId: 'e1',
+          player1Id: 'player1',
+          player2Id: 'player2',
+          player1Score: 0,
+          player2Score: 2,
+          round: 4,
+          draw: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      ];
+
+      const percentage = calculateMatchWinPercentage(playerId, matches);
+      // would be 25%, but minimum is 33%
+      expect(percentage).toBeCloseTo(33);
     });
 
     it('should calculate player2 match win percentage correctly', () => {
       const playerId = 'player2';
-      const matchPoints = calculateMatchPoints(playerId, matches);
-      const percentage = calculateMatchWinPercentage(playerId, matchPoints, matches);
+      const percentage = calculateMatchWinPercentage(playerId, matches);
       // Would be 16.67%, but minimum is 33%
       expect(percentage).toBe(0.33 * 100);
     });
@@ -97,16 +256,125 @@ describe('Player Stats Calculations', () => {
 
   describe('calculateGameWinPercentage', () => {
     it('should calculate player1 game win percentage correctly', () => {
-      const gamePoints = calculateGamePoints(playerId, matches);
-      const percentage = calculateGameWinPercentage(playerId, gamePoints, matches);
+      const percentage = calculateGameWinPercentage(playerId, matches);
       expect(percentage).toBe((10 / (3 * 6)) * 100);
     });
 
     it('should calculate player2 game win percentage correctly', () => {
       const playerId = 'player2';
-      const gamePoints = calculateGamePoints(playerId, matches);
-      const percentage = calculateGameWinPercentage(playerId, gamePoints, matches);
+      const percentage = calculateGameWinPercentage(playerId, matches);
       expect(percentage).toBe((4 / (3 * 3)) * 100);
+    });
+    it('should calculate player1 game win percentage 21 GPs / 10 games', () => {
+      const matches: Match[] = [
+        {
+          id: 'm1',
+          eventId: 'e1',
+          player1Id: 'player1',
+          player2Id: 'player2',
+          player1Score: 2,
+          player2Score: 0,
+          round: 1,
+          draw: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        {
+          id: 'm2',
+          eventId: 'e1',
+          player1Id: 'player1',
+          player2Id: 'player2',
+          player1Score: 2,
+          player2Score: 1,
+          round: 2,
+          draw: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        {
+          id: 'm3',
+          eventId: 'e1',
+          player1Id: 'player1',
+          player2Id: 'player2',
+          player1Score: 1,
+          player2Score: 2,
+          round: 3,
+          draw: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        {
+          id: 'm4',
+          eventId: 'e1',
+          player1Id: 'player1',
+          player2Id: 'player2',
+          player1Score: 2,
+          player2Score: 0,
+          round: 4,
+          draw: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      ];
+
+      const percentage = calculateGameWinPercentage(playerId, matches);
+      expect(percentage).toBe((21 / (3 * 10)) * 100);
+    });
+    it('should calculate player1 game win percentage 9 GPs / 11 games', () => {
+      const matches: Match[] = [
+        {
+          id: 'm1',
+          eventId: 'e1',
+          player1Id: 'player1',
+          player2Id: 'player2',
+          player1Score: 1,
+          player2Score: 2,
+          round: 1,
+          draw: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        {
+          id: 'm2',
+          eventId: 'e1',
+          player1Id: 'player1',
+          player2Id: 'player2',
+          player1Score: 1,
+          player2Score: 2,
+          round: 2,
+          draw: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        {
+          id: 'm3',
+          eventId: 'e1',
+          player1Id: 'player1',
+          player2Id: 'player2',
+          player1Score: 0,
+          player2Score: 2,
+          round: 3,
+          draw: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        {
+          id: 'm4',
+          eventId: 'e1',
+          player1Id: 'player1',
+          player2Id: 'player2',
+          player1Score: 1,
+          player2Score: 2,
+          round: 4,
+          draw: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      ];
+
+      const percentage = calculateGameWinPercentage(playerId, matches);
+      // Would be (9 / (3 * 11)) * 100
+      expect(percentage).toBe(0.33 * 100);
     });
   });
 

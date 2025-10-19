@@ -4,7 +4,7 @@ import { Match, Player } from '@prisma/client';
 export const calculateMatchPoints = (playerId: string, matches: Match[]): number => {
   let points = 0;
   for (const match of matches) {
-    if (match.draw) {
+    if (match.player1Score === match.player2Score || match.draw) {
       points += 1;
     } else if (match.player1Id === playerId && match.player1Score > match.player2Score) {
       points += 3;
@@ -30,7 +30,7 @@ export const calculateGamePoints = (playerId: string, matches: Match[]): number 
   return points;
 };
 
-export const calculateMatchWinPercentage = (playerId: string, matchPoints: number, matches: Match[]): number => {
+export const calculateMatchWinPercentage = (playerId: string, matches: Match[]): number => {
   let numRounds = 0;
 
   for (const match of matches) {
@@ -43,11 +43,13 @@ export const calculateMatchWinPercentage = (playerId: string, matchPoints: numbe
     return 0;
   }
 
+  const matchPoints = calculateMatchPoints(playerId, matches);
+
   return Math.max(0.33, (matchPoints / (numRounds * 3))) * 100;
 };
 
 
-export const calculateGameWinPercentage = (playerId: string, gamePoints: number, matches: Match[]): number => {
+export const calculateGameWinPercentage = (playerId: string,  matches: Match[]): number => {
   let totalGames = 0;
 
   for (const match of matches) {
@@ -60,6 +62,7 @@ export const calculateGameWinPercentage = (playerId: string, gamePoints: number,
     return 0;
   }
 
+  const gamePoints = calculateGamePoints(playerId, matches);
   return Math.max(0.33, gamePoints / (totalGames * 3)) * 100;
 };
 
@@ -81,7 +84,7 @@ export const calculateOpponentMatchWinPercentage = (playerId: string, playerMatc
   for (const opponentId of Array.from(opponents)) {
     const opponentMatches = allMatches.filter(m => m.player1Id === opponentId || m.player2Id === opponentId);
     const opponentMatchPoints = calculateMatchPoints(opponentId, opponentMatches);
-    totalOpponentWinPercentage += calculateMatchWinPercentage(opponentId, opponentMatchPoints, opponentMatches);
+    totalOpponentWinPercentage += calculateMatchWinPercentage(opponentId, opponentMatches);
   }
 
   return totalOpponentWinPercentage / opponents.size;
@@ -104,8 +107,7 @@ export const calculateOpponentGameWinPercentage = (playerId: string, playerMatch
   let totalOpponentWinPercentage = 0;
   for (const opponentId of opponents) {
     const opponentMatches = allMatches.filter(m => m.player1Id === opponentId || m.player2Id === opponentId);
-    const opponentGamePoints = calculateGamePoints(opponentId, opponentMatches);
-    totalOpponentWinPercentage += calculateGameWinPercentage(opponentId, opponentGamePoints, opponentMatches);
+    totalOpponentWinPercentage += calculateGameWinPercentage(opponentId, opponentMatches);
   }
 
   return totalOpponentWinPercentage / opponents.size;
@@ -128,14 +130,12 @@ export interface RankedPlayer extends PlayerStats {
 export const calculateEventRanking = (players: Player[], allMatches: Match[]): RankedPlayer[] => {
   const playerStats: PlayerStats[] = players.map(player => {
     const playerMatches = allMatches.filter(m => m.player1Id === player.id || m.player2Id === player.id);
-    const matchPoints = calculateMatchPoints(player.id, playerMatches);
-    const gamePoints = calculateGamePoints(player.id, playerMatches);
     return {
       player,
-      matchPoints,
-      gamePoints,
-      matchWinPercentage: calculateMatchWinPercentage(player.id, matchPoints, playerMatches),
-      gameWinPercentage: calculateGameWinPercentage(player.id, gamePoints, playerMatches),
+      matchPoints: calculateMatchPoints(player.id, playerMatches),
+      gamePoints: calculateGamePoints(player.id, playerMatches),
+      matchWinPercentage: calculateMatchWinPercentage(player.id, playerMatches),
+      gameWinPercentage: calculateGameWinPercentage(player.id,  playerMatches),
       opponentsMatchWinPercentage: calculateOpponentMatchWinPercentage(player.id, playerMatches, allMatches),
       opponentsGameWinPercentage: calculateOpponentGameWinPercentage(player.id, playerMatches, allMatches),
     };
