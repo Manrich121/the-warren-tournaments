@@ -35,7 +35,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     });
 
     const eventRankings = league.events.map(event => {
-      return calculateEventRanking(players, event.matches);
+      const eventPlayers = players.filter(player => {
+        return event.matches.some(match => match.player1Id === player.id || match.player2Id === player.id);
+      });
+
+      return calculateEventRanking(eventPlayers, event.matches);
     });
 
     const leagueRanking = calculateLeagueRanking(players, eventRankings);

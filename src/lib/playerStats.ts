@@ -130,7 +130,7 @@ export interface RankedPlayer extends PlayerStats {
 export const calculateEventRanking = (players: Player[], allMatches: Match[]): RankedPlayer[] => {
   const playerStats: PlayerStats[] = players.map(player => {
     const playerMatches = allMatches.filter(m => m.player1Id === player.id || m.player2Id === player.id);
-    return {
+    return  {
       player,
       matchPoints: calculateMatchPoints(player.id, playerMatches),
       gamePoints: calculateGamePoints(player.id, playerMatches),
