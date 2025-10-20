@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { Trophy, Users, Calendar, Target, ArrowRight } from 'lucide-react';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useEvents } from '@/hooks/useEvents';
-import { useLeagues } from '@/hooks/useLeagues';
 import { usePrizePools } from '@/hooks/usePrizePools';
 import { useMatches } from '@/hooks/useMatches';
 import type { League, Player } from '@prisma/client';
@@ -17,7 +16,10 @@ import { AddLeagueDialog } from '@/components/AddLeagueDialog';
 import { AddEventDialog } from '@/components/AddEventDialog';
 import { Header } from '@/components/Header';
 import { Nav } from '@/components/Nav';
-import { Leaderboard } from '@/components/Leaderboard';
+import Leaderboard from '@/components/Leaderboard';
+import { useActiveLeague } from '@/hooks/useActiveLeague';
+import { useLeagueLeaderboard } from '@/hooks/useLeagueLeaderboard';
+import { genericSort } from '@/lib/utils';
 
 export default function DashboardPage() {
   const { status } = useSession();
@@ -25,9 +27,14 @@ export default function DashboardPage() {
 
   const { data: players, isLoading: playersLoading, error: playersError } = usePlayers();
   const { data: events, isLoading: eventsLoading, error: eventsError } = useEvents();
-  const { data: leagues, isLoading: leaguesLoading, error: leaguesError } = useLeagues();
   const { data: prizePools, isLoading: prizePoolsLoading, error: prizePoolsError } = usePrizePools();
   const { data: matchesData, isLoading: matchesLoading, error: matchesError } = useMatches();
+  const { data: activeLeague, isLoading: activeLeagueLoading, error: activeLeagueError } = useActiveLeague();
+  const {
+    data: leaderboard,
+    isLoading: leaderboardLoading,
+    error: leaderboardError
+  } = useLeagueLeaderboard(activeLeague?.id || '');
 
   const matches = useMemo(() => {
     if (!matchesData || !players) {
@@ -41,8 +48,14 @@ export default function DashboardPage() {
   }, [matchesData, players]);
 
   const isLoading =
-    playersLoading || eventsLoading || leaguesLoading || prizePoolsLoading || matchesLoading || status === 'loading';
-  const error = playersError || eventsError || leaguesError || prizePoolsError || matchesError;
+    playersLoading ||
+    eventsLoading ||
+    prizePoolsLoading ||
+    matchesLoading ||
+    activeLeagueLoading ||
+    leaderboardLoading ||
+    status === 'loading';
+  const error = playersError || eventsError || prizePoolsError || matchesError || activeLeagueError || leaderboardError;
 
   const getLeagueStatus = (league: League) => {
     const now = new Date();
@@ -53,17 +66,9 @@ export default function DashboardPage() {
     return 'Past';
   };
 
-  const currentLeague = useMemo(() => {
-    return (
-      leagues.find(league => getLeagueStatus(league) === 'Active') ||
-      leagues.find(league => getLeagueStatus(league) === 'Upcoming') ||
-      leagues[0]
-    );
-  }, [leagues]);
-
   const stats = useMemo(() => {
-    const currentLeagueEvents = currentLeague ? events.filter(e => e.leagueId === currentLeague.id) : [];
-    const currentLeagueMatches = currentLeague
+    const currentLeagueEvents = activeLeague ? events.filter(e => e.leagueId === activeLeague.id) : [];
+    const currentLeagueMatches = activeLeague
       ? matches.filter(m => currentLeagueEvents.some(e => e.id === m.eventId))
       : [];
     const currentLeaguePlayers = currentLeagueMatches.reduce((acc, match) => {
@@ -77,7 +82,7 @@ export default function DashboardPage() {
     }, [] as Player[]);
 
     return {
-      totalLeagues: leagues.length,
+      totalLeagues: activeLeague ? 1 : 0,
       totalEvents: events.length,
       totalPlayers: players?.length,
       totalMatches: matches.length,
@@ -85,7 +90,9 @@ export default function DashboardPage() {
       currentLeaguePlayers: currentLeaguePlayers.length,
       currentLeagueMatches: currentLeagueMatches.length
     };
-  }, [leagues, events, players, matches, currentLeague]);
+  }, [events, players, matches, activeLeague]);
+
+  const sortedEvents = useMemo(() => genericSort(events, 'date', 'desc'), [events]);
 
   if (isLoading) {
     return (
@@ -131,9 +138,7 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{stats.totalLeagues}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {leagues.filter(l => getLeagueStatus(l) === 'Active').length} active
-                  </p>
+                  <p className="text-xs text-muted-foreground">{activeLeague ? 1 : 0} active</p>
                 </CardContent>
               </Card>
             </Link>
@@ -179,19 +184,19 @@ export default function DashboardPage() {
           </div>
 
           {/* Current League Summary */}
-          {currentLeague && (
+          {activeLeague && (
             <div>
-              <Link href={`/leagues/${currentLeague.id}`}>
+              <Link href={`/leagues/${activeLeague.id}`}>
                 <Card className="cursor-pointer hover:shadow-md transition-shadow  hover:bg-accent">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2">
                         <Trophy className="h-5 w-5" />
-                        Current League: {currentLeague.name}
+                        Current League: {activeLeague.name}
                       </CardTitle>
                       <div className="flex items-center gap-2">
-                        <Badge variant={getLeagueStatus(currentLeague) === 'Active' ? 'default' : 'secondary'}>
-                          {getLeagueStatus(currentLeague)}
+                        <Badge variant={getLeagueStatus(activeLeague) === 'Active' ? 'default' : 'secondary'}>
+                          {getLeagueStatus(activeLeague)}
                         </Badge>
                         <ArrowRight className="h-4 w-4 text-muted-foreground" />
                       </div>
@@ -213,7 +218,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="text-center">
                         <div className="text-2xl font-bold">
-                          R{prizePools?.find(p => p.leagueId === currentLeague.id)?.amount || 0}
+                          R{prizePools?.find(p => p.leagueId === activeLeague.id)?.amount || 0}
                         </div>
                         <div className="text-sm text-muted-foreground">Prize Pool</div>
                       </div>
@@ -226,7 +231,7 @@ export default function DashboardPage() {
 
           {/* Recent Events */}
           <div className="grid grid-cols-2 gap-4">
-            <Leaderboard league={currentLeague} />
+            {leaderboard && <Leaderboard title="Active League Leaderboard" players={leaderboard} />}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -241,7 +246,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {events.slice(0, 3).map(event => {
+                  {sortedEvents.map(event => {
                     const eventMatches = matches.filter(m => m.eventId === event.id);
                     const eventPlayers = eventMatches.reduce((acc, match) => {
                       if (match.player1 && !acc.find(p => p?.id === match.player1?.id)) {

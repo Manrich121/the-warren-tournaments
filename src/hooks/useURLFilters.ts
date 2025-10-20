@@ -10,7 +10,7 @@ export function useURLFilters<T extends Record<string, FilterValue>>(defaultFilt
   const searchParams = useSearchParams();
 
   const filters: T = useMemo(() => {
-    const currentFilters: any = { ...defaultFilters };
+    const currentFilters = { ...defaultFilters };
 
     searchParams.forEach((value, key) => {
       if (value && value !== 'all') {

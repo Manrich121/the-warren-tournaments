@@ -1,0 +1,48 @@
+openapi: 3.0.0
+info:
+  title: Event Leaderboard API
+  version: 1.0.0
+paths:
+  /api/events/{id}/leaderboard:
+    get:
+      summary: Get the leaderboard for a specific event
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the event
+      responses:
+        '200':
+          description: A list of players ranked for the event
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    rank:
+                      type: integer
+                    player:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                    matchPoints:
+                      type: integer
+                    gamePoints:
+                      type: integer
+                    matchWinPercentage:
+                      type: number
+                    gameWinPercentage:
+                      type: number
+                    opponentsMatchWinPercentage:
+                      type: number
+                    opponentsGameWinPercentage:
+                      type: number
+                    eventPoints:
+                      type: integer

@@ -84,14 +84,18 @@ function MatchesContent() {
     }));
   }, [leagues]);
 
-  const eventOptions: FilterOption[] = useMemo(() => {
+  const filteredEvents = useMemo(() => {
     if (!events) return [];
-    const filteredEvents = filters.league ? events.filter(e => e.leagueId === filters.league) : events;
+
+    return filters.league ? events.filter(e => e.leagueId === filters.league) : events;
+  }, [events, filters]);
+
+  const eventOptions: FilterOption[] = useMemo(() => {
     return filteredEvents.map(event => ({
       value: event.id,
       label: event.name
     }));
-  }, [events, filters]);
+  }, [filteredEvents, filters]);
 
   // Apply filters
   const filteredMatches = useMemo(() => {
@@ -104,8 +108,8 @@ function MatchesContent() {
       }
 
       // League filter (via event)
-      if (filters.league && events) {
-        const event = events.find(e => e.id === match.eventId);
+      if (filters.league && filteredEvents) {
+        const event = filteredEvents.find(e => e.id === match.eventId);
         if (!event || event.leagueId !== filters.league) {
           return false;
         }
@@ -118,16 +122,26 @@ function MatchesContent() {
 
       return true;
     });
-  }, [matches, filters, events]);
+  }, [matches, filters, filteredEvents]);
 
   const roundOptions: FilterOption[] = useMemo(() => {
-    if (!filteredMatches) return [];
-    const rounds = Array.from(new Set(filteredMatches.map(match => match.round)));
-    return rounds.map(round => ({
-      value: String(round),
-      label: `Round ${round}`
-    }));
-  }, [filteredMatches]);
+    if (!matches || !events) return [];
+    const fEvents = filters.event ? events.filter(e => e.id === filters.event) : events;
+
+    const fMatches = matches.filter(match => {
+      return fEvents.some(e => e.id === match.eventId);
+    });
+
+    if (!fMatches) return [];
+    const rounds = Array.from(new Set(fMatches.map(match => match.round)));
+    // sort ascending
+    return rounds
+      .sort((a, b) => a - b)
+      .map(round => ({
+        value: String(round),
+        label: `Round ${round}`
+      }));
+  }, [matches, filters, events]);
 
   const sortedMatches = filteredMatches ? genericSort(filteredMatches, sortField, sortDirection) : [];
 
