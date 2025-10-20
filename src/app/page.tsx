@@ -19,6 +19,7 @@ import { Nav } from '@/components/Nav';
 import Leaderboard from '@/components/Leaderboard';
 import { useActiveLeague } from '@/hooks/useActiveLeague';
 import { useLeagueLeaderboard } from '@/hooks/useLeagueLeaderboard';
+import { genericSort } from '@/lib/utils';
 
 export default function DashboardPage() {
   const { status } = useSession();
@@ -29,9 +30,11 @@ export default function DashboardPage() {
   const { data: prizePools, isLoading: prizePoolsLoading, error: prizePoolsError } = usePrizePools();
   const { data: matchesData, isLoading: matchesLoading, error: matchesError } = useMatches();
   const { data: activeLeague, isLoading: activeLeagueLoading, error: activeLeagueError } = useActiveLeague();
-  const { data: leaderboard, isLoading: leaderboardLoading, error: leaderboardError } = useLeagueLeaderboard(
-    activeLeague?.id || ''
-  );
+  const {
+    data: leaderboard,
+    isLoading: leaderboardLoading,
+    error: leaderboardError
+  } = useLeagueLeaderboard(activeLeague?.id || '');
 
   const matches = useMemo(() => {
     if (!matchesData || !players) {
@@ -88,6 +91,8 @@ export default function DashboardPage() {
       currentLeagueMatches: currentLeagueMatches.length
     };
   }, [events, players, matches, activeLeague]);
+
+  const sortedEvents = useMemo(() => genericSort(events, 'date', 'desc'), [events]);
 
   if (isLoading) {
     return (
@@ -241,7 +246,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {events.slice(0, 3).map(event => {
+                  {sortedEvents.map(event => {
                     const eventMatches = matches.filter(m => m.eventId === event.id);
                     const eventPlayers = eventMatches.reduce((acc, match) => {
                       if (match.player1 && !acc.find(p => p?.id === match.player1?.id)) {
