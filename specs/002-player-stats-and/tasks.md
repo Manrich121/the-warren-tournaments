@@ -80,11 +80,11 @@
 - [x] T031 Display the event leaderboard on the event details page (`src/app/events/[id]/page.tsx`) using the new component and hook.
 
 ## Phase 3.5: Integration
-- [ ] T023 Integrate the calculation functions from `src/lib/playerStats.ts` into the API endpoints.
+- [x] T023 Integrate the calculation functions from `src/lib/playerStats.ts` into the API endpoints.
 
 ## Phase 3.6: Polish
-- [ ] T024 [P] Add comprehensive unit tests for all calculation functions in `src/__tests__/playerStats.test.ts`.
-- [ ] T025 [P] Update the API documentation with the new leaderboard endpoints.
+- [x] T024 [P] Add comprehensive unit tests for all calculation functions in `src/__tests__/playerStats.test.ts`.
+- [-] T025 [P] Update the API documentation with the new leaderboard endpoints.
 
 ## Dependencies
 - T001, T002 before T003-T012a
