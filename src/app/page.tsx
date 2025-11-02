@@ -29,7 +29,7 @@ export default function DashboardPage() {
   const { data: events, isLoading: eventsLoading, error: eventsError } = useEvents();
   const { data: prizePools, isLoading: prizePoolsLoading, error: prizePoolsError } = usePrizePools();
   const { data: matchesData, isLoading: matchesLoading, error: matchesError } = useMatches();
-  const { data: activeLeague, isLoading: activeLeagueLoading, error: activeLeagueError } = useActiveLeague();
+  const { data: activeLeague } = useActiveLeague();
   const {
     data: leaderboard,
     isLoading: leaderboardLoading,
@@ -52,10 +52,9 @@ export default function DashboardPage() {
     eventsLoading ||
     prizePoolsLoading ||
     matchesLoading ||
-    activeLeagueLoading ||
     leaderboardLoading ||
     status === 'loading';
-  const error = playersError || eventsError || prizePoolsError || matchesError || activeLeagueError || leaderboardError;
+  const error = playersError || eventsError || prizePoolsError || matchesError || leaderboardError;
 
   const getLeagueStatus = (league: League) => {
     const now = new Date();

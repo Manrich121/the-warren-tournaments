@@ -13,6 +13,6 @@ const fetchActiveLeague = async (): Promise<League> => {
 export const useActiveLeague = () => {
   return useQuery<League, Error>({
     queryKey: keys.activeLeague(),
-    queryFn: fetchActiveLeague,
+    queryFn: fetchActiveLeague
   });
 };
