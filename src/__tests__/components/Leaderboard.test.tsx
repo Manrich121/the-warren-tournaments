@@ -1,5 +1,4 @@
 import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom/extend-expect';
 import Leaderboard from '@/components/Leaderboard';
 import { LeaderboardEntry } from '@/types/leaderboard';
 
