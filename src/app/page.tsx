@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +18,11 @@ import { Header } from '@/components/Header';
 import { Nav } from '@/components/Nav';
 import Leaderboard from '@/components/Leaderboard';
 import { useActiveLeague } from '@/hooks/useActiveLeague';
+import { useMostRecentLeague } from '@/hooks/useMostRecentLeague';
 import { useLeagueLeaderboard } from '@/hooks/useLeagueLeaderboard';
+import { useLeagues } from '@/hooks/useLeagues';
+import { QuickStats, LeagueStats } from '@/components/QuickStats';
+import { LeagueSelector } from '@/components/LeagueSelector';
 import { genericSort } from '@/lib/utils';
 
 export default function DashboardPage() {
@@ -29,12 +33,31 @@ export default function DashboardPage() {
   const { data: events, isLoading: eventsLoading, error: eventsError } = useEvents();
   const { data: prizePools, isLoading: prizePoolsLoading, error: prizePoolsError } = usePrizePools();
   const { data: matchesData, isLoading: matchesLoading, error: matchesError } = useMatches();
-  const { data: activeLeague, isLoading: activeLeagueLoading, error: activeLeagueError } = useActiveLeague();
+  const { data: activeLeague } = useActiveLeague();
+  const { data: mostRecentLeague, isLoading: mostRecentLeagueLoading } = useMostRecentLeague();
+  const { data: allLeagues } = useLeagues();
+  
+  // State for user-selected league (US3 - League switching)
+  const [selectedLeagueId, setSelectedLeagueId] = useState<string | null>(null);
+  
+  // Default to most recent league on initial load
+  useEffect(() => {
+    if (mostRecentLeague && !selectedLeagueId) {
+      setSelectedLeagueId(mostRecentLeague.id);
+    }
+  }, [mostRecentLeague, selectedLeagueId]);
+  
+  // Determine which league to display (selected or most recent)
+  const displayLeague = useMemo(() => {
+    if (!selectedLeagueId || !allLeagues) return mostRecentLeague;
+    return allLeagues.find(l => l.id === selectedLeagueId) || mostRecentLeague;
+  }, [selectedLeagueId, allLeagues, mostRecentLeague]);
+  
   const {
     data: leaderboard,
     isLoading: leaderboardLoading,
     error: leaderboardError
-  } = useLeagueLeaderboard(activeLeague?.id || '');
+  } = useLeagueLeaderboard(displayLeague?.id);
 
   const matches = useMemo(() => {
     if (!matchesData || !players) {
@@ -52,10 +75,9 @@ export default function DashboardPage() {
     eventsLoading ||
     prizePoolsLoading ||
     matchesLoading ||
-    activeLeagueLoading ||
-    leaderboardLoading ||
+    mostRecentLeagueLoading ||
     status === 'loading';
-  const error = playersError || eventsError || prizePoolsError || matchesError || activeLeagueError || leaderboardError;
+  const error = playersError || eventsError || prizePoolsError || matchesError || leaderboardError;
 
   const getLeagueStatus = (league: League) => {
     const now = new Date();
@@ -66,7 +88,44 @@ export default function DashboardPage() {
     return 'Past';
   };
 
-  const stats = useMemo(() => {
+  // Calculate league stats for QuickStats component (FR-002, FR-003)
+  const leagueStats = useMemo((): LeagueStats | null => {
+    if (!displayLeague || !events || !matches || !allLeagues) {
+      return null;
+    }
+
+    // Filter events and matches for the displayed (most recent) league
+    const leagueEvents = events.filter(e => e.leagueId === displayLeague.id);
+    const leagueMatches = matches.filter(m =>
+      leagueEvents.some(e => e.id === m.eventId)
+    );
+
+    // Get unique players who participated in the league
+    const uniquePlayerIds = new Set<string>();
+    leagueMatches.forEach(match => {
+      uniquePlayerIds.add(match.player1Id);
+      uniquePlayerIds.add(match.player2Id);
+    });
+
+    // Count active leagues (for "Total Leagues" card subtitle)
+    const activeLeaguesCount = allLeagues.filter(league => {
+      const now = new Date();
+      const startDate = new Date(league.startDate);
+      const endDate = new Date(league.endDate);
+      return startDate <= now && endDate >= now;
+    }).length;
+
+    return {
+      totalLeagues: allLeagues.length,  // Global count (all leagues)
+      activeLeagues: activeLeaguesCount,
+      eventsCount: leagueEvents.length,  // League-specific
+      playersCount: uniquePlayerIds.size,  // League-specific
+      matchesCount: leagueMatches.length,  // League-specific
+    };
+  }, [displayLeague, events, matches, allLeagues]);
+
+  // Keep legacy stats for "Current League Summary" card
+  const currentLeagueStats = useMemo(() => {
     const currentLeagueEvents = activeLeague ? events.filter(e => e.leagueId === activeLeague.id) : [];
     const currentLeagueMatches = activeLeague
       ? matches.filter(m => currentLeagueEvents.some(e => e.id === m.eventId))
@@ -82,15 +141,11 @@ export default function DashboardPage() {
     }, [] as Player[]);
 
     return {
-      totalLeagues: activeLeague ? 1 : 0,
-      totalEvents: events.length,
-      totalPlayers: players?.length,
-      totalMatches: matches.length,
       currentLeagueEvents: currentLeagueEvents.length,
       currentLeaguePlayers: currentLeaguePlayers.length,
       currentLeagueMatches: currentLeagueMatches.length
     };
-  }, [events, players, matches, activeLeague]);
+  }, [events, matches, activeLeague]);
 
   const sortedEvents = useMemo(() => genericSort(events, 'date', 'desc'), [events]);
 
@@ -128,60 +183,18 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Quick Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Link href="/leagues">
-              <Card className="cursor-pointer hover:shadow-md transition-shadow hover:bg-accent">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Leagues</CardTitle>
-                  <Trophy className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalLeagues}</div>
-                  <p className="text-xs text-muted-foreground">{activeLeague ? 1 : 0} active</p>
-                </CardContent>
-              </Card>
-            </Link>
+          {/* League Selector (US3 - FR-007) */}
+          {allLeagues && allLeagues.length > 0 && (
+            <LeagueSelector
+              leagues={allLeagues}
+              selectedLeagueId={selectedLeagueId}
+              onSelectLeague={setSelectedLeagueId}
+              className="mb-4"
+            />
+          )}
 
-            <Link href="/events">
-              <Card className="cursor-pointer hover:shadow-md transition-shadow hover:bg-accent">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Events</CardTitle>
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalEvents}</div>
-                  <p className="text-xs text-muted-foreground">Across all leagues</p>
-                </CardContent>
-              </Card>
-            </Link>
-
-            <Link href="/players">
-              <Card className="cursor-pointer hover:shadow-md transition-shadow  hover:bg-accent">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Players</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalPlayers}</div>
-                  <p className="text-xs text-muted-foreground">Registered players</p>
-                </CardContent>
-              </Card>
-            </Link>
-
-            <Link href="/matches">
-              <Card className="cursor-pointer hover:shadow-md transition-shadow  hover:bg-accent">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Matches</CardTitle>
-                  <Target className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalMatches}</div>
-                  <p className="text-xs text-muted-foreground">All time matches</p>
-                </CardContent>
-              </Card>
-            </Link>
-          </div>
+          {/* Quick Stats Grid - League-Specific Stats (FR-002, FR-003) */}
+          <QuickStats stats={leagueStats} isLoading={isLoading} />
 
           {/* Current League Summary */}
           {activeLeague && (
@@ -205,15 +218,15 @@ export default function DashboardPage() {
                   <CardContent>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="text-center">
-                        <div className="text-2xl font-bold">{stats.currentLeagueEvents}</div>
+                        <div className="text-2xl font-bold">{currentLeagueStats.currentLeagueEvents}</div>
                         <div className="text-sm text-muted-foreground">Events</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold">{stats.currentLeaguePlayers}</div>
+                        <div className="text-2xl font-bold">{currentLeagueStats.currentLeaguePlayers}</div>
                         <div className="text-sm text-muted-foreground">Players</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold">{stats.currentLeagueMatches}</div>
+                        <div className="text-2xl font-bold">{currentLeagueStats.currentLeagueMatches}</div>
                         <div className="text-sm text-muted-foreground">Matches</div>
                       </div>
                       <div className="text-center">
@@ -229,9 +242,31 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Recent Events */}
-          <div className="grid grid-cols-2 gap-4">
-            {leaderboard && <Leaderboard title="Active League Leaderboard" players={leaderboard} />}
+          {/* Leaderboard and Recent Events */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Most Recent League Leaderboard */}
+            <div>
+              {displayLeague ? (
+                <Leaderboard
+                  title={`${displayLeague.name} Leaderboard`}
+                  entries={leaderboard || []}
+                  isLoading={leaderboardLoading}
+                />
+              ) : (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>League Leaderboard</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center text-muted-foreground py-8">
+                      No leagues available
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            {/* Recent Events */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">

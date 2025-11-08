@@ -1,0 +1,11 @@
+node_modules
+dist
+build
+out
+.next
+coverage
+.nyc_output
+/src/generated/prisma
+*.min.js
+*.config.js
+*.config.mjs
