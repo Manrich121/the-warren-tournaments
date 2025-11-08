@@ -332,7 +332,7 @@ export default function LeaguePage({ params }: LeaguePageProps) {
           </Card>
 
           {/* Leaderboard */}
-          {leaderboard && <Leaderboard title="League Leaderboard" players={leaderboard} />}
+          {leaderboard && <Leaderboard title="League Leaderboard" entries={leaderboard} />}
         </div>
       </div>
     </>

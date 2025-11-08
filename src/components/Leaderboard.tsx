@@ -1,14 +1,54 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { LeagueRankedPlayer, RankedPlayer } from '@/lib/playerStats';
+import { LeaderboardEntry } from '@/types/leaderboard';
 
 interface LeaderboardProps {
-  title: string;
-  players: (RankedPlayer | LeagueRankedPlayer)[];
+  title?: string;
+  entries: LeaderboardEntry[];
+  isLoading?: boolean;
 }
 
-const Leaderboard = ({ title, players }: LeaderboardProps) => {
-  const isLeagueLeaderboard = 'totalEventPoints' in players[0];
+/**
+ * Leaderboard component displaying ranked players with league points and win rates.
+ * 
+ * Features:
+ * - Displays rank, player name, league points, and match win rate
+ * - Empty state when no matches played
+ * - Loading skeleton support
+ * - Responsive table layout
+ */
+const Leaderboard = ({ title = 'Leaderboard', entries, isLoading = false }: LeaderboardProps) => {
+  // Handle empty state
+  if (!isLoading && entries.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>{title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center text-muted-foreground py-8">
+            No matches played in this league yet
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Handle loading state
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>{title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center text-muted-foreground py-8">
+            Loading leaderboard...
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -16,42 +56,34 @@ const Leaderboard = ({ title, players }: LeaderboardProps) => {
         <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Player</TableHead>
-              {isLeagueLeaderboard ? (
-                <TableHead>Total Points</TableHead>
-              ) : (
-                <>
-                  <TableHead>Match Points</TableHead>
-                  <TableHead>Match Win %</TableHead>
-                  <TableHead>Opponent Match Win %</TableHead>
-                  <TableHead>Game Win %</TableHead>
-                  <TableHead>Opponent Game Win %</TableHead>
-                </>
-              )}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {players.map(player => (
-              <TableRow key={player.player.id}>
-                <TableCell>{player.player.name}</TableCell>
-                {isLeagueLeaderboard ? (
-                  <TableCell>{(player as LeagueRankedPlayer).totalEventPoints}</TableCell>
-                ) : (
-                  <>
-                    <TableCell>{(player as RankedPlayer).matchPoints}</TableCell>
-                    <TableCell>{(player as RankedPlayer).matchWinPercentage.toFixed(2)}%</TableCell>
-                    <TableCell>{(player as RankedPlayer).opponentsMatchWinPercentage.toFixed(2)}%</TableCell>
-                    <TableCell>{(player as RankedPlayer).gameWinPercentage.toFixed(2)}%</TableCell>
-                    <TableCell>{(player as RankedPlayer).opponentsGameWinPercentage.toFixed(2)}%</TableCell>
-                  </>
-                )}
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-16">Rank</TableHead>
+                <TableHead>Player</TableHead>
+                <TableHead className="text-right">League Points</TableHead>
+                <TableHead className="text-right">Matches</TableHead>
+                <TableHead className="text-right">Win Rate</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {entries.map((entry) => (
+                <TableRow key={entry.playerId}>
+                  <TableCell className="font-medium">{entry.rank}</TableCell>
+                  <TableCell>{entry.playerName}</TableCell>
+                  <TableCell className="text-right font-semibold">{entry.leaguePoints}</TableCell>
+                  <TableCell className="text-right">
+                    {entry.matchesWon}/{entry.matchesPlayed}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {(entry.matchWinRate * 100).toFixed(1)}%
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );

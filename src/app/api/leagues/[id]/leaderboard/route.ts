@@ -1,10 +1,39 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/prisma';
-import { calculateEventRanking, calculateLeagueRanking } from '@/lib/playerStats';
+import { calculateLeagueLeaderboard } from '@/lib/leaderboard-calculator';
+import { z } from 'zod';
+
+/**
+ * GET /api/leagues/[id]/leaderboard
+ *
+ * Returns the ranked leaderboard for a specific league with full tie-breaking.
+ * Uses the new calculateLeagueLeaderboard function with 5-level tie-breaking:
+ * 1. League points
+ * 2. Match win rate
+ * 3. Opponents' match win rate
+ * 4. Game win rate
+ * 5. Opponents' game win rate
+ * 6. Alphabetical by player name
+ *
+ * Response: LeaderboardEntry[] | { error, message }
+ */
+
+const leagueIdSchema = z.string().cuid();
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
+
+    // Validate league ID format
+    const validationResult = leagueIdSchema.safeParse(id);
+    if (!validationResult.success) {
+      return NextResponse.json(
+        { error: 'Bad Request', message: 'Invalid league ID format' },
+        { status: 400 }
+      );
+    }
+
+    // Fetch league with events and matches
     const league = await prisma.league.findUnique({
       where: { id },
       include: {
@@ -17,9 +46,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     });
 
     if (!league) {
-      return NextResponse.json({ error: 'League not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Not Found', message: 'League not found' },
+        { status: 404 }
+      );
     }
 
+    // Collect all player IDs from matches
     const playerIds = new Set<string>();
     league.events.forEach(event => {
       event.matches.forEach(match => {
@@ -28,25 +61,26 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       });
     });
 
+    // Fetch all players who participated in this league
     const players = await prisma.player.findMany({
       where: {
         id: { in: Array.from(playerIds) }
       }
     });
 
-    const eventRankings = league.events.map(event => {
-      const eventPlayers = players.filter(player => {
-        return event.matches.some(match => match.player1Id === player.id || match.player2Id === player.id);
-      });
+    // Flatten events and matches for the calculator
+    const allEvents = league.events;
+    const allMatches = league.events.flatMap(event => event.matches);
 
-      return calculateEventRanking(eventPlayers, event.matches);
-    });
+    // Calculate leaderboard with new tie-breaking logic
+    const leaderboard = calculateLeagueLeaderboard(id, allEvents, allMatches, players);
 
-    const leagueRanking = calculateLeagueRanking(players, eventRankings);
-
-    return NextResponse.json(leagueRanking);
+    return NextResponse.json(leaderboard);
   } catch (error) {
     console.error('Error fetching league leaderboard:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal Server Error', message: 'Failed to fetch league leaderboard' },
+      { status: 500 }
+    );
   }
 }

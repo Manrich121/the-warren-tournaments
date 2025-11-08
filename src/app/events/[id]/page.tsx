@@ -17,7 +17,7 @@ import { AddMatchDialog } from '@/components/AddMatchDialog';
 import { genericSort } from '@/lib/utils';
 import { Header } from '@/components/Header';
 import { Nav } from '@/components/Nav';
-import Leaderboard from '@/components/Leaderboard';
+import EventLeaderboard from '@/components/EventLeaderboard';
 import { useEventLeaderboard } from '@/hooks/useEventLeaderboard';
 
 interface EventPageProps {
@@ -205,7 +205,7 @@ export default function EventPage({ params }: EventPageProps) {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Players Leaderboard */}
-            {leaderboard && <Leaderboard title="Event Leaderboard" players={leaderboard} />}
+            {leaderboard && <EventLeaderboard title="Event Leaderboard" players={leaderboard} />}
 
             {/* Matches */}
             <Card>

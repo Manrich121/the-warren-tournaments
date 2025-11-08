@@ -1,6 +1,7 @@
 export const keys = {
   leagues: () => ['leagues'] as const,
   activeLeague: () => [...keys.leagues(), 'active'] as const,
+  mostRecentLeague: () => [...keys.leagues(), 'most-recent'] as const,
   league: (id: string | undefined) => [...keys.leagues(), id] as const,
   leagueLeaderboard: (id: string) => [...keys.league(id), 'leaderboard'] as const,
   events: () => ['events'] as const,
