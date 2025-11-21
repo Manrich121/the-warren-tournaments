@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
@@ -16,6 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { Loader2Icon } from 'lucide-react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { TypeaheadDropdown, TypeaheadOption } from '@/components/TypeaheadDropdown';
 import { useAddMatch } from '@/hooks/useAddMatch';
 import { useUpdateMatch } from '@/hooks/useUpdateMatch';
 import { Player, Event, Match } from '@prisma/client';
@@ -32,8 +32,8 @@ export function AddMatchDialog({ match, players, events, children }: AddMatchDia
   const addMatchMutation = useAddMatch();
   const updateMatchMutation = useUpdateMatch();
 
-  const [newMatchPlayer1, setNewMatchPlayer1] = useState('');
-  const [newMatchPlayer2, setNewMatchPlayer2] = useState('');
+  const [newMatchPlayer1, setNewMatchPlayer1] = useState<string | null>(null);
+  const [newMatchPlayer2, setNewMatchPlayer2] = useState<string | null>(null);
   const [newMatchEvent, setNewMatchEvent] = useState('');
   const [newMatchP1Score, setNewMatchP1Score] = useState('');
   const [newMatchP2Score, setNewMatchP2Score] = useState('');
@@ -43,16 +43,33 @@ export function AddMatchDialog({ match, players, events, children }: AddMatchDia
 
   const isEditMode = !!match;
 
-  const player1Options = useMemo(() => {
+  const eventOptions = useMemo<TypeaheadOption[]>(() => {
+    if (!events) return [];
+    return events.map(event => ({
+      label: event.name,
+      value: event.id,
+      data: event
+    }));
+  }, [events]);
+
+  const player1Options = useMemo<TypeaheadOption[]>(() => {
     if (!players) return [];
-    if (!newMatchPlayer2) return players;
-    return players.filter(player => player.id !== newMatchPlayer2);
+    const filteredPlayers = !newMatchPlayer2 ? players : players.filter(player => player.id !== newMatchPlayer2);
+    return filteredPlayers.map(player => ({
+      label: player.name,
+      value: player.id,
+      data: player
+    }));
   }, [players, newMatchPlayer2]);
 
-  const player2Options = useMemo(() => {
+  const player2Options = useMemo<TypeaheadOption[]>(() => {
     if (!players) return [];
-    if (!newMatchPlayer1) return players;
-    return players.filter(player => player.id !== newMatchPlayer1);
+    const filteredPlayers = !newMatchPlayer1 ? players : players.filter(player => player.id !== newMatchPlayer1);
+    return filteredPlayers.map(player => ({
+      label: player.name,
+      value: player.id,
+      data: player
+    }));
   }, [players, newMatchPlayer1]);
 
   useEffect(() => {
@@ -70,8 +87,8 @@ export function AddMatchDialog({ match, players, events, children }: AddMatchDia
   }, [scoreSelection]);
 
   const resetForm = useCallback(() => {
-    setNewMatchPlayer1('');
-    setNewMatchPlayer2('');
+    setNewMatchPlayer1(null);
+    setNewMatchPlayer2(null);
     setNewMatchEvent('');
     setNewMatchP1Score('');
     setNewMatchP2Score('');
@@ -147,19 +164,15 @@ export function AddMatchDialog({ match, players, events, children }: AddMatchDia
         >
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Event</Label>
-              <Select value={newMatchEvent} onValueChange={setNewMatchEvent}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Event" />
-                </SelectTrigger>
-                <SelectContent>
-                  {events?.map(event => (
-                    <SelectItem key={event.id} value={event.id}>
-                      {event.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <TypeaheadDropdown
+                options={eventOptions}
+                value={newMatchEvent}
+                onSelect={value => setNewMatchEvent(value as string)}
+                label="Event"
+                placeholder="Select Event"
+                searchPlaceholder="Search events..."
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label>Round</Label>
@@ -168,34 +181,26 @@ export function AddMatchDialog({ match, players, events, children }: AddMatchDia
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Player 1</Label>
-              <Select value={newMatchPlayer1} onValueChange={setNewMatchPlayer1}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Player 1" />
-                </SelectTrigger>
-                <SelectContent>
-                  {player1Options.map(player => (
-                    <SelectItem key={player.id} value={player.id}>
-                      {player.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <TypeaheadDropdown
+                options={player1Options}
+                value={newMatchPlayer1}
+                onSelect={value => setNewMatchPlayer1(value as string)}
+                label="Player 1"
+                placeholder="Select Player 1"
+                searchPlaceholder="Search players..."
+                required
+              />
             </div>
             <div className="space-y-2">
-              <Label>Player 2</Label>
-              <Select value={newMatchPlayer2} onValueChange={setNewMatchPlayer2}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Player 2" />
-                </SelectTrigger>
-                <SelectContent>
-                  {player2Options.map(player => (
-                    <SelectItem key={player.id} value={player.id}>
-                      {player.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <TypeaheadDropdown
+                options={player2Options}
+                value={newMatchPlayer2}
+                onSelect={value => setNewMatchPlayer2(value as string)}
+                label="Player 2"
+                placeholder="Select Player 2"
+                searchPlaceholder="Search players..."
+                required
+              />
             </div>
           </div>
           <div className="flex flex-col items-center space-y-2">

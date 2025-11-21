@@ -1,207 +1,123 @@
 'use client';
 
-import { useState, useMemo, Suspense } from 'react';
+import { useState, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ChevronUpIcon, ChevronDownIcon, TrashIcon, Loader2Icon, PencilIcon, XIcon } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription
-} from '@/components/ui/dialog';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { PencilIcon } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ColumnDef } from '@tanstack/react-table';
+import { DataTable } from '@/components/DataTable';
+import { TableRowActions } from '@/components/TableRowActions';
 import { useMatches } from '@/hooks/useMatches';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useEvents } from '@/hooks/useEvents';
-import { useLeagues } from '@/hooks/useLeagues';
 import { useDeleteMatch } from '@/hooks/useDeleteMatch';
-import { useURLFilters } from '@/hooks/useURLFilters';
-import { FilterDropdown, FilterOption } from '@/components/FilterDropdown';
 import { Match } from '@prisma/client';
-import { genericSort } from '@/lib/utils';
 import { AddMatchDialog } from '@/components/AddMatchDialog';
 import { Header } from '@/components/Header';
 import { Nav } from '@/components/Nav';
-import { GenericSkeletonLoader } from '@/components/ShimmeringLoader';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
-function MatchesContent() {
+export default function MatchesPage() {
   const { status } = useSession();
   const isAdmin = status === 'authenticated';
 
-  const { data: matches, isLoading: matchesLoading, error: matchesError } = useMatches();
-  const { data: players, isLoading: playersLoading, error: playersError } = usePlayers();
-  const { data: events, isLoading: eventsLoading, error: eventsError } = useEvents();
-  const { data: leagues, isLoading: leaguesLoading, error: leaguesError } = useLeagues();
+  const { data: matches, isLoading: matchesLoading } = useMatches();
+  const { data: players, isLoading: playersLoading } = usePlayers();
+  const { data: events, isLoading: eventsLoading } = useEvents();
   const deleteMatchMutation = useDeleteMatch();
 
-  const [deleteMatchId, setDeleteMatchId] = useState<string | null>(null);
-  const [deleteMatchOpen, setDeleteMatchOpen] = useState(false);
+  // Event filter state
+  const [selectedEventId, setSelectedEventId] = useState<string>('all');
 
-  const [sortField, setSortField] = useState<keyof Match>('eventId');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const isLoading = matchesLoading || playersLoading || eventsLoading || status === 'loading';
 
-  // Filtering
-  const { filters, setFilter, clearFilters, hasActiveFilters } = useURLFilters<{
-    league?: string;
-    event?: string;
-    round?: number;
-  }>();
-
-  const isLoading = matchesLoading || playersLoading || eventsLoading || leaguesLoading || status === 'loading';
-  const error = matchesError || playersError || eventsError || leaguesError;
-
-  const handleDeleteMatch = () => {
-    if (!deleteMatchId || !isAdmin) return;
-    deleteMatchMutation.mutate(deleteMatchId, {
-      onSuccess: () => {
-        setDeleteMatchId(null);
-        setDeleteMatchOpen(false);
-      }
-    });
+  const handleDelete = (matchId: string) => {
+    deleteMatchMutation.mutate(matchId);
   };
 
-  const handleSort = (field: keyof Match) => {
-    if (field === sortField) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-  };
-
-  // Filter options
-  const leagueOptions: FilterOption[] = useMemo(() => {
-    if (!leagues) return [];
-    return leagues.map(league => ({
-      value: league.id,
-      label: league.name
-    }));
-  }, [leagues]);
-
-  const filteredEvents = useMemo(() => {
-    if (!events) return [];
-
-    return filters.league ? events.filter(e => e.leagueId === filters.league) : events;
-  }, [events, filters]);
-
-  const eventOptions: FilterOption[] = useMemo(() => {
-    return filteredEvents.map(event => ({
-      value: event.id,
-      label: event.name
-    }));
-  }, [filteredEvents, filters]);
-
-  // Apply filters
+  // Pre-filter matches by event
   const filteredMatches = useMemo(() => {
     if (!matches) return [];
+    if (selectedEventId === 'all') return matches;
+    return matches.filter(match => match.eventId === selectedEventId);
+  }, [matches, selectedEventId]);
 
-    return matches.filter(match => {
-      // Event filter
-      if (filters.event && match.eventId !== filters.event) {
-        return false;
-      }
-
-      // League filter (via event)
-      if (filters.league && filteredEvents) {
-        const event = filteredEvents.find(e => e.id === match.eventId);
-        if (!event || event.leagueId !== filters.league) {
-          return false;
+  // Define columns for DataTable
+  const columns: ColumnDef<Match>[] = useMemo(
+    () => [
+      {
+        id: 'player1',
+        accessorFn: originalRow => {
+          const player = players?.find(p => p.id === originalRow.player1Id);
+          return player?.name || 'Unknown';
+        },
+        header: 'Player 1',
+        enableSorting: true,
+        enableGlobalFilter: true,
+        cell: info => info.getValue()
+      },
+      {
+        id: 'player2',
+        accessorFn: originalRow => {
+          const player = players?.find(p => p.id === originalRow.player2Id);
+          return player?.name || 'Unknown';
+        },
+        header: 'Player 2',
+        enableSorting: true,
+        enableGlobalFilter: true,
+        cell: info => info.getValue()
+      },
+      {
+        id: 'scores',
+        accessorKey: 'player1Score',
+        header: 'Score',
+        enableSorting: false,
+        enableGlobalFilter: false,
+        cell: ({ row }) => {
+          const match = row.original;
+          return (
+            <span className="font-mono">
+              {match.player1Score} - {match.player2Score}
+              {match.draw && <span className="ml-2 text-muted-foreground">(Draw)</span>}
+            </span>
+          );
+        }
+      },
+      {
+        id: 'round',
+        accessorKey: 'round',
+        header: 'Round',
+        enableSorting: true,
+        enableGlobalFilter: false,
+        cell: ({ getValue }) => `Round ${getValue()}`
+      },
+      {
+        id: 'event',
+        accessorFn: originalRow => {
+          const event = events?.find(e => e.id === originalRow.eventId);
+          return event?.name || 'Unknown';
+        },
+        header: 'Event',
+        enableSorting: true,
+        enableGlobalFilter: false,
+        cell: info => info.getValue()
+      },
+      {
+        id: 'createdAt',
+        accessorKey: 'createdAt',
+        header: 'Created',
+        enableSorting: true,
+        enableGlobalFilter: false,
+        cell: ({ getValue }) => {
+          const date = getValue() as Date;
+          return new Date(date).toLocaleDateString();
         }
       }
-
-      // Round filter
-      if (filters.round && match.round !== Number(filters.round)) {
-        return false;
-      }
-
-      return true;
-    });
-  }, [matches, filters, filteredEvents]);
-
-  const roundOptions: FilterOption[] = useMemo(() => {
-    if (!matches || !events) return [];
-    const fEvents = filters.event ? events.filter(e => e.id === filters.event) : events;
-
-    const fMatches = matches.filter(match => {
-      return fEvents.some(e => e.id === match.eventId);
-    });
-
-    if (!fMatches) return [];
-    const rounds = Array.from(new Set(fMatches.map(match => match.round)));
-    // sort ascending
-    return rounds
-      .sort((a, b) => a - b)
-      .map(round => ({
-        value: String(round),
-        label: `Round ${round}`
-      }));
-  }, [matches, filters, events]);
-
-  const sortedMatches = filteredMatches ? genericSort(filteredMatches, sortField, sortDirection) : [];
-
-  const SortableHeader = ({ field, children }: { field: keyof Match; children: React.ReactNode }) => {
-    const isActive = sortField === field;
-    const isAsc = sortDirection === 'asc';
-
-    return (
-      <TableHead>
-        <button
-          onClick={() => handleSort(field)}
-          className="flex items-center space-x-1 hover:text-foreground font-medium"
-        >
-          <span>{children}</span>
-          {isActive ? (
-            isAsc ? (
-              <ChevronUpIcon className="h-4 w-4" />
-            ) : (
-              <ChevronDownIcon className="h-4 w-4" />
-            )
-          ) : (
-            <div className="h-4 w-4" />
-          )}
-        </button>
-      </TableHead>
-    );
-  };
-
-  const getPlayerName = (playerId: string) => {
-    const player = players?.find(p => p.id === playerId);
-    return player?.name.split(' ')[0] || 'Unknown Player';
-  };
-
-  const getEventData = (eventId: string) => {
-    const event = events?.find(e => e.id === eventId);
-    return { eventName: event?.name || 'Unknown Event', eventDate: event?.date };
-  };
-
-  if (isLoading) {
-    return (
-      <>
-        <Header />
-        <div className="container mx-auto space-y-6">
-          <Nav />
-          <div className="py-8 space-y-6">
-            <h1 className="text-3xl font-bold">Matches</h1>
-            <GenericSkeletonLoader />
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto py-8">
-        <div className="text-center text-red-500">Error: {error.message}</div>
-      </div>
-    );
-  }
+    ],
+    [players, events]
+  );
 
   return (
     <>
@@ -211,185 +127,79 @@ function MatchesContent() {
         <div className="py-8 space-y-6">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Matches</h1>
-            {isAdmin && <AddMatchDialog players={players} events={events} />}
+            {isAdmin && <AddMatchDialog events={events} players={players} />}
           </div>
 
-          {/* Filters */}
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="filters" className="border rounded-lg">
-              <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">Filters</span>
-                  {hasActiveFilters && (
-                    <span className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full">Active</span>
-                  )}
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="flex flex-wrap gap-4 items-center p-4 pt-1">
-                  <FilterDropdown
-                    placeholder="Leagues"
-                    value={filters.league}
-                    options={leagueOptions}
-                    onValueChange={value => setFilter('league', value)}
-                    disabled={isLoading}
-                  />
+          {/* Event Filter */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 max-w-xs">
+              <Label htmlFor="event-filter">Filter by Event:</Label>
+              <Select value={selectedEventId} onValueChange={setSelectedEventId}>
+                <SelectTrigger id="event-filter" className="w-[200px]">
+                  <SelectValue placeholder="All events" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All events</SelectItem>
+                  {events?.map(event => (
+                    <SelectItem key={event.id} value={event.id}>
+                      {event.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {selectedEventId !== 'all' && (
+              <Button variant="ghost" onClick={() => setSelectedEventId('all')}>
+                Clear filter
+              </Button>
+            )}
+          </div>
 
-                  <FilterDropdown
-                    placeholder="Events"
-                    value={filters.event}
-                    options={eventOptions}
-                    onValueChange={value => setFilter('event', value)}
-                    disabled={isLoading}
-                  />
-
-                  <FilterDropdown
-                    placeholder="Round"
-                    value={filters.round ? String(filters.round) : null}
-                    options={roundOptions}
-                    onValueChange={value => setFilter('round', value)}
-                    disabled={isLoading}
-                  />
-
-                  {hasActiveFilters && (
-                    <Button variant="outline" size="sm" onClick={clearFilters} className="ml-auto">
-                      <XIcon className="h-4 w-4 mr-2" />
-                      Clear Filters
-                    </Button>
-                  )}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-
-          <Card>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <SortableHeader field="eventId">Event</SortableHeader>
-                    <SortableHeader field="round">Round</SortableHeader>
-                    <TableHead>Player 1</TableHead>
-                    <TableHead>Player 2</TableHead>
-                    <TableHead>Score</TableHead>
-                    <TableHead>Result</TableHead>
-                    <SortableHeader field="createdAt">Date</SortableHeader>
-                    {isAdmin && <TableHead>Actions</TableHead>}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {sortedMatches.map(match => {
-                    const player1Name = getPlayerName(match.player1Id);
-                    const player2Name = getPlayerName(match.player2Id);
-                    const { eventName, eventDate } = getEventData(match.eventId);
-
-                    let result = 'Draw';
-
-                    if (!match.draw) {
-                      if (match.player1Score > match.player2Score) {
-                        result = `${player1Name} wins`;
-                      } else {
-                        result = `${player2Name} wins`;
-                      }
-                    }
-
+          <DataTable
+            data={filteredMatches}
+            columns={columns}
+            storageKey="table-state-matches"
+            enableGlobalFilter={true}
+            enableSorting={true}
+            enablePagination={true}
+            initialPageSize={25}
+            isLoading={isLoading}
+            renderRowActions={
+              isAdmin
+                ? match => {
                     return (
-                      <TableRow key={match.id}>
-                        <TableCell>{eventName}</TableCell>
-                        <TableCell>{match.round}</TableCell>
-                        <TableCell>{player1Name}</TableCell>
-                        <TableCell>{player2Name}</TableCell>
-                        <TableCell>
-                          {match.player1Score} - {match.player2Score}
-                        </TableCell>
-                        <TableCell>{result}</TableCell>
-                        <TableCell>{new Date(eventDate ?? match.createdAt).toLocaleDateString()}</TableCell>
-                        {isAdmin && (
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <AddMatchDialog players={players} events={events} match={match}>
-                                      <Button variant="outline" size="sm" className="p-2">
-                                        <PencilIcon className="h-4 w-4" />
-                                      </Button>
-                                    </AddMatchDialog>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Edit Match</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="p-2"
-                                      onClick={() => {
-                                        setDeleteMatchId(match.id);
-                                        setDeleteMatchOpen(true);
-                                      }}
-                                    >
-                                      <TrashIcon className="h-4 w-4" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Delete match</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            </div>
-                          </TableCell>
-                        )}
-                      </TableRow>
+                      <div className="flex items-center gap-2">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <AddMatchDialog match={match} events={events} players={players}>
+                                <Button variant="outline" size="sm" className="p-2">
+                                  <PencilIcon className="h-4 w-4" />
+                                </Button>
+                              </AddMatchDialog>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Edit match</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <TableRowActions
+                          entityName="match"
+                          showEdit={false}
+                          onDelete={() => handleDelete(match.id)}
+                          deleteWarning="This will permanently delete the match."
+                          isDeleting={deleteMatchMutation.isPending}
+                        />
+                      </div>
                     );
-                  })}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-
-          {/* Delete Dialog - Only shown for admins */}
-          {isAdmin && (
-            <Dialog open={deleteMatchOpen} onOpenChange={setDeleteMatchOpen}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Are you sure you want to delete this match?</DialogTitle>
-                  <DialogDescription>
-                    This action cannot be undone. This will permanently delete the match.
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setDeleteMatchOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button variant="destructive" onClick={handleDeleteMatch} disabled={deleteMatchMutation.isPending}>
-                    {deleteMatchMutation.isPending && <Loader2Icon className="animate-spin" />}
-                    Delete
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          )}
+                  }
+                : undefined
+            }
+            searchPlaceholder="Search matches..."
+            emptyMessage="No matches found. Create one to get started."
+          />
         </div>
       </div>
     </>
-  );
-}
-
-export default function MatchesPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="container mx-auto py-8">
-          <div className="text-center">Loading...</div>
-        </div>
-      }
-    >
-      <MatchesContent />
-    </Suspense>
   );
 }
