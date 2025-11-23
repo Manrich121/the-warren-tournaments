@@ -44,6 +44,8 @@ export default function EventPage({ params }: EventPageProps) {
   const players = useMemo(() => playersData || [], [playersData]);
   const eventMatches = useMemo(() => (matchesData || []).filter(m => m.eventId === eventId), [matchesData, eventId]);
 
+  const [addMatchOpen, setAddMatchOpen] = useState(false);
+
   // Sorting state
   const [matchesSortField, setMatchesSortField] = useState<keyof MatchWithPlayers>('round');
   const [matchesSortDirection, setMatchesSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -155,7 +157,21 @@ export default function EventPage({ params }: EventPageProps) {
                 </p>
               </div>
             </div>
-            {isAdmin && <AddMatchDialog players={players} events={[event]} />}
+            {isAdmin && (
+              <>
+                <AddMatchDialog
+                  players={players}
+                  events={[event]}
+                  open={addMatchOpen}
+                  onOpenChange={open => {
+                    if (!open) {
+                      setAddMatchOpen(false);
+                    }
+                  }}
+                />
+                <Button onClick={() => setAddMatchOpen(true)}>Add match</Button>
+              </>
+            )}
           </div>
 
           {/* Event Stats */}
