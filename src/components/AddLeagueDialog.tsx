@@ -23,11 +23,11 @@ import { League } from '@prisma/client';
 
 interface AddLeagueDialogProps {
   league?: League;
-  children?: React.ReactNode;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export function AddLeagueDialog({ league, children }: AddLeagueDialogProps) {
-  const [open, setOpen] = useState(false);
+export function AddLeagueDialog({ league, open, onOpenChange }: AddLeagueDialogProps) {
   const addLeagueMutation = useAddLeague();
   const updateLeagueMutation = useUpdateLeague();
   const updatePrizePoolMutation = useUpdatePrizePool();
@@ -84,7 +84,7 @@ export function AddLeagueDialog({ league, children }: AddLeagueDialogProps) {
         {
           onSuccess: async () => {
             await handlePrizePoolUpdate(league.id);
-            setOpen(false);
+            onOpenChange(false);
           }
         }
       );
@@ -98,7 +98,7 @@ export function AddLeagueDialog({ league, children }: AddLeagueDialogProps) {
             setStartDate('');
             setEndDate('');
             setPrizePoolAmount('');
-            setOpen(false);
+            onOpenChange(false);
           }
         }
       );
@@ -106,8 +106,7 @@ export function AddLeagueDialog({ league, children }: AddLeagueDialogProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent onPointerDownOutside={e => e.preventDefault()} onEscapeKeyDown={e => e.preventDefault()}>
         <form
           onSubmit={e => {
@@ -141,17 +140,15 @@ export function AddLeagueDialog({ league, children }: AddLeagueDialogProps) {
           <div className="space-y-2">
             <Label htmlFor="prizePoolAmount">Prize Pool Amount</Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-500">
-                R
-              </span>
-              <Input 
-                id="prizePoolAmount" 
-                type="number" 
-                min="0" 
-                step="0.01" 
-                value={prizePoolAmount} 
-                onChange={e => setPrizePoolAmount(e.target.value)} 
-                placeholder="Enter prize pool amount (optional)" 
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-500">R</span>
+              <Input
+                id="prizePoolAmount"
+                type="number"
+                min="0"
+                step="0.01"
+                value={prizePoolAmount}
+                onChange={e => setPrizePoolAmount(e.target.value)}
+                placeholder="Enter prize pool amount (optional)"
                 className="pl-8"
               />
             </div>

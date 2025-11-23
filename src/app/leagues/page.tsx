@@ -3,8 +3,6 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { PencilIcon, TrashIcon } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/DataTable';
 import { TableRowActions } from '@/components/TableRowActions';
@@ -14,6 +12,7 @@ import { League } from '@prisma/client';
 import { AddLeagueDialog } from '@/components/AddLeagueDialog';
 import { Header } from '@/components/Header';
 import { Nav } from '@/components/Nav';
+import { useState } from 'react';
 
 export default function LeaguesPage() {
   const router = useRouter();
@@ -22,6 +21,9 @@ export default function LeaguesPage() {
 
   const { data: leagues, isLoading } = useLeagues();
   const deleteLeagueMutation = useDeleteLeague();
+
+  const [selectedLeague, setSelectedLeague] = useState<League | undefined>(undefined);
+  const [addLeagueOpen, setAddLeagueOpen] = useState(false);
 
   const handleDelete = (leagueId: string) => {
     deleteLeagueMutation.mutate(leagueId);
@@ -81,9 +83,19 @@ export default function LeaguesPage() {
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Leagues</h1>
             {isAdmin && (
-              <AddLeagueDialog>
-                <Button>Add New League</Button>
-              </AddLeagueDialog>
+              <>
+                <AddLeagueDialog
+                  league={selectedLeague}
+                  open={addLeagueOpen}
+                  onOpenChange={open => {
+                    if (!open) {
+                      setAddLeagueOpen(false);
+                      setSelectedLeague(undefined);
+                    }
+                  }}
+                />
+                <Button onClick={() => setAddLeagueOpen(true)}>Add New League</Button>
+              </>
             )}
           </div>
 
@@ -100,23 +112,13 @@ export default function LeaguesPage() {
               isAdmin
                 ? league => (
                     <div className="flex items-center gap-2">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <AddLeagueDialog league={league}>
-                              <Button variant="outline" size="sm" className="p-2">
-                                <PencilIcon className="h-4 w-4" />
-                              </Button>
-                            </AddLeagueDialog>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Edit league</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
                       <TableRowActions
                         entityName="league"
-                        showEdit={false}
+                        showEdit={true}
+                        onEdit={() => {
+                          setSelectedLeague(league);
+                          setAddLeagueOpen(true);
+                        }}
                         onDelete={() => handleDelete(league.id)}
                         deleteWarning="This will permanently delete the league and all associated events and matches."
                         isDeleting={deleteLeagueMutation.isPending}

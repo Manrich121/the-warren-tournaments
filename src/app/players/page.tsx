@@ -2,8 +2,6 @@
 
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
-import { PencilIcon } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/DataTable';
 import { TableRowActions } from '@/components/TableRowActions';
@@ -13,14 +11,19 @@ import { Player } from '@prisma/client';
 import { AddPlayerDialog } from '@/components/AddPlayerDialog';
 import { Header } from '@/components/Header';
 import { Nav } from '@/components/Nav';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function PlayersPage() {
   const { status } = useSession();
+  const router = useRouter();
   const isAdmin = status === 'authenticated';
 
   const { data: players, isLoading } = usePlayers();
   const deletePlayerMutation = useDeletePlayer();
+
+  const [selectedPlayer, setSelectedPlayer] = useState<Player | undefined>(undefined);
+  const [addPlayerOpen, setAddPlayerOpen] = useState(false);
 
   const handleDelete = (playerId: string) => {
     deletePlayerMutation.mutate(playerId);
@@ -61,9 +64,19 @@ export default function PlayersPage() {
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Players</h1>
             {isAdmin && (
-              <AddPlayerDialog>
-                <Button>Add New Player</Button>
-              </AddPlayerDialog>
+              <>
+                <AddPlayerDialog
+                  player={selectedPlayer}
+                  open={addPlayerOpen}
+                  onOpenChange={open => {
+                    if (!open) {
+                      setAddPlayerOpen(false);
+                      setSelectedPlayer(undefined);
+                    }
+                  }}
+                />
+                <Button onClick={() => setAddPlayerOpen(true)}>Add New Player</Button>
+              </>
             )}
           </div>
 
@@ -76,27 +89,18 @@ export default function PlayersPage() {
             enablePagination={true}
             initialPageSize={25}
             isLoading={isLoading || status === 'loading'}
+            onRowClick={player => router.push(`/players/${player.id}`)}
             renderRowActions={
               isAdmin
                 ? player => (
                     <div className="flex items-center gap-2">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <AddPlayerDialog player={player}>
-                              <Button variant="outline" size="sm" className="p-2">
-                                <PencilIcon className="h-4 w-4" />
-                              </Button>
-                            </AddPlayerDialog>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Edit player</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
                       <TableRowActions
                         entityName="player"
-                        showEdit={false}
+                        showEdit={true}
+                        onEdit={() => {
+                          setSelectedPlayer(player);
+                          setAddPlayerOpen(true);
+                        }}
                         onDelete={() => handleDelete(player.id)}
                         deleteWarning="This will permanently delete the player and remove them from all matches."
                         isDeleting={deletePlayerMutation.isPending}
@@ -106,7 +110,7 @@ export default function PlayersPage() {
                 : undefined
             }
             searchPlaceholder="Search players..."
-            emptyMessage="No players found. Create one to get started."
+            emptyMessage="No players found."
           />
         </div>
       </div>

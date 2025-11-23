@@ -4,15 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-  DialogClose
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Loader2Icon } from 'lucide-react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { TypeaheadDropdown, TypeaheadOption } from '@/components/TypeaheadDropdown';
@@ -24,11 +16,11 @@ export interface AddMatchDialogProps {
   match?: Match;
   players?: Player[];
   events?: Event[];
-  children?: React.ReactNode;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export function AddMatchDialog({ match, players, events, children }: AddMatchDialogProps) {
-  const [open, setOpen] = useState(false);
+export function AddMatchDialog({ match, players, events, open, onOpenChange }: AddMatchDialogProps) {
   const addMatchMutation = useAddMatch();
   const updateMatchMutation = useUpdateMatch();
 
@@ -121,7 +113,7 @@ export function AddMatchDialog({ match, players, events, children }: AddMatchDia
     const mutationOptions = {
       onSuccess: () => {
         resetForm();
-        setOpen(false);
+        onOpenChange(false);
       }
     };
 
@@ -145,8 +137,7 @@ export function AddMatchDialog({ match, players, events, children }: AddMatchDia
   const isPending = addMatchMutation.isPending || updateMatchMutation.isPending;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children ? children : <Button>Add New Match</Button>}</DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="sm:max-w-[625px]"
         onPointerDownOutside={e => e.preventDefault()}

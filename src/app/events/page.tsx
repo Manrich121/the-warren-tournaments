@@ -4,8 +4,6 @@ import { useState, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { PencilIcon } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/DataTable';
 import { TableRowActions } from '@/components/TableRowActions';
@@ -31,6 +29,9 @@ export default function EventsPage() {
   // League filter state (separate from DataTable global search)
   const [selectedLeagueId, setSelectedLeagueId] = useState<string>('all');
 
+  const [selectedEvent, setSelectedEvent] = useState<Event | undefined>(undefined);
+  const [addEventOpen, setAddEventOpen] = useState(false);
+
   const isLoading = eventsLoading || leaguesLoading || status === 'loading';
 
   const handleDelete = (eventId: string) => {
@@ -45,52 +46,52 @@ export default function EventsPage() {
   }, [events, selectedLeagueId]);
 
   // Define columns for DataTable
-  const columns: ColumnDef<Event>[] = useMemo(() => [
-    {
-      id: 'name',
-      accessorKey: 'name',
-      header: 'Name',
-      enableSorting: true,
-      enableGlobalFilter: true,
-      cell: ({ getValue }) => (
-        <span className="text-primary font-medium">{getValue() as string}</span>
-      ),
-    },
-    {
-      id: 'league',
-      accessorKey: 'leagueId',
-      header: 'League',
-      enableSorting: true,
-      enableGlobalFilter: true,
-      cell: ({ getValue }) => {
-        const leagueId = getValue() as string;
-        const league = leagues?.find(l => l.id === leagueId);
-        return league?.name || 'Unknown';
+  const columns: ColumnDef<Event>[] = useMemo(
+    () => [
+      {
+        id: 'name',
+        accessorKey: 'name',
+        header: 'Name',
+        enableSorting: true,
+        enableGlobalFilter: true,
+        cell: ({ getValue }) => <span className="text-primary font-medium">{getValue() as string}</span>
       },
-    },
-    {
-      id: 'date',
-      accessorKey: 'date',
-      header: 'Date',
-      enableSorting: true,
-      enableGlobalFilter: false,
-      cell: ({ getValue }) => {
-        const date = getValue() as Date;
-        return new Date(date).toLocaleDateString();
+      {
+        id: 'league',
+        header: 'League',
+        accessorFn: originalRow => {
+          const league = leagues?.find(l => l.id === originalRow.leagueId);
+          return league?.name || 'Unknown';
+        },
+        enableSorting: true,
+        enableGlobalFilter: true,
+        cell: ({ getValue }) => getValue()
       },
-    },
-    {
-      id: 'createdAt',
-      accessorKey: 'createdAt',
-      header: 'Created',
-      enableSorting: true,
-      enableGlobalFilter: false,
-      cell: ({ getValue }) => {
-        const date = getValue() as Date;
-        return new Date(date).toLocaleDateString();
+      {
+        id: 'date',
+        accessorKey: 'date',
+        header: 'Date',
+        enableSorting: true,
+        enableGlobalFilter: false,
+        cell: ({ getValue }) => {
+          const date = getValue() as Date;
+          return new Date(date).toLocaleDateString();
+        }
       },
-    },
-  ], [leagues]);
+      {
+        id: 'createdAt',
+        accessorKey: 'createdAt',
+        header: 'Created',
+        enableSorting: true,
+        enableGlobalFilter: false,
+        cell: ({ getValue }) => {
+          const date = getValue() as Date;
+          return new Date(date).toLocaleDateString();
+        }
+      }
+    ],
+    [leagues]
+  );
 
   return (
     <>
@@ -100,7 +101,22 @@ export default function EventsPage() {
         <div className="py-8 space-y-6">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Events</h1>
-            {isAdmin && <AddEventDialog leagues={leagues} />}
+            {isAdmin && (
+              <>
+                <AddEventDialog
+                  leagues={leagues}
+                  event={selectedEvent}
+                  open={addEventOpen}
+                  onOpenChange={open => {
+                    if (!open) {
+                      setAddEventOpen(false);
+                      setSelectedEvent(undefined);
+                    }
+                  }}
+                />
+                <Button onClick={() => setAddEventOpen(true)}>Add New Event</Button>
+              </>
+            )}
           </div>
 
           {/* League Filter */}
@@ -137,30 +153,20 @@ export default function EventsPage() {
             enablePagination={true}
             initialPageSize={25}
             isLoading={isLoading}
-            onRowClick={(event) => router.push(`/events/${event.id}`)}
+            onRowClick={event => router.push(`/events/${event.id}`)}
             renderRowActions={
               isAdmin
-                ? (event) => {
+                ? event => {
                     const league = leagues?.find(l => l.id === event.leagueId);
                     return (
                       <div className="flex items-center gap-2">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <AddEventDialog event={event} leagues={leagues}>
-                                <Button variant="outline" size="sm" className="p-2">
-                                  <PencilIcon className="h-4 w-4" />
-                                </Button>
-                              </AddEventDialog>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Edit event</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
                         <TableRowActions
                           entityName="event"
-                          showEdit={false}
+                          showEdit={true}
+                          onEdit={() => {
+                            setSelectedEvent(event);
+                            setAddEventOpen(true);
+                          }}
                           onDelete={() => handleDelete(event.id)}
                           deleteWarning="This will permanently delete the event and all associated matches."
                           isDeleting={deleteEventMutation.isPending}

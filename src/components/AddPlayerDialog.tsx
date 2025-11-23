@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,7 +10,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogClose,
   DialogDescription
 } from '@/components/ui/dialog';
@@ -21,17 +20,23 @@ import { Player } from '@prisma/client';
 
 interface AddPlayerDialogProps {
   player?: Player;
-  children?: React.ReactNode;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export function AddPlayerDialog({ player, children }: AddPlayerDialogProps) {
-  const [open, setOpen] = useState(false);
+export function AddPlayerDialog({ player, open, onOpenChange }: AddPlayerDialogProps) {
   const addPlayerMutation = useAddPlayer();
   const updatePlayerMutation = useUpdatePlayer();
 
   const [newPlayerName, setNewPlayerName] = useState(player?.name ?? '');
 
   const isEditMode = !!player;
+
+  useEffect(() => {
+    if (open) {
+      setNewPlayerName(player?.name ?? '');
+    }
+  }, [open, player]);
 
   const handleSubmit = async () => {
     if (!newPlayerName) return;
@@ -44,7 +49,7 @@ export function AddPlayerDialog({ player, children }: AddPlayerDialogProps) {
         },
         {
           onSuccess: () => {
-            setOpen(false);
+            onOpenChange(false);
           }
         }
       );
@@ -54,7 +59,7 @@ export function AddPlayerDialog({ player, children }: AddPlayerDialogProps) {
         {
           onSuccess: () => {
             setNewPlayerName('');
-            setOpen(false);
+            onOpenChange(false);
           }
         }
       );
@@ -64,8 +69,7 @@ export function AddPlayerDialog({ player, children }: AddPlayerDialogProps) {
   const currentMutation = isEditMode ? updatePlayerMutation : addPlayerMutation;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children ? children : <Button>Add New Player</Button>}</DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent onPointerDownOutside={e => e.preventDefault()} onEscapeKeyDown={e => e.preventDefault()}>
         <form
           onSubmit={e => {

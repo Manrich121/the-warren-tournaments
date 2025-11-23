@@ -3,8 +3,6 @@
 import { useState, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
-import { PencilIcon } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/DataTable';
 import { TableRowActions } from '@/components/TableRowActions';
@@ -27,6 +25,9 @@ export default function MatchesPage() {
   const { data: players, isLoading: playersLoading } = usePlayers();
   const { data: events, isLoading: eventsLoading } = useEvents();
   const deleteMatchMutation = useDeleteMatch();
+
+  const [selectedMatch, setSelectedMatch] = useState<Match | undefined>(undefined);
+  const [addMatchOpen, setAddMatchOpen] = useState(false);
 
   // Event filter state
   const [selectedEventId, setSelectedEventId] = useState<string>('all');
@@ -127,7 +128,23 @@ export default function MatchesPage() {
         <div className="py-8 space-y-6">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Matches</h1>
-            {isAdmin && <AddMatchDialog events={events} players={players} />}
+            {isAdmin && (
+              <>
+                <AddMatchDialog
+                  match={selectedMatch}
+                  events={events}
+                  players={players}
+                  open={addMatchOpen}
+                  onOpenChange={open => {
+                    if (!open) {
+                      setAddMatchOpen(false);
+                      setSelectedMatch(undefined);
+                    }
+                  }}
+                />
+                <Button onClick={() => setAddMatchOpen(true)}>Add New Match</Button>
+              </>
+            )}
           </div>
 
           {/* Event Filter */}
@@ -169,23 +186,13 @@ export default function MatchesPage() {
                 ? match => {
                     return (
                       <div className="flex items-center gap-2">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <AddMatchDialog match={match} events={events} players={players}>
-                                <Button variant="outline" size="sm" className="p-2">
-                                  <PencilIcon className="h-4 w-4" />
-                                </Button>
-                              </AddMatchDialog>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Edit match</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
                         <TableRowActions
                           entityName="match"
-                          showEdit={false}
+                          showEdit={true}
+                          onEdit={() => {
+                            setSelectedMatch(match);
+                            setAddMatchOpen(true);
+                          }}
                           onDelete={() => handleDelete(match.id)}
                           deleteWarning="This will permanently delete the match."
                           isDeleting={deleteMatchMutation.isPending}
@@ -196,7 +203,7 @@ export default function MatchesPage() {
                 : undefined
             }
             searchPlaceholder="Search matches..."
-            emptyMessage="No matches found. Create one to get started."
+            emptyMessage="No matches found."
           />
         </div>
       </div>
