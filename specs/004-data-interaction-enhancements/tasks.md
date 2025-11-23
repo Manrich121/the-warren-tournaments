@@ -193,36 +193,7 @@ Project structure follows Next.js App Router:
 
 ---
 
-## Phase 8: User Story 2 - Advanced Multi-Column Filtering (Priority: P2)
-
-**Goal**: Enable filtering by specific columns (e.g., events by league, matches by round) with multiple active filters and clear all action
-
-**Independent Test**: On events page, select league from dropdown filter, verify events filter to that league. Add date range filter, verify both filters apply. Click "Clear all filters", verify all reset.
-
-**Why P2**: Powerful feature for data analysis, builds on US1/US4/US5 (search, sort, typeahead), independently testable
-
-### Tests for User Story 2
-
-- [ ] T060 [P] [US2] Write unit test for DataTable column filtering at src/__tests__/components/DataTable.filtering.test.tsx verifying columnFilters state, getFilteredRowModel with custom filterFn
-- [ ] T061 [P] [US2] Write integration test at src/__tests__/integration/multi-column-filters.test.tsx verifying multiple filters applied simultaneously and clear all functionality
-
-### Implementation for User Story 2
-
-- [ ] T062 [US2] Add columnFilters state management to DataTable component using useTableState hook
-- [ ] T063 [US2] Implement column filter UI section above DataTable (separate from global search) with "Clear all filters" button
-- [ ] T064 [US2] Create FilterBar component at src/components/FilterBar.tsx (optional) or inline filter UI in DataTable for rendering column-specific filters
-- [ ] T065 [US2] Update events page at src/app/events/page.tsx to use DataTable with column definitions
-- [ ] T066 [US2] Add league filter to events page using TypeaheadDropdown component with useLeagues hook for options
-- [ ] T067 [US2] Add date range filter to events page using shadcn/ui DatePickerWithRange component (install with pnpx shadcn@latest add calendar)
-- [ ] T068 [US2] Implement pre-filtering logic in events page before passing data to DataTable (filter by selectedLeagueId and dateRange before DataTable receives data)
-- [ ] T069 [US2] Add "Clear all filters" button in events page that resets all filter state (selectedLeagueId, dateRange, and DataTable globalFilter)
-- [ ] T070 [US2] Test multi-column filtering on events page with league + date range combination, verify pagination resets to page 1
-
-**Checkpoint**: Multi-column filtering should work independently, integrate seamlessly with search, sort, pagination
-
----
-
-## Phase 9: Replication to All Pages
+## Phase 8: Replication to All Pages
 
 **Purpose**: Apply DataTable component with search, sort, pagination to remaining data pages (events, matches, players)
 
@@ -248,7 +219,7 @@ Project structure follows Next.js App Router:
 
 ---
 
-## Phase 10: Polish & Cross-Cutting Concerns
+## Phase 9: Polish & Cross-Cutting Concerns
 
 **Purpose**: Improvements that affect multiple user stories, final testing, and documentation
 
