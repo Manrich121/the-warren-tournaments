@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useMemo, use } from 'react';
+import { useMemo, use, useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -78,6 +78,9 @@ export default function LeaguePage({ params }: LeaguePageProps) {
     });
     return Array.from(playerMap.values());
   }, [leagueMatches]);
+
+  const [editLeagueOpen, setEditLeagueOpen] = useState<boolean>(false);
+  const [addEventOpen, setAddEventOpen] = useState<boolean>(false);
 
   const getLeagueStatus = (league: League) => {
     const now = new Date();
@@ -185,18 +188,34 @@ export default function LeaguePage({ params }: LeaguePageProps) {
             </div>
             {isAdmin && (
               <div className="flex gap-2">
-                <AddLeagueDialog league={league}>
-                  <Button variant="outline">
-                    <PencilIcon className="mr-2 h-4 w-4" />
-                    Edit League
-                  </Button>
-                </AddLeagueDialog>
-                <AddEventDialog leagues={[league]}>
-                  <Button>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Event
-                  </Button>
-                </AddEventDialog>
+                <AddLeagueDialog
+                  league={league}
+                  open={editLeagueOpen}
+                  onOpenChange={open => {
+                    if (!open) {
+                      setEditLeagueOpen(false);
+                    }
+                  }}
+                />
+                <Button variant="outline" onClick={() => setEditLeagueOpen(true)}>
+                  <PencilIcon className="mr-2 h-4 w-4" />
+                  Edit League
+                </Button>
+
+                <AddEventDialog
+                  leagues={[league]}
+                  open={addEventOpen}
+                  onOpenChange={open => {
+                    if (!open) {
+                      setAddEventOpen(false);
+                    }
+                  }}
+                />
+
+                <Button onClick={() => setAddEventOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Event
+                </Button>
               </div>
             )}
           </div>
@@ -261,14 +280,6 @@ export default function LeaguePage({ params }: LeaguePageProps) {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Events</CardTitle>
-                {isAdmin && (
-                  <AddEventDialog leagues={[league]}>
-                    <Button variant="outline" size="sm">
-                      <Plus className="mr-2 h-4 w-4" />
-                      Add Event
-                    </Button>
-                  </AddEventDialog>
-                )}
               </div>
             </CardHeader>
             <CardContent>
@@ -319,12 +330,21 @@ export default function LeaguePage({ params }: LeaguePageProps) {
                   <h3 className="text-lg font-semibold mb-2">No events yet</h3>
                   <p className="mb-4">Get started by creating your first event for this league.</p>
                   {isAdmin && (
-                    <AddEventDialog leagues={[league]}>
-                      <Button>
+                    <>
+                      <AddEventDialog
+                        leagues={[league]}
+                        open={addEventOpen}
+                        onOpenChange={open => {
+                          if (!open) {
+                            setAddEventOpen(false);
+                          }
+                        }}
+                      />
+                      <Button onClick={() => setAddEventOpen(true)}>
                         <Plus className="mr-2 h-4 w-4" />
                         Create First Event
                       </Button>
-                    </AddEventDialog>
+                    </>
                   )}
                 </div>
               )}

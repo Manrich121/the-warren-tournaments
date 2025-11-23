@@ -36,23 +36,26 @@ export default function DashboardPage() {
   const { data: activeLeague } = useActiveLeague();
   const { data: mostRecentLeague, isLoading: mostRecentLeagueLoading } = useMostRecentLeague();
   const { data: allLeagues } = useLeagues();
-  
+
   // State for user-selected league (US3 - League switching)
   const [selectedLeagueId, setSelectedLeagueId] = useState<string | null>(null);
-  
+
+  const [addLeagueOpen, setAddLeagueOpen] = useState(false);
+  const [addEventOpen, setAddEventOpen] = useState(false);
+
   // Default to most recent league on initial load
   useEffect(() => {
     if (mostRecentLeague && !selectedLeagueId) {
       setSelectedLeagueId(mostRecentLeague.id);
     }
   }, [mostRecentLeague, selectedLeagueId]);
-  
+
   // Determine which league to display (selected or most recent)
   const displayLeague = useMemo(() => {
     if (!selectedLeagueId || !allLeagues) return mostRecentLeague;
     return allLeagues.find(l => l.id === selectedLeagueId) || mostRecentLeague;
   }, [selectedLeagueId, allLeagues, mostRecentLeague]);
-  
+
   const {
     data: leaderboard,
     isLoading: leaderboardLoading,
@@ -96,9 +99,7 @@ export default function DashboardPage() {
 
     // Filter events and matches for the displayed (most recent) league
     const leagueEvents = events.filter(e => e.leagueId === displayLeague.id);
-    const leagueMatches = matches.filter(m =>
-      leagueEvents.some(e => e.id === m.eventId)
-    );
+    const leagueMatches = matches.filter(m => leagueEvents.some(e => e.id === m.eventId));
 
     // Get unique players who participated in the league
     const uniquePlayerIds = new Set<string>();
@@ -116,11 +117,11 @@ export default function DashboardPage() {
     }).length;
 
     return {
-      totalLeagues: allLeagues.length,  // Global count (all leagues)
+      totalLeagues: allLeagues.length, // Global count (all leagues)
       activeLeagues: activeLeaguesCount,
-      eventsCount: leagueEvents.length,  // League-specific
-      playersCount: uniquePlayerIds.size,  // League-specific
-      matchesCount: leagueMatches.length,  // League-specific
+      eventsCount: leagueEvents.length, // League-specific
+      playersCount: uniquePlayerIds.size, // League-specific
+      matchesCount: leagueMatches.length // League-specific
     };
   }, [displayLeague, events, matches, allLeagues]);
 
@@ -175,10 +176,28 @@ export default function DashboardPage() {
             <div className="flex justify-between items-center">
               <h1 className="text-3xl font-bold">Admin</h1>
               <div className="flex gap-2">
-                <AddLeagueDialog>
-                  <Button variant="outline">New League</Button>
-                </AddLeagueDialog>
-                <AddEventDialog />
+                <AddLeagueDialog
+                  open={addLeagueOpen}
+                  onOpenChange={open => {
+                    if (!open) {
+                      setAddLeagueOpen(false);
+                    }
+                  }}
+                />
+                <Button variant="outline" onClick={() => setAddLeagueOpen(true)}>
+                  New League
+                </Button>
+                <AddEventDialog
+                  open={addLeagueOpen}
+                  onOpenChange={open => {
+                    if (!open) {
+                      setAddEventOpen(false);
+                    }
+                  }}
+                />
+                <Button variant="default" onClick={() => setAddEventOpen(true)}>
+                  New Event
+                </Button>
               </div>
             </div>
           )}
@@ -258,9 +277,7 @@ export default function DashboardPage() {
                     <CardTitle>League Leaderboard</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-center text-muted-foreground py-8">
-                      No leagues available
-                    </div>
+                    <div className="text-center text-muted-foreground py-8">No leagues available</div>
                   </CardContent>
                 </Card>
               )}
