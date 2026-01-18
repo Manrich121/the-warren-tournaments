@@ -8,8 +8,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const event = await prisma.event.findUnique({
       where: { id },
       include: {
-        matches: true,
-      },
+        matches: true
+      }
     });
 
     if (!event) {
@@ -24,8 +24,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
     const players = await prisma.player.findMany({
       where: {
-        id: { in: Array.from(playerIds) },
-      },
+        id: { in: Array.from(playerIds) }
+      }
     });
 
     const rankedPlayers = calculateEventRanking(players, event.matches);

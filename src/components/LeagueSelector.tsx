@@ -1,13 +1,7 @@
 'use client';
 
 import { League } from '@prisma/client';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatLeagueOption } from '@/lib/league-utils';
 
 interface LeagueSelectorProps {
@@ -42,19 +36,12 @@ interface LeagueSelectorProps {
  * />
  * ```
  */
-export function LeagueSelector({
-  leagues,
-  selectedLeagueId,
-  onSelectLeague,
-  className = '',
-}: LeagueSelectorProps) {
+export function LeagueSelector({ leagues, selectedLeagueId, onSelectLeague, className = '' }: LeagueSelectorProps) {
   // Handle empty leagues array
   if (!leagues || leagues.length === 0) {
     return (
       <div className={`flex items-center gap-2 ${className}`}>
-        <label className="text-sm font-medium text-muted-foreground">
-          Select League:
-        </label>
+        <label className="text-sm font-medium text-muted-foreground">Select League:</label>
         <Select disabled>
           <SelectTrigger className="w-[300px]" aria-label="Select League">
             <SelectValue placeholder="No leagues available" />
@@ -69,10 +56,7 @@ export function LeagueSelector({
       <label htmlFor="league-selector" className="text-sm font-medium">
         Select League:
       </label>
-      <Select
-        value={selectedLeagueId || undefined}
-        onValueChange={onSelectLeague}
-      >
+      <Select value={selectedLeagueId || undefined} onValueChange={onSelectLeague}>
         <SelectTrigger
           id="league-selector"
           className="w-[300px]"
@@ -82,7 +66,7 @@ export function LeagueSelector({
           <SelectValue placeholder="Select a league" />
         </SelectTrigger>
         <SelectContent>
-          {leagues.map((league) => (
+          {leagues.map(league => (
             <SelectItem key={league.id} value={league.id}>
               {formatLeagueOption(league)}
             </SelectItem>

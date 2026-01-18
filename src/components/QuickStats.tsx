@@ -57,9 +57,7 @@ export function QuickStats({ stats, isLoading = false }: QuickStatsProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalLeagues}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.activeLeagues} active
-            </p>
+            <p className="text-xs text-muted-foreground">{stats.activeLeagues} active</p>
           </CardContent>
         </Card>
       </Link>

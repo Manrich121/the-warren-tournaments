@@ -16,10 +16,10 @@ const fetchLeagueLeaderboard = async (leagueId: string): Promise<LeaderboardEntr
 
 /**
  * Hook to fetch the leaderboard for a specific league.
- * 
+ *
  * @param leagueId - The ID of the league to fetch leaderboard for
  * @returns Query result with array of ranked leaderboard entries
- * 
+ *
  * Configuration:
  * - staleTime: 1 minute (leaderboards update as matches are played)
  * - Only enabled when leagueId is provided
@@ -29,6 +29,6 @@ export const useLeagueLeaderboard = (leagueId: string | undefined) => {
     queryKey: keys.leagueLeaderboard(leagueId || ''),
     queryFn: () => fetchLeagueLeaderboard(leagueId!),
     enabled: !!leagueId,
-    staleTime: 60 * 1000, // 1 minute
+    staleTime: 60 * 1000 // 1 minute
   });
 };

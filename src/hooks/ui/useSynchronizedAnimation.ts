@@ -11,10 +11,10 @@ export function useSynchronizedAnimation<T>(name: string) {
   useIsomorphicLayoutEffect(() => {
     const animations = document
       .getAnimations()
-      .filter((animation) => animation instanceof CSSAnimation && animation.animationName === name);
+      .filter(animation => animation instanceof CSSAnimation && animation.animationName === name);
 
     const myAnimation = animations.find(
-      (animation) => animation.effect instanceof KeyframeEffect && animation.effect.target === ref.current
+      animation => animation.effect instanceof KeyframeEffect && animation.effect.target === ref.current
     );
 
     if (myAnimation === undefined) {
