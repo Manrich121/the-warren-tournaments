@@ -58,30 +58,32 @@ export function ScoringSystemDialog({ open, onOpenChange, system }: ScoringSyste
   const [tieBreakers, setTieBreakers] = useState<TieBreaker[]>([DEFAULT_INIT_TIEBREAKER]);
   const [error, setError] = useState<string | null>(null);
 
-  // Reset or populate form when dialog opens
+  // Populate form when system changes or dialog opens
   useEffect(() => {
-    if (open) {
-      if (system) {
-        // Edit mode: populate with existing data
-        setName(system.name);
-        setFormulas(system.formulas.map(f => ({
+    if (isEditMode) {
+      // Edit mode: populate with existing data
+      setName(system.name);
+      setFormulas(
+        system.formulas.map(f => ({
           multiplier: f.multiplier,
           pointMetric: f.pointMetric,
           order: f.order,
-        })));
-        setTieBreakers(system.tieBreakers.map(tb => ({
+        }))
+      );
+      setTieBreakers(
+        system.tieBreakers.map(tb => ({
           type: tb.type,
           order: tb.order,
-        })));
-      } else {
-        // Create mode: reset to defaults
-        setName('');
-        setFormulas([DEFAULT_INIT_FORMULA]);
-        setTieBreakers([DEFAULT_INIT_TIEBREAKER]);
-      }
-      setError(null);
+        }))
+      );
+    } else {
+      // Create mode: reset to defaults
+      setName('');
+      setFormulas([DEFAULT_INIT_FORMULA]);
+      setTieBreakers([DEFAULT_INIT_TIEBREAKER]);
     }
-  }, [open, system]);
+    setError(null);
+  }, [system, isEditMode, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
