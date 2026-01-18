@@ -7,6 +7,27 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Point metrics that can be used in scoring formulas
+enum PointMetricType {
+  EVENT_ATTENDANCE
+  MATCH_WINS
+  GAME_WINS
+  FIRST_PLACE // 1st place in event
+  SECOND_PLACE // 2nd place in event
+  THIRD_PLACE // 3rd place in event
+}
+
+// Tie-breaker metrics for ranking players with equal points
+enum TieBreakerType {
+  LEAGUE_POINTS
+  MATCH_POINTS
+  OPP_MATCH_WIN_PCT // Opponent Match Win Percentage
+  GAME_WIN_PCT
+  OPP_GAME_WIN_PCT // Opponent Game Win Percentage
+  EVENT_ATTENDANCE_TIE // Event Attendance (when used as tie-breaker)
+  MATCH_WINS_TIE // Match Wins (when used as tie-breaker)
+}
+
 model Player {
   id               String   @id @default(cuid())
   name             String
@@ -46,14 +67,18 @@ model Event {
 }
 
 model League {
-  id        String      @id @default(cuid())
-  name      String
-  startDate DateTime
-  endDate   DateTime
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  events    Event[]
-  prizePool PrizePool[]
+  id              String         @id @default(cuid())
+  name            String
+  startDate       DateTime
+  endDate         DateTime
+  scoringSystemId String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  events          Event[]
+  prizePool       PrizePool[]
+  scoringSystem   ScoringSystem? @relation(fields: [scoringSystemId], references: [id], onDelete: SetNull)
+
+  @@index([scoringSystemId])
 }
 
 model Admin {
@@ -71,4 +96,47 @@ model PrizePool {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   league    League   @relation(fields: [leagueId], references: [id])
+}
+
+// Scoring System - defines how points are calculated and players ranked
+model ScoringSystem {
+  id          String         @id @default(cuid())
+  name        String         @unique
+  isDefault   Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  formulas    ScoreFormula[]
+  tieBreakers TieBreaker[]
+  leagues     League[]
+
+  @@index([isDefault])
+}
+
+// Score Formula - individual point calculation rule (N x PointMetric)
+model ScoreFormula {
+  id              String          @id @default(cuid())
+  scoringSystemId String
+  multiplier      Int
+  pointMetric     PointMetricType
+  order           Int
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  scoringSystem   ScoringSystem   @relation(fields: [scoringSystemId], references: [id], onDelete: Cascade)
+
+  @@index([scoringSystemId])
+  @@index([scoringSystemId, order])
+}
+
+// Tie-Breaker - defines ranking criteria when players have equal points
+model TieBreaker {
+  id              String         @id @default(cuid())
+  scoringSystemId String
+  type            TieBreakerType
+  order           Int
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  scoringSystem   ScoringSystem  @relation(fields: [scoringSystemId], references: [id], onDelete: Cascade)
+
+  @@unique([scoringSystemId, order])
+  @@index([scoringSystemId])
 }

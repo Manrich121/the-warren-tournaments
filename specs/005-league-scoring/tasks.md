@@ -33,20 +33,20 @@ Project structure per plan.md:
 
 **Purpose**: Database schema, types, and core infrastructure
 
-- [ ] T001 Update Prisma schema with PointMetricType and TieBreakerType enums in prisma/schema.prisma
-- [ ] T002 Add ScoringSystem model with relations to ScoreFormula, TieBreaker, and League in prisma/schema.prisma
-- [ ] T003 Add ScoreFormula model with scoringSystemId foreign key in prisma/schema.prisma
-- [ ] T004 Add TieBreaker model with unique constraint on (scoringSystemId, order) in prisma/schema.prisma
-- [ ] T005 Modify League model to add optional scoringSystemId field in prisma/schema.prisma
-- [ ] T006 Run Prisma format and validate schema
-- [ ] T007 Create migration with `pnpx prisma migrate dev --name add_scoring_system`
-- [ ] T008 [P] Create TypeScript domain types in src/types/scoring-system.ts (ScoringSystemWithRelations, ScoringSystemSummary, ScoreFormula, TieBreaker, ScoringSystemFormData, PlayerWithPoints)
-- [ ] T009 [P] Create display label maps in src/lib/constants/scoring-labels.ts (POINT_METRIC_LABELS, TIE_BREAKER_LABELS, options arrays)
-- [ ] T010 Create Zod validation schemas in src/lib/validations/scoring-system.ts (formulaSchema, tieBreakerSchema, createScoringSystemSchema, updateScoringSystemSchema)
-- [ ] T011 Update seed script in prisma/seed.ts to create default scoring system with specified formulas and tie-breakers
-- [ ] T012 Run seed script with `pnpx prisma db seed`
-- [ ] T013 Generate Prisma client with `pnpm run db:generate`
-- [ ] T014 Add shadcn/ui Tabs component with `pnpx shadcn@latest add tabs`
+- [X] T001 Update Prisma schema with PointMetricType and TieBreakerType enums in prisma/schema.prisma
+- [X] T002 Add ScoringSystem model with relations to ScoreFormula, TieBreaker, and League in prisma/schema.prisma
+- [X] T003 Add ScoreFormula model with scoringSystemId foreign key in prisma/schema.prisma
+- [X] T004 Add TieBreaker model with unique constraint on (scoringSystemId, order) in prisma/schema.prisma
+- [X] T005 Modify League model to add optional scoringSystemId field in prisma/schema.prisma
+- [X] T006 Run Prisma format and validate schema
+- [X] T007 Create migration with `pnpx prisma migrate dev --name add_scoring_system`
+- [X] T008 [P] Create TypeScript domain types in src/types/scoring-system.ts (ScoringSystemWithRelations, ScoringSystemSummary, ScoreFormula, TieBreaker, ScoringSystemFormData, PlayerWithPoints)
+- [X] T009 [P] Create display label maps in src/lib/constants/scoring-labels.ts (POINT_METRIC_LABELS, TIE_BREAKER_LABELS, options arrays)
+- [X] T010 Create Zod validation schemas in src/lib/validations/scoring-system.ts (formulaSchema, tieBreakerSchema, createScoringSystemSchema, updateScoringSystemSchema)
+- [X] T011 Update seed script in prisma/seed.ts to create default scoring system with specified formulas and tie-breakers
+- [X] T012 Run seed script with `pnpx prisma db seed`
+- [X] T013 Generate Prisma client with `pnpm run db:generate`
+- [X] T014 Add shadcn/ui Tabs component with `pnpx shadcn@latest add tabs`
 
 ---
 
