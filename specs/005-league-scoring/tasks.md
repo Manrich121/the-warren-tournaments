@@ -56,9 +56,9 @@ Project structure per plan.md:
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T015 [P] Create TanStack Query hooks skeleton in src/lib/hooks/use-scoring-systems.ts (useScoringSystems, useCreateScoringSystem, useUpdateScoringSystem, useDeleteScoringSystem)
-- [ ] T016 [P] Create point calculation utility function in src/lib/utils/calculate-points.ts
-- [ ] T017 [P] Create tie-breaker ranking utility function in src/lib/utils/apply-tie-breakers.ts
+- [X] T015 [P] Create TanStack Query hooks skeleton in src/lib/hooks/use-scoring-systems.ts (useScoringSystems, useCreateScoringSystem, useUpdateScoringSystem, useDeleteScoringSystem)
+- [X] T016 [P] Create point calculation utility function in src/lib/utils/calculate-points.ts
+- [X] T017 [P] Create tie-breaker ranking utility function in src/lib/utils/apply-tie-breakers.ts
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
