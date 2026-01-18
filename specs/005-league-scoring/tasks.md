@@ -76,12 +76,12 @@ Project structure per plan.md:
 - [X] T019 [US1] Implement GET /api/scoring-systems route in src/app/api/scoring-systems/route.ts (list all systems with summary data)
 - [X] T020 [US1] Implement useScoringSystems hook in src/lib/hooks/use-scoring-systems.ts (fetch list of scoring systems)
 - [X] T021 [US1] Implement useCreateScoringSystem hook in src/lib/hooks/use-scoring-systems.ts (mutation for creating systems)
-- [ ] T022 [P] [US1] Create FormulaCard component in src/components/scoring-system/formula-card.tsx (single formula input with multiplier number input, point metric dropdown, and remove button)
-- [ ] T023 [P] [US1] Create FormulaList component in src/components/scoring-system/formula-list.tsx (manages formula array with Add button, renders FormulaCard components)
-- [ ] T024 [US1] Create ScoringSystemDialog component in src/components/scoring-system/scoring-system-dialog.tsx (Dialog with react-hook-form, name input, FormulaList integration, Save/Discard buttons)
-- [ ] T025 [US1] Create ScoringSystemTable component in src/components/scoring-system/scoring-system-table.tsx (TanStack Table displaying system name, formula count, league count, default flag, created date, actions)
-- [ ] T026 [US1] Add Tabs to leagues page in src/app/leagues/page.tsx (two tabs: "Leagues" and "Scoring Systems", integrate ScoringSystemTable in second tab)
-- [ ] T027 [US1] Add validation and error handling for name uniqueness (FR-017), minimum one formula (FR-018), and maximum limits
+- [X] T022 [P] [US1] Create FormulaCard component in src/components/scoring-system/formula-card.tsx (single formula input with multiplier number input, point metric dropdown, and remove button)
+- [X] T023 [P] [US1] Create FormulaList component in src/components/scoring-system/formula-list.tsx (manages formula array with Add button, renders FormulaCard components)
+- [X] T024 [US1] Create ScoringSystemDialog component in src/components/scoring-system/scoring-system-dialog.tsx (Dialog with react-hook-form, name input, FormulaList integration, Save/Discard buttons)
+- [X] T025 [US1] Create ScoringSystemTable component in src/components/scoring-system/scoring-system-table.tsx (TanStack Table displaying system name, formula count, league count, default flag, created date, actions)
+- [X] T026 [US1] Add Tabs to leagues page in src/app/leagues/page.tsx (two tabs: "Leagues" and "Scoring Systems", integrate ScoringSystemTable in second tab)
+- [X] T027 [US1] Add validation and error handling for name uniqueness (FR-017), minimum one formula (FR-018), and maximum limits
 
 **Checkpoint**: At this point, User Story 1 should be fully functional - admin can create scoring systems with formulas and see them listed
 
