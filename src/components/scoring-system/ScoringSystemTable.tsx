@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Loader2, Pencil, Trash2 } from 'lucide-react';
 import { ScoringSystemDialog } from './ScoringSystemDialog';
-import { useScoringSystems, useScoringSystem, useDeleteScoringSystem } from '@/hooks/scoring-systems';
+import { useScoringSystems, useDeleteScoringSystem } from '@/hooks/scoring-systems';
+import type { ScoringSystemWithRelations } from '@/types/scoring-system';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,27 +25,19 @@ import { GenericSkeletonLoader } from '@/components/ShimmeringLoader';
 export function ScoringSystemTable() {
   const { data: systems, isLoading: isLoadingSystems } = useScoringSystems();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingSystemId, setEditingSystemId] = useState<string | null>(null);
+  const [editingSystem, setEditingSystem] = useState<ScoringSystemWithRelations | null>(null);
   const [deletingSystemId, setDeletingSystemId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  const { data: editingSystem, isLoading: isLoadingEditSystem } = useScoringSystem(editingSystemId || '');
   const deleteMutation = useDeleteScoringSystem();
 
-  // Open dialog once the editing system data is loaded
-  useEffect(() => {
-    if (editingSystemId && editingSystem && !isLoadingEditSystem) {
-      setDialogOpen(true);
-    }
-  }, [editingSystemId, editingSystem, isLoadingEditSystem]);
-
-  const handleEdit = (systemId: string) => {
-    setEditingSystemId(systemId);
-    // Dialog will open automatically once data is loaded (see useEffect above)
+  const handleEdit = (system: ScoringSystemWithRelations) => {
+    setEditingSystem(system);
+    setDialogOpen(true);
   };
 
   const handleCreate = () => {
-    setEditingSystemId(null);
+    setEditingSystem(null);
     setDialogOpen(true);
   };
 
@@ -64,7 +57,7 @@ export function ScoringSystemTable() {
   const handleDialogClose = (open: boolean) => {
     setDialogOpen(open);
     if (!open) {
-      setEditingSystemId(null);
+      setEditingSystem(null);
     }
   };
 
@@ -144,11 +137,10 @@ export function ScoringSystemTable() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleEdit(system.id)}
+                        onClick={() => handleEdit(system)}
                         title="Edit scoring system"
-                        disabled={isLoadingEditSystem}
                       >
-                        {isLoadingEditSystem ? <Loader2 className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
+                        <Pencil className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -169,7 +161,7 @@ export function ScoringSystemTable() {
       )}
 
       {/* Edit/Create Dialog */}
-      <ScoringSystemDialog open={dialogOpen} onOpenChange={handleDialogClose} system={editingSystem} />
+      <ScoringSystemDialog open={dialogOpen} onOpenChange={handleDialogClose} system={editingSystem ?? undefined} />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog
