@@ -11,7 +11,7 @@ import { useLeagues } from '@/hooks/useLeagues';
 import { useDeleteLeague } from '@/hooks/useDeleteLeague';
 import { League } from '@prisma/client';
 import { AddLeagueDialog } from '@/components/AddLeagueDialog';
-import { ScoringSystemTable } from '@/components/scoring-system/scoring-system-table';
+import { ScoringSystemTable } from '@/components/scoring-system/ScoringSystemTable';
 import { Header } from '@/components/Header';
 import { Nav } from '@/components/Nav';
 import { useState } from 'react';

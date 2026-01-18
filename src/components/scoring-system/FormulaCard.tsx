@@ -1,18 +1,12 @@
-"use client";
+'use client';
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
-import { POINT_METRIC_OPTIONS } from "@/lib/constants/scoring-labels";
-import type { PointMetricType } from "@prisma/client";
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { X } from 'lucide-react';
+import { POINT_METRIC_OPTIONS } from '@/lib/constants/scoring-labels';
+import type { PointMetricType } from '@prisma/client';
 
 interface FormulaCardProps {
   multiplier: number;
@@ -29,24 +23,29 @@ export function FormulaCard({
   onMultiplierChange,
   onPointMetricChange,
   onRemove,
-  index,
+  index
 }: FormulaCardProps) {
   return (
     <div className="flex items-center gap-2 rounded-lg border p-3">
       <div className="flex flex-1 items-center gap-2">
         {/* Multiplier input */}
-        <div className="w-24">
+        <div className="w-25">
           <Label htmlFor={`multiplier-${index}`} className="sr-only">
             Multiplier
           </Label>
-          <Input
-            id={`multiplier-${index}`}
-            type="number"
-            value={multiplier}
-            onChange={(e) => onMultiplierChange(parseInt(e.target.value) || 0)}
-            placeholder="Points"
-            className="text-center"
-          />
+          <div className={'flex flex-row items-center gap-2'}>
+            <Input
+              id={`multiplier-${index}`}
+              type="number"
+              value={multiplier}
+              onChange={e => onMultiplierChange(parseInt(e.target.value) || 0)}
+              placeholder="Points"
+              className="text-center"
+            />
+            <span className={'min-w-[3ch] inline-block text-center'}>
+              {multiplier === -1 || multiplier === 1 ? 'pt' : 'pts'}
+            </span>
+          </div>
         </div>
 
         {/* Multiplication symbol */}
@@ -62,7 +61,7 @@ export function FormulaCard({
               <SelectValue placeholder="Select metric" />
             </SelectTrigger>
             <SelectContent>
-              {POINT_METRIC_OPTIONS.map((option) => (
+              {POINT_METRIC_OPTIONS.map(option => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>

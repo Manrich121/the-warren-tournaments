@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { FormulaCard } from "./formula-card";
+import { FormulaCard } from "./FormulaCard";
 import type { PointMetricType } from "@prisma/client";
 
 interface Formula {
@@ -25,9 +25,25 @@ export function FormulaList({
   const handleAdd = () => {
     if (formulas.length >= maxFormulas) return;
 
+    // Get already used metrics to avoid duplicates
+    const usedMetrics = new Set(formulas.map(f => f.pointMetric));
+    
+    // Default metrics in order of priority
+    const defaultMetrics: PointMetricType[] = [
+      "EVENT_ATTENDANCE",
+      "FIRST_PLACE",
+      "SECOND_PLACE",
+      "THIRD_PLACE",
+      "MATCH_WINS",
+      "GAME_WINS",
+    ];
+    
+    // Find first unused metric
+    const nextMetric = defaultMetrics.find(m => !usedMetrics.has(m)) || "EVENT_ATTENDANCE";
+
     const newFormula: Formula = {
       multiplier: 1,
-      pointMetric: "EVENT_ATTENDANCE",
+      pointMetric: nextMetric,
       order: formulas.length + 1,
     };
 

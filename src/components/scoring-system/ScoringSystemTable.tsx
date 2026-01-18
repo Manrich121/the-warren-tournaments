@@ -1,20 +1,13 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Plus, Loader2 } from "lucide-react";
-import { ScoringSystemDialog } from "./scoring-system-dialog";
-import { useScoringSystems } from "@/hooks/scoring-systems";
-import { format } from "date-fns";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Loader2 } from 'lucide-react';
+import { ScoringSystemDialog } from './ScoringSystemDialog';
+import { useScoringSystems } from '@/hooks/scoring-systems';
+import { format } from 'date-fns';
 
 export function ScoringSystemTable() {
   const { data: systems, isLoading } = useScoringSystems();
@@ -34,9 +27,7 @@ export function ScoringSystemTable() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Scoring Systems</h2>
-          <p className="text-muted-foreground">
-            Configure how players earn points in leagues
-          </p>
+          <p className="text-muted-foreground">Configure how players earn points in leagues</p>
         </div>
         <Button onClick={() => setDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
@@ -48,12 +39,10 @@ export function ScoringSystemTable() {
       {!systems || systems.length === 0 ? (
         <div className="rounded-lg border border-dashed p-12 text-center">
           <p className="text-lg font-medium mb-2">No scoring systems yet</p>
-          <p className="text-sm text-muted-foreground mb-4">
-            Create your first scoring system to get started
-          </p>
+          <p className="text-sm text-muted-foreground mb-4">Create your first scoring system to get started</p>
           <Button onClick={() => setDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Create Scoring System
+            New Scoring System
           </Button>
         </div>
       ) : (
@@ -69,7 +58,7 @@ export function ScoringSystemTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {systems.map((system) => (
+              {systems.map(system => (
                 <TableRow key={system.id}>
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
@@ -81,17 +70,11 @@ export function ScoringSystemTable() {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="text-center">
-                    {system.formulaCount}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {system.tieBreakerCount}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {system.leagueCount}
-                  </TableCell>
+                  <TableCell className="text-center">{system.formulaCount}</TableCell>
+                  <TableCell className="text-center">{system.tieBreakerCount}</TableCell>
+                  <TableCell className="text-center">{system.leagueCount}</TableCell>
                   <TableCell className="text-muted-foreground">
-                    {format(new Date(system.createdAt), "MMM d, yyyy")}
+                    {format(new Date(system.createdAt), 'MMM d, yyyy')}
                   </TableCell>
                 </TableRow>
               ))}
