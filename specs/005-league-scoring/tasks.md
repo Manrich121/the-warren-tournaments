@@ -95,13 +95,13 @@ Project structure per plan.md:
 
 ### Implementation for User Story 2
 
-- [ ] T028 [P] [US2] Create TieBreakerCard component in src/components/scoring-system/tie-breaker-card.tsx (dropdown for tie-breaker type with numbering display and remove button)
-- [ ] T029 [P] [US2] Create TieBreakerList component in src/components/scoring-system/tie-breaker-list.tsx (manages tie-breaker array with Add button, auto-numbering, renders TieBreakerCard components)
-- [ ] T030 [US2] Integrate TieBreakerList into ScoringSystemDialog component in src/components/scoring-system/scoring-system-dialog.tsx (add below FormulaList section)
-- [ ] T031 [US2] Update POST route in src/app/api/scoring-systems/route.ts to handle tie-breaker creation with order validation
-- [ ] T032 [US2] Update GET routes to include tie-breakers ordered by order field
-- [ ] T033 [US2] Add validation for maximum 7 tie-breakers and unique order values within system
-- [ ] T034 [US2] Implement automatic renumbering when tie-breakers are removed
+- [X] T028 [P] [US2] Create TieBreakerCard component in src/components/scoring-system/TieBreakerCard.tsx (dropdown for tie-breaker type with numbering display and remove button)
+- [X] T029 [P] [US2] Create TieBreakerList component in src/components/scoring-system/TieBreakerList.tsx (manages tie-breaker array with Add button, auto-numbering, renders TieBreakerCard components)
+- [X] T030 [US2] Integrate TieBreakerList into ScoringSystemDialog component in src/components/scoring-system/ScoringSystemDialog.tsx (add below FormulaList section)
+- [X] T031 [US2] Update POST route in src/app/api/scoring-systems/route.ts to handle tie-breaker creation with order validation
+- [X] T032 [US2] Update GET routes to include tie-breakers ordered by order field
+- [X] T033 [US2] Add validation for maximum 7 tie-breakers and unique order values within system
+- [X] T034 [US2] Implement automatic renumbering when tie-breakers are removed
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work - systems can be created with formulas and tie-breakers
 
