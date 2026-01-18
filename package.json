@@ -83,6 +83,9 @@
     "typescript-eslint": "^8.45.0"
   },
   "packageManager": "pnpm@10.28.0",
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "pnpm": {
     "overrides": {
       "@types/react": "19.2.2"
