@@ -72,10 +72,10 @@ Project structure per plan.md:
 
 ### Implementation for User Story 1
 
-- [ ] T018 [US1] Implement POST /api/scoring-systems route in src/app/api/scoring-systems/route.ts (create scoring system with validation, uniqueness check, formula creation)
-- [ ] T019 [US1] Implement GET /api/scoring-systems route in src/app/api/scoring-systems/route.ts (list all systems with summary data)
-- [ ] T020 [US1] Implement useScoringSystems hook in src/lib/hooks/use-scoring-systems.ts (fetch list of scoring systems)
-- [ ] T021 [US1] Implement useCreateScoringSystem hook in src/lib/hooks/use-scoring-systems.ts (mutation for creating systems)
+- [X] T018 [US1] Implement POST /api/scoring-systems route in src/app/api/scoring-systems/route.ts (create scoring system with validation, uniqueness check, formula creation)
+- [X] T019 [US1] Implement GET /api/scoring-systems route in src/app/api/scoring-systems/route.ts (list all systems with summary data)
+- [X] T020 [US1] Implement useScoringSystems hook in src/lib/hooks/use-scoring-systems.ts (fetch list of scoring systems)
+- [X] T021 [US1] Implement useCreateScoringSystem hook in src/lib/hooks/use-scoring-systems.ts (mutation for creating systems)
 - [ ] T022 [P] [US1] Create FormulaCard component in src/components/scoring-system/formula-card.tsx (single formula input with multiplier number input, point metric dropdown, and remove button)
 - [ ] T023 [P] [US1] Create FormulaList component in src/components/scoring-system/formula-list.tsx (manages formula array with Add button, renders FormulaCard components)
 - [ ] T024 [US1] Create ScoringSystemDialog component in src/components/scoring-system/scoring-system-dialog.tsx (Dialog with react-hook-form, name input, FormulaList integration, Save/Discard buttons)
