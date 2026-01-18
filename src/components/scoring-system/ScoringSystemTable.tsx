@@ -19,7 +19,6 @@ import {
 } from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { TIE_BREAKER_SHORT_LABELS } from '@/lib/constants/scoring-labels';
-import { Skeleton } from '@/components/ui/skeleton';
 import { GenericSkeletonLoader } from '@/components/ShimmeringLoader';
 
 export function ScoringSystemTable() {
@@ -29,15 +28,15 @@ export function ScoringSystemTable() {
   const [deletingSystemId, setDeletingSystemId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  const { data: editingSystem, isLoading: isLoadingSystem } = useScoringSystem(editingSystemId || '');
+  const { data: editingSystem, isLoading: isLoadingEditSystem } = useScoringSystem(editingSystemId || '');
   const deleteMutation = useDeleteScoringSystem();
 
   // Open dialog once the editing system data is loaded
   useEffect(() => {
-    if (editingSystemId && editingSystem && !isLoadingSystem) {
+    if (editingSystemId && editingSystem && !isLoadingEditSystem) {
       setDialogOpen(true);
     }
-  }, [editingSystemId, editingSystem, isLoadingSystem]);
+  }, [editingSystemId, editingSystem, isLoadingEditSystem]);
 
   const handleEdit = (systemId: string) => {
     setEditingSystemId(systemId);
@@ -147,8 +146,9 @@ export function ScoringSystemTable() {
                         size="icon"
                         onClick={() => handleEdit(system.id)}
                         title="Edit scoring system"
+                        disabled={isLoadingEditSystem}
                       >
-                        <Pencil className="h-4 w-4" />
+                        {isLoadingEditSystem ? <Loader2 className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
                       </Button>
                       <Button
                         variant="ghost"
