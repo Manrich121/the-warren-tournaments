@@ -16,12 +16,14 @@ import {
 import { Loader2 } from 'lucide-react';
 import { FormulaList } from './FormulaList';
 import { TieBreakerList } from './TieBreakerList';
-import { useAddScoringSystem } from '@/hooks/scoring-systems';
+import { useAddScoringSystem, useUpdateScoringSystem } from '@/hooks/scoring-systems';
+import type { ScoringSystemWithRelations } from '@/types/scoring-system';
 import { PointMetricType, TieBreakerType } from '@prisma/client';
 
 interface ScoringSystemDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  system?: ScoringSystemWithRelations; // If provided, dialog is in edit mode
 }
 
 interface Formula {
@@ -46,23 +48,40 @@ const DEFAULT_INIT_TIEBREAKER: TieBreaker = {
   order: 1
 };
 
-export function ScoringSystemDialog({ open, onOpenChange }: ScoringSystemDialogProps) {
+export function ScoringSystemDialog({ open, onOpenChange, system }: ScoringSystemDialogProps) {
   const addMutation = useAddScoringSystem();
+  const updateMutation = useUpdateScoringSystem();
+  const isEditMode = !!system;
 
   const [name, setName] = useState('');
   const [formulas, setFormulas] = useState<Formula[]>([DEFAULT_INIT_FORMULA]);
   const [tieBreakers, setTieBreakers] = useState<TieBreaker[]>([DEFAULT_INIT_TIEBREAKER]);
   const [error, setError] = useState<string | null>(null);
 
-  // Reset form when dialog opens
+  // Reset or populate form when dialog opens
   useEffect(() => {
     if (open) {
-      setName('');
-      setFormulas([DEFAULT_INIT_FORMULA]);
-      setTieBreakers([DEFAULT_INIT_TIEBREAKER]);
+      if (system) {
+        // Edit mode: populate with existing data
+        setName(system.name);
+        setFormulas(system.formulas.map(f => ({
+          multiplier: f.multiplier,
+          pointMetric: f.pointMetric,
+          order: f.order,
+        })));
+        setTieBreakers(system.tieBreakers.map(tb => ({
+          type: tb.type,
+          order: tb.order,
+        })));
+      } else {
+        // Create mode: reset to defaults
+        setName('');
+        setFormulas([DEFAULT_INIT_FORMULA]);
+        setTieBreakers([DEFAULT_INIT_TIEBREAKER]);
+      }
       setError(null);
     }
-  }, [open]);
+  }, [open, system]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,15 +106,24 @@ export function ScoringSystemDialog({ open, onOpenChange }: ScoringSystemDialogP
     }
 
     try {
-      await addMutation.mutateAsync({
-        name: name.trim(),
-        formulas,
-        tieBreakers
-      });
+      if (isEditMode && system) {
+        await updateMutation.mutateAsync({
+          id: system.id,
+          name: name.trim(),
+          formulas,
+          tieBreakers,
+        });
+      } else {
+        await addMutation.mutateAsync({
+          name: name.trim(),
+          formulas,
+          tieBreakers,
+        });
+      }
 
       onOpenChange(false);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create scoring system';
+      const errorMessage = err instanceof Error ? err.message : `Failed to ${isEditMode ? 'update' : 'create'} scoring system`;
       setError(errorMessage);
     }
   };
@@ -109,7 +137,7 @@ export function ScoringSystemDialog({ open, onOpenChange }: ScoringSystemDialogP
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Create League Scoring System</DialogTitle>
+            <DialogTitle>{isEditMode ? 'Edit' : 'Create'} League Scoring System</DialogTitle>
             <DialogDescription>Define how players earn league points with formulas and tie-breakers.</DialogDescription>
           </DialogHeader>
 
@@ -149,9 +177,9 @@ export function ScoringSystemDialog({ open, onOpenChange }: ScoringSystemDialogP
                 Cancel
               </Button>
             </DialogClose>
-            <Button type="submit" disabled={addMutation.isPending}>
-              {addMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Create Scoring System
+            <Button type="submit" disabled={addMutation.isPending || updateMutation.isPending}>
+              {(addMutation.isPending || updateMutation.isPending) && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              {isEditMode ? 'Update' : 'Create'} Scoring System
             </Button>
           </DialogFooter>
         </form>

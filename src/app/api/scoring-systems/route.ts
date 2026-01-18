@@ -4,40 +4,25 @@ import { auth } from "@/auth";
 import { createScoringSystemSchema } from "@/lib/validations/scoring-system";
 import { z } from "zod";
 
-// GET /api/scoring-systems - List all scoring systems
+// GET /api/scoring-systems - List all scoring systems with full details
 export async function GET() {
   try {
     const systems = await prisma.scoringSystem.findMany({
-      select: {
-        id: true,
-        name: true,
-        isDefault: true,
-        createdAt: true,
-        updatedAt: true,
+      include: {
+        formulas: {
+          orderBy: { order: "asc" },
+        },
+        tieBreakers: {
+          orderBy: { order: "asc" },
+        },
         _count: {
-          select: {
-            formulas: true,
-            tieBreakers: true,
-            leagues: true,
-          },
+          select: { leagues: true },
         },
       },
       orderBy: [{ isDefault: "desc" }, { name: "asc" }],
     });
 
-    // Transform to match ScoringSystemSummary type
-    const summaries = systems.map((system) => ({
-      id: system.id,
-      name: system.name,
-      isDefault: system.isDefault,
-      formulaCount: system._count.formulas,
-      tieBreakerCount: system._count.tieBreakers,
-      leagueCount: system._count.leagues,
-      createdAt: system.createdAt,
-      updatedAt: system.updatedAt,
-    }));
-
-    return NextResponse.json({ data: summaries });
+    return NextResponse.json({ data: systems });
   } catch (error) {
     console.error("Error fetching scoring systems:", error);
     return NextResponse.json(

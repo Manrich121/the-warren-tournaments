@@ -149,7 +149,7 @@ export default function LeaguesPage() {
             </TabsContent>
 
             {isAdmin && (
-              <TabsContent value="scoring-systems" className="space-y-6">
+              <TabsContent value="scoring-systems" className="space-y-6 focus-visible:ring-0">
                 <ScoringSystemTable />
               </TabsContent>
             )}

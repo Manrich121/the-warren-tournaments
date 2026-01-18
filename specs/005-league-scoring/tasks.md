@@ -115,15 +115,15 @@ Project structure per plan.md:
 
 ### Implementation for User Story 3
 
-- [ ] T035 [US3] Implement GET /api/scoring-systems/[id] route in src/app/api/scoring-systems/[id]/route.ts (fetch single system with all relations)
-- [ ] T036 [US3] Implement PATCH /api/scoring-systems/[id] route in src/app/api/scoring-systems/[id]/route.ts (update system, replace formulas and tie-breakers)
-- [ ] T037 [US3] Implement DELETE /api/scoring-systems/[id] route in src/app/api/scoring-systems/[id]/route.ts (delete with league association check, prevent default deletion)
-- [ ] T038 [US3] Implement useUpdateScoringSystem hook in src/lib/hooks/use-scoring-systems.ts (mutation for updating)
-- [ ] T039 [US3] Implement useDeleteScoringSystem hook in src/lib/hooks/use-scoring-systems.ts (mutation for deletion with error handling)
-- [ ] T040 [US3] Add edit mode to ScoringSystemDialog in src/components/scoring-system/scoring-system-dialog.tsx (load existing data, populate form fields, update title and button text)
-- [ ] T041 [US3] Add Edit and Delete action buttons to ScoringSystemTable in src/components/scoring-system/scoring-system-table.tsx
-- [ ] T042 [US3] Implement delete confirmation dialog with league association error display
-- [ ] T043 [US3] Add validation for name uniqueness excluding current system ID during updates
+- [X] T035 [US3] Implement GET /api/scoring-systems/[id] route in src/app/api/scoring-systems/[id]/route.ts (fetch single system with all relations)
+- [X] T036 [US3] Implement PATCH /api/scoring-systems/[id] route in src/app/api/scoring-systems/[id]/route.ts (update system, replace formulas and tie-breakers)
+- [X] T037 [US3] Implement DELETE /api/scoring-systems/[id] route in src/app/api/scoring-systems/[id]/route.ts (delete with league association check, prevent default deletion)
+- [X] T038 [US3] Implement useUpdateScoringSystem hook in src/hooks/scoring-systems/useUpdateScoringSystem.ts (mutation for updating)
+- [X] T039 [US3] Implement useDeleteScoringSystem hook in src/hooks/scoring-systems/useDeleteScoringSystem.ts (mutation for deletion with error handling)
+- [X] T040 [US3] Add edit mode to ScoringSystemDialog in src/components/scoring-system/ScoringSystemDialog.tsx (load existing data, populate form fields, update title and button text)
+- [X] T041 [US3] Add Edit and Delete action buttons to ScoringSystemTable in src/components/scoring-system/ScoringSystemTable.tsx
+- [X] T042 [US3] Implement delete confirmation dialog with league association error display
+- [X] T043 [US3] Add validation for name uniqueness excluding current system ID during updates
 
 **Checkpoint**: All CRUD operations for scoring systems should now be functional
 
