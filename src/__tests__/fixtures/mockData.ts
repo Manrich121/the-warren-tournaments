@@ -14,7 +14,7 @@ export const mockLeagues: League[] = [
     startDate: new Date('2025-06-01'),
     endDate: new Date('2025-08-31'),
     createdAt: new Date('2025-01-01'),
-    updatedAt: new Date('2025-01-01'),
+    updatedAt: new Date('2025-01-01')
   },
   {
     id: 'league-2',
@@ -22,7 +22,7 @@ export const mockLeagues: League[] = [
     startDate: new Date('2025-12-01'),
     endDate: new Date('2026-02-28'),
     createdAt: new Date('2025-01-15'),
-    updatedAt: new Date('2025-01-15'),
+    updatedAt: new Date('2025-01-15')
   },
   {
     id: 'league-3',
@@ -30,8 +30,8 @@ export const mockLeagues: League[] = [
     startDate: new Date('2025-03-01'),
     endDate: new Date('2025-05-31'),
     createdAt: new Date('2024-12-01'),
-    updatedAt: new Date('2024-12-01'),
-  },
+    updatedAt: new Date('2024-12-01')
+  }
 ];
 
 /**
@@ -42,26 +42,26 @@ export const mockPlayers: Player[] = [
     id: 'player-1',
     name: 'Alice Johnson',
     createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01')
   },
   {
     id: 'player-2',
     name: 'Bob Smith',
     createdAt: new Date('2024-01-02'),
-    updatedAt: new Date('2024-01-02'),
+    updatedAt: new Date('2024-01-02')
   },
   {
     id: 'player-3',
     name: 'Charlie Brown',
     createdAt: new Date('2024-01-03'),
-    updatedAt: new Date('2024-01-03'),
+    updatedAt: new Date('2024-01-03')
   },
   {
     id: 'player-4',
     name: 'Diana Prince',
     createdAt: new Date('2024-01-04'),
-    updatedAt: new Date('2024-01-04'),
-  },
+    updatedAt: new Date('2024-01-04')
+  }
 ];
 
 /**
@@ -74,7 +74,7 @@ export const mockEvents: Event[] = [
     name: 'Summer Tournament Round 1',
     date: new Date('2025-06-15'),
     createdAt: new Date('2025-05-01'),
-    updatedAt: new Date('2025-05-01'),
+    updatedAt: new Date('2025-05-01')
   },
   {
     id: 'event-2',
@@ -82,7 +82,7 @@ export const mockEvents: Event[] = [
     name: 'Summer Tournament Round 2',
     date: new Date('2025-07-15'),
     createdAt: new Date('2025-05-01'),
-    updatedAt: new Date('2025-05-01'),
+    updatedAt: new Date('2025-05-01')
   },
   {
     id: 'event-3',
@@ -90,8 +90,8 @@ export const mockEvents: Event[] = [
     name: 'Winter Championship Finals',
     date: new Date('2025-12-20'),
     createdAt: new Date('2025-11-01'),
-    updatedAt: new Date('2025-11-01'),
-  },
+    updatedAt: new Date('2025-11-01')
+  }
 ];
 
 /**
@@ -108,7 +108,7 @@ export const mockMatches: Match[] = [
     round: 1,
     draw: false,
     createdAt: new Date('2025-06-15'),
-    updatedAt: new Date('2025-06-15'),
+    updatedAt: new Date('2025-06-15')
   },
   {
     id: 'match-2',
@@ -120,7 +120,7 @@ export const mockMatches: Match[] = [
     round: 1,
     draw: true,
     createdAt: new Date('2025-06-15'),
-    updatedAt: new Date('2025-06-15'),
+    updatedAt: new Date('2025-06-15')
   },
   {
     id: 'match-3',
@@ -132,8 +132,8 @@ export const mockMatches: Match[] = [
     round: 2,
     draw: false,
     createdAt: new Date('2025-07-15'),
-    updatedAt: new Date('2025-07-15'),
-  },
+    updatedAt: new Date('2025-07-15')
+  }
 ];
 
 /**
@@ -146,7 +146,7 @@ export function generateMockLeagues(count: number): League[] {
     startDate: new Date(2025, i % 12, 1),
     endDate: new Date(2025, (i + 2) % 12, 28),
     createdAt: new Date(2024, i % 12, 1),
-    updatedAt: new Date(2024, i % 12, 1),
+    updatedAt: new Date(2024, i % 12, 1)
   }));
 }
 
@@ -157,7 +157,7 @@ export function generateMockPlayers(count: number): Player[] {
   return Array.from({ length: count }, (_, i) => ({
     id: `player-${i + 1}`,
     name: `Player ${i + 1}`,
-    createdAt: new Date(2024, 0, i % 365 + 1),
-    updatedAt: new Date(2024, 0, i % 365 + 1),
+    createdAt: new Date(2024, 0, (i % 365) + 1),
+    updatedAt: new Date(2024, 0, (i % 365) + 1)
   }));
 }

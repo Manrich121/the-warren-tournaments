@@ -27,10 +27,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     // Validate league ID format
     const validationResult = leagueIdSchema.safeParse(id);
     if (!validationResult.success) {
-      return NextResponse.json(
-        { error: 'Bad Request', message: 'Invalid league ID format' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Bad Request', message: 'Invalid league ID format' }, { status: 400 });
     }
 
     // Fetch league with events and matches
@@ -46,10 +43,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     });
 
     if (!league) {
-      return NextResponse.json(
-        { error: 'Not Found', message: 'League not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Not Found', message: 'League not found' }, { status: 404 });
     }
 
     // Collect all player IDs from matches

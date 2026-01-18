@@ -1,8 +1,5 @@
 import { Match, Player, Event } from '@prisma/client';
-import {
-  calculateLeagueLeaderboard,
-  areEntriesEqual
-} from '../lib/leaderboard-calculator';
+import { calculateLeagueLeaderboard, areEntriesEqual } from '../lib/leaderboard-calculator';
 import { LeaderboardEntry } from '../types/leaderboard';
 
 describe('Leaderboard Calculator', () => {
@@ -74,16 +71,9 @@ describe('Leaderboard Calculator', () => {
     });
 
     it('should rank players by league points (primary criterion)', () => {
-      const players = [
-        createPlayer('p1', 'Alice'),
-        createPlayer('p2', 'Bob'),
-        createPlayer('p3', 'Charlie')
-      ];
+      const players = [createPlayer('p1', 'Alice'), createPlayer('p2', 'Bob'), createPlayer('p3', 'Charlie')];
 
-      const events = [
-        createEvent('e1', 'league1', 'Event 1'),
-        createEvent('e2', 'league1', 'Event 2')
-      ];
+      const events = [createEvent('e1', 'league1', 'Event 1'), createEvent('e2', 'league1', 'Event 2')];
 
       // Event 1: Alice wins all
       const matches = [
@@ -93,7 +83,7 @@ describe('Leaderboard Calculator', () => {
         // Event 2: Bob wins all
         createMatch('m4', 'e2', 'p2', 'p1', 2, 0), // Bob beats Alice
         createMatch('m5', 'e2', 'p2', 'p3', 2, 1), // Bob beats Charlie
-        createMatch('m6', 'e2', 'p1', 'p3', 1, 2)  // Charlie beats Alice
+        createMatch('m6', 'e2', 'p1', 'p3', 1, 2) // Charlie beats Alice
       ];
 
       const result = calculateLeagueLeaderboard('league1', events, matches, players);
@@ -111,10 +101,7 @@ describe('Leaderboard Calculator', () => {
     });
 
     it('should use match win rate as tie-breaker when league points are equal', () => {
-      const players = [
-        createPlayer('p1', 'Alice'),
-        createPlayer('p2', 'Bob')
-      ];
+      const players = [createPlayer('p1', 'Alice'), createPlayer('p2', 'Bob')];
 
       const events = [createEvent('e1', 'league1', 'Event 1')];
 
@@ -124,7 +111,7 @@ describe('Leaderboard Calculator', () => {
         createMatch('m1', 'e1', 'p1', 'p2', 2, 1), // Alice wins
         createMatch('m2', 'e1', 'p1', 'p3', 2, 0), // Alice wins (p3 not in players, but counts for stats)
         createMatch('m3', 'e1', 'p2', 'p1', 0, 2), // Alice wins
-        createMatch('m4', 'e1', 'p2', 'p3', 2, 0)  // Bob wins
+        createMatch('m4', 'e1', 'p2', 'p3', 2, 0) // Bob wins
       ];
 
       // Add p3 temporarily for match calculations
@@ -138,10 +125,7 @@ describe('Leaderboard Calculator', () => {
     });
 
     it('should handle draw matches correctly (not counted as wins)', () => {
-      const players = [
-        createPlayer('p1', 'Alice'),
-        createPlayer('p2', 'Bob')
-      ];
+      const players = [createPlayer('p1', 'Alice'), createPlayer('p2', 'Bob')];
 
       const events = [createEvent('e1', 'league1', 'Event 1')];
 
@@ -171,7 +155,7 @@ describe('Leaderboard Calculator', () => {
 
       const matches = [
         createMatch('m1', 'e1', 'p1', 'p2', 2, 1), // Alice: 2/3 games
-        createMatch('m2', 'e1', 'p1', 'p3', 1, 2)  // Alice: 1/3 games
+        createMatch('m2', 'e1', 'p1', 'p3', 1, 2) // Alice: 1/3 games
       ];
 
       const allPlayers = [...players, createPlayer('p2', 'Bob'), createPlayer('p3', 'Charlie')];
@@ -185,11 +169,7 @@ describe('Leaderboard Calculator', () => {
     });
 
     it('should handle alphabetical ordering when all numeric criteria are identical', () => {
-      const players = [
-        createPlayer('p1', 'Alice'),
-        createPlayer('p2', 'Bob'),
-        createPlayer('p3', 'Charlie')
-      ];
+      const players = [createPlayer('p1', 'Alice'), createPlayer('p2', 'Bob'), createPlayer('p3', 'Charlie')];
 
       const events = [createEvent('e1', 'league1', 'Event 1')];
 
@@ -208,7 +188,7 @@ describe('Leaderboard Calculator', () => {
       expect(result[0].playerName).toBe('Alice');
       expect(result[1].playerName).toBe('Bob');
       expect(result[2].playerName).toBe('Charlie');
-      
+
       // Each should have a different rank since alphabetical order breaks the tie
       expect(result[0].rank).toBe(1);
       expect(result[1].rank).toBe(2);
@@ -216,11 +196,7 @@ describe('Leaderboard Calculator', () => {
     });
 
     it('should apply alphabetical tie-breaking when all other criteria equal', () => {
-      const players = [
-        createPlayer('p1', 'Zara'),
-        createPlayer('p2', 'Alice'),
-        createPlayer('p3', 'Bob')
-      ];
+      const players = [createPlayer('p1', 'Zara'), createPlayer('p2', 'Alice'), createPlayer('p3', 'Bob')];
 
       const events = [createEvent('e1', 'league1', 'Event 1')];
 
@@ -250,7 +226,7 @@ describe('Leaderboard Calculator', () => {
 
       const matches = [
         createMatch('m1', 'e1', 'p1', 'p2', 2, 1), // league1
-        createMatch('m2', 'e2', 'p1', 'p2', 0, 2)  // league2 (should be ignored)
+        createMatch('m2', 'e2', 'p1', 'p2', 0, 2) // league2 (should be ignored)
       ];
 
       const result = calculateLeagueLeaderboard('league1', events, matches, players);
@@ -271,9 +247,7 @@ describe('Leaderboard Calculator', () => {
 
       const events = [createEvent('e1', 'league1', 'Event 1')];
 
-      const matches = [
-        createMatch('m1', 'e1', 'p1', 'p2', 2, 1)
-      ];
+      const matches = [createMatch('m1', 'e1', 'p1', 'p2', 2, 1)];
 
       const result = calculateLeagueLeaderboard('league1', events, matches, players);
 
@@ -282,18 +256,14 @@ describe('Leaderboard Calculator', () => {
     });
 
     it('should calculate opponent statistics correctly', () => {
-      const players = [
-        createPlayer('p1', 'Alice'),
-        createPlayer('p2', 'Bob'),
-        createPlayer('p3', 'Charlie')
-      ];
+      const players = [createPlayer('p1', 'Alice'), createPlayer('p2', 'Bob'), createPlayer('p3', 'Charlie')];
 
       const events = [createEvent('e1', 'league1', 'Event 1')];
 
       const matches = [
         createMatch('m1', 'e1', 'p1', 'p2', 2, 1), // Alice beats Bob
         createMatch('m2', 'e1', 'p1', 'p3', 2, 0), // Alice beats Charlie
-        createMatch('m3', 'e1', 'p2', 'p3', 2, 1)  // Bob beats Charlie
+        createMatch('m3', 'e1', 'p2', 'p3', 2, 1) // Bob beats Charlie
       ];
 
       const result = calculateLeagueLeaderboard('league1', events, matches, players);
@@ -322,7 +292,7 @@ describe('Leaderboard Calculator', () => {
         createMatch('m3', 'e1', 'p1', 'p4', 2, 0), // Alice beats David
         createMatch('m4', 'e1', 'p2', 'p3', 1, 1, true), // Bob and Charlie draw
         createMatch('m5', 'e1', 'p2', 'p4', 2, 0), // Bob beats David
-        createMatch('m6', 'e1', 'p3', 'p4', 2, 0)  // Charlie beats David
+        createMatch('m6', 'e1', 'p3', 'p4', 2, 0) // Charlie beats David
       ];
 
       const result = calculateLeagueLeaderboard('league1', events, matches, players);
@@ -420,13 +390,9 @@ describe('Leaderboard Calculator', () => {
   describe('Edge Cases', () => {
     it('should handle very high league points correctly', () => {
       const players = [createPlayer('p1', 'Alice')];
-      const events = Array.from({ length: 50 }, (_, i) =>
-        createEvent(`e${i}`, 'league1', `Event ${i}`)
-      );
+      const events = Array.from({ length: 50 }, (_, i) => createEvent(`e${i}`, 'league1', `Event ${i}`));
 
-      const matches = events.flatMap(event =>
-        [createMatch(`m${event.id}`, event.id, 'p1', 'p2', 2, 0)]
-      );
+      const matches = events.flatMap(event => [createMatch(`m${event.id}`, event.id, 'p1', 'p2', 2, 0)]);
 
       const allPlayers = [...players, createPlayer('p2', 'Bob')];
 
@@ -455,9 +421,7 @@ describe('Leaderboard Calculator', () => {
 
       const events = [createEvent('e1', 'league1', 'Event 1')];
 
-      const matches = [
-        createMatch('m1', 'e1', 'p1', 'p2', 2, 1)
-      ];
+      const matches = [createMatch('m1', 'e1', 'p1', 'p2', 2, 1)];
 
       const result = calculateLeagueLeaderboard('league1', events, matches, players);
 

@@ -7,12 +7,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSessionStorage } from './useSessionStorage';
 import { TableState, DEFAULT_TABLE_STATE } from '@/types/table';
-import {
-  ColumnFiltersState,
-  SortingState,
-  PaginationState,
-  OnChangeFn,
-} from '@tanstack/react-table';
+import { ColumnFiltersState, SortingState, PaginationState, OnChangeFn } from '@tanstack/react-table';
 
 /**
  * Props for useTableState hook
@@ -94,8 +89,8 @@ export function useTableState(props: UseTableStateProps): UseTableStateReturn {
       ...DEFAULT_TABLE_STATE,
       pagination: {
         ...DEFAULT_TABLE_STATE.pagination,
-        pageSize: initialPageSize,
-      },
+        pageSize: initialPageSize
+      }
     }),
     [initialPageSize]
   );
@@ -107,9 +102,7 @@ export function useTableState(props: UseTableStateProps): UseTableStateReturn {
 
   // Individual state values for TanStack Table
   const [globalFilter, setGlobalFilterState] = useState<string>(persistedState.globalFilter);
-  const [columnFilters, setColumnFiltersState] = useState<ColumnFiltersState>(
-    persistedState.columnFilters
-  );
+  const [columnFilters, setColumnFiltersState] = useState<ColumnFiltersState>(persistedState.columnFilters);
   const [sorting, setSortingState] = useState<SortingState>(persistedState.sorting);
   const [pagination, setPaginationState] = useState<PaginationState>(persistedState.pagination);
 
@@ -127,7 +120,7 @@ export function useTableState(props: UseTableStateProps): UseTableStateReturn {
       globalFilter,
       columnFilters,
       sorting,
-      pagination,
+      pagination
     };
 
     // Only update if state actually changed
@@ -137,29 +130,26 @@ export function useTableState(props: UseTableStateProps): UseTableStateReturn {
   }, [globalFilter, columnFilters, sorting, pagination, persistedState, setPersistedState]);
 
   // Wrapped setters that match TanStack Table's OnChangeFn type
-  const setGlobalFilter: OnChangeFn<string> = (updaterOrValue) => {
-    const newValue =
-      typeof updaterOrValue === 'function' ? updaterOrValue(globalFilter) : updaterOrValue;
+  const setGlobalFilter: OnChangeFn<string> = updaterOrValue => {
+    const newValue = typeof updaterOrValue === 'function' ? updaterOrValue(globalFilter) : updaterOrValue;
     setGlobalFilterState(newValue);
   };
 
-  const setColumnFilters: OnChangeFn<ColumnFiltersState> = (updaterOrValue) => {
-    const newValue =
-      typeof updaterOrValue === 'function' ? updaterOrValue(columnFilters) : updaterOrValue;
+  const setColumnFilters: OnChangeFn<ColumnFiltersState> = updaterOrValue => {
+    const newValue = typeof updaterOrValue === 'function' ? updaterOrValue(columnFilters) : updaterOrValue;
     setColumnFiltersState(newValue);
 
     // Reset to first page when column filters change
-    setPaginationState((prev) => ({ ...prev, pageIndex: 0 }));
+    setPaginationState(prev => ({ ...prev, pageIndex: 0 }));
   };
 
-  const setSorting: OnChangeFn<SortingState> = (updaterOrValue) => {
+  const setSorting: OnChangeFn<SortingState> = updaterOrValue => {
     const newValue = typeof updaterOrValue === 'function' ? updaterOrValue(sorting) : updaterOrValue;
     setSortingState(newValue);
   };
 
-  const setPagination: OnChangeFn<PaginationState> = (updaterOrValue) => {
-    const newValue =
-      typeof updaterOrValue === 'function' ? updaterOrValue(pagination) : updaterOrValue;
+  const setPagination: OnChangeFn<PaginationState> = updaterOrValue => {
+    const newValue = typeof updaterOrValue === 'function' ? updaterOrValue(pagination) : updaterOrValue;
     setPaginationState(newValue);
   };
 
@@ -180,6 +170,6 @@ export function useTableState(props: UseTableStateProps): UseTableStateReturn {
     setSorting,
     pagination,
     setPagination,
-    resetFilters,
+    resetFilters
   };
 }

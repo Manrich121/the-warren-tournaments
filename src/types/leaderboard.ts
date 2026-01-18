@@ -49,7 +49,7 @@ export interface LeaderboardEntry {
 /**
  * League status based on start and end dates
  */
-export type LeagueStatus = "Active" | "Upcoming" | "Past";
+export type LeagueStatus = 'Active' | 'Upcoming' | 'Past';
 
 /**
  * Extended league interface with formatted date strings for UI display

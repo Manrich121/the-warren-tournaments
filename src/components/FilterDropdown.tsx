@@ -15,13 +15,7 @@ interface FilterDropdownProps {
   disabled?: boolean;
 }
 
-export function FilterDropdown({ 
-  placeholder, 
-  value, 
-  options, 
-  onValueChange,
-  disabled = false 
-}: FilterDropdownProps) {
+export function FilterDropdown({ placeholder, value, options, onValueChange, disabled = false }: FilterDropdownProps) {
   const handleValueChange = (selectedValue: string) => {
     if (selectedValue === 'all' || selectedValue === '') {
       onValueChange(null);
@@ -31,11 +25,7 @@ export function FilterDropdown({
   };
 
   return (
-    <Select 
-      value={value || 'all'} 
-      onValueChange={handleValueChange}
-      disabled={disabled}
-    >
+    <Select value={value || 'all'} onValueChange={handleValueChange} disabled={disabled}>
       <SelectTrigger className="w-[200px]">
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>

@@ -16,9 +16,9 @@ const fetchMostRecentLeague = async (): Promise<League | null> => {
 
 /**
  * Hook to fetch the most recent league.
- * 
+ *
  * @returns Query result with most recent league or null
- * 
+ *
  * Configuration:
  * - staleTime: 30 seconds (leagues don't change frequently)
  * - Handles null gracefully (no leagues exist)
@@ -27,6 +27,6 @@ export const useMostRecentLeague = () => {
   return useQuery<League | null, Error>({
     queryKey: keys.mostRecentLeague(),
     queryFn: fetchMostRecentLeague,
-    staleTime: 30 * 1000, // 30 seconds
+    staleTime: 30 * 1000 // 30 seconds
   });
 };

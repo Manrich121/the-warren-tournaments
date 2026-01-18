@@ -33,7 +33,7 @@ const mockLeagues: League[] = [
     startDate: new Date('2024-06-01'),
     endDate: new Date('2024-08-31'),
     createdAt: new Date('2024-05-01'),
-    updatedAt: new Date('2024-05-01'),
+    updatedAt: new Date('2024-05-01')
   },
   {
     id: 'league-2',
@@ -41,7 +41,7 @@ const mockLeagues: League[] = [
     startDate: new Date('2024-09-01'),
     endDate: new Date('2024-11-30'),
     createdAt: new Date('2024-08-01'),
-    updatedAt: new Date('2024-08-01'),
+    updatedAt: new Date('2024-08-01')
   },
   {
     id: 'league-3',
@@ -49,8 +49,8 @@ const mockLeagues: League[] = [
     startDate: new Date('2024-12-01'),
     endDate: new Date('2025-02-28'),
     createdAt: new Date('2024-11-01'),
-    updatedAt: new Date('2024-11-01'),
-  },
+    updatedAt: new Date('2024-11-01')
+  }
 ];
 
 const mockLeaderboard: LeaderboardEntry[] = [
@@ -66,7 +66,7 @@ const mockLeaderboard: LeaderboardEntry[] = [
     gamePossiblePoints: 144,
     gameWinRate: 0.833,
     opponentsMatchWinRate: 0.65,
-    opponentsGameWinRate: 0.60,
+    opponentsGameWinRate: 0.6
   },
   {
     playerId: 'player-2',
@@ -79,9 +79,9 @@ const mockLeaderboard: LeaderboardEntry[] = [
     gamePoints: 96,
     gamePossiblePoints: 144,
     gameWinRate: 0.667,
-    opponentsMatchWinRate: 0.70,
-    opponentsGameWinRate: 0.65,
-  },
+    opponentsMatchWinRate: 0.7,
+    opponentsGameWinRate: 0.65
+  }
 ];
 
 describe('League Switching Integration', () => {
@@ -91,9 +91,9 @@ describe('League Switching Integration', () => {
     queryClient = new QueryClient({
       defaultOptions: {
         queries: {
-          retry: false,
-        },
-      },
+          retry: false
+        }
+      }
     });
 
     // Reset mock
@@ -112,7 +112,7 @@ describe('League Switching Integration', () => {
     it('should fetch all leagues on initial load', async () => {
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => mockLeagues,
+        json: async () => mockLeagues
       });
 
       const { result } = renderHook(() => useLeagues(), { wrapper });
@@ -130,7 +130,7 @@ describe('League Switching Integration', () => {
 
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => mostRecentLeague,
+        json: async () => mostRecentLeague
       });
 
       const { result } = renderHook(() => useMostRecentLeague(), { wrapper });
@@ -146,7 +146,7 @@ describe('League Switching Integration', () => {
 
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => mockLeaderboard,
+        json: async () => mockLeaderboard
       });
 
       const { result } = renderHook(() => useLeagueLeaderboard(leagueId), { wrapper });
@@ -166,16 +166,13 @@ describe('League Switching Integration', () => {
       // Mock initial leaderboard fetch
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => mockLeaderboard,
+        json: async () => mockLeaderboard
       });
 
-      const { result, rerender } = renderHook(
-        ({ leagueId }: { leagueId?: string }) => useLeagueLeaderboard(leagueId),
-        {
-          wrapper,
-          initialProps: { leagueId: initialLeagueId },
-        }
-      );
+      const { result, rerender } = renderHook(({ leagueId }: { leagueId?: string }) => useLeagueLeaderboard(leagueId), {
+        wrapper,
+        initialProps: { leagueId: initialLeagueId }
+      });
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
       expect(result.current.data).toEqual(mockLeaderboard);
@@ -184,7 +181,7 @@ describe('League Switching Integration', () => {
       const newMockLeaderboard = [mockLeaderboard[1]]; // Only Bob
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => newMockLeaderboard,
+        json: async () => newMockLeaderboard
       });
 
       // Change league selection
@@ -200,7 +197,7 @@ describe('League Switching Integration', () => {
 
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => [],
+        json: async () => []
       });
 
       const { result } = renderHook(() => useLeagueLeaderboard(leagueId), { wrapper });
@@ -215,7 +212,7 @@ describe('League Switching Integration', () => {
     it('should handle API error when fetching leagues', async () => {
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: false,
-        status: 500,
+        status: 500
       });
 
       const { result } = renderHook(() => useLeagues(), { wrapper });
@@ -230,7 +227,7 @@ describe('League Switching Integration', () => {
 
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: false,
-        status: 500,
+        status: 500
       });
 
       const { result } = renderHook(() => useLeagueLeaderboard(leagueId), { wrapper });
@@ -254,10 +251,7 @@ describe('League Switching Integration', () => {
   describe('Loading States', () => {
     it('should have initialData for leagues hook', () => {
       (global.fetch as jest.Mock).mockImplementation(
-        () =>
-          new Promise((resolve) =>
-            setTimeout(() => resolve({ ok: true, json: async () => mockLeagues }), 100)
-          )
+        () => new Promise(resolve => setTimeout(() => resolve({ ok: true, json: async () => mockLeagues }), 100))
       );
 
       const { result } = renderHook(() => useLeagues(), { wrapper });
@@ -271,10 +265,7 @@ describe('League Switching Integration', () => {
       const leagueId = 'league-1';
 
       (global.fetch as jest.Mock).mockImplementation(
-        () =>
-          new Promise((resolve) =>
-            setTimeout(() => resolve({ ok: true, json: async () => mockLeaderboard }), 100)
-          )
+        () => new Promise(resolve => setTimeout(() => resolve({ ok: true, json: async () => mockLeaderboard }), 100))
       );
 
       const { result } = renderHook(() => useLeagueLeaderboard(leagueId), { wrapper });
@@ -291,16 +282,13 @@ describe('League Switching Integration', () => {
       // First fetch
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => mockLeaderboard,
+        json: async () => mockLeaderboard
       });
 
-      const { result, rerender } = renderHook(
-        ({ leagueId }: { leagueId?: string }) => useLeagueLeaderboard(leagueId),
-        {
-          wrapper,
-          initialProps: { leagueId },
-        }
-      );
+      const { result, rerender } = renderHook(({ leagueId }: { leagueId?: string }) => useLeagueLeaderboard(leagueId), {
+        wrapper,
+        initialProps: { leagueId }
+      });
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 

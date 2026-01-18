@@ -14,6 +14,6 @@ export const useEventLeaderboard = (eventId: string) => {
   return useQuery<RankedPlayer[], Error>({
     queryKey: keys.eventLeaderboard(eventId),
     queryFn: () => fetchEventLeaderboard(eventId),
-    enabled: !!eventId,
+    enabled: !!eventId
   });
 };

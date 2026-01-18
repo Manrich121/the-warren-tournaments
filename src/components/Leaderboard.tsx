@@ -10,7 +10,7 @@ interface LeaderboardProps {
 
 /**
  * Leaderboard component displaying ranked players with league points and win rates.
- * 
+ *
  * Features:
  * - Displays rank, player name, league points, and match win rate
  * - Empty state when no matches played
@@ -26,9 +26,7 @@ const Leaderboard = ({ title = 'Leaderboard', entries, isLoading = false }: Lead
           <CardTitle>{title}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center text-muted-foreground py-8">
-            No matches played in this league yet
-          </div>
+          <div className="text-center text-muted-foreground py-8">No matches played in this league yet</div>
         </CardContent>
       </Card>
     );
@@ -42,9 +40,7 @@ const Leaderboard = ({ title = 'Leaderboard', entries, isLoading = false }: Lead
           <CardTitle>{title}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center text-muted-foreground py-8">
-            Loading leaderboard...
-          </div>
+          <div className="text-center text-muted-foreground py-8">Loading leaderboard...</div>
         </CardContent>
       </Card>
     );
@@ -68,7 +64,7 @@ const Leaderboard = ({ title = 'Leaderboard', entries, isLoading = false }: Lead
               </TableRow>
             </TableHeader>
             <TableBody>
-              {entries.map((entry) => (
+              {entries.map(entry => (
                 <TableRow key={entry.playerId}>
                   <TableCell className="font-medium">{entry.rank}</TableCell>
                   <TableCell>{entry.playerName}</TableCell>
@@ -76,9 +72,7 @@ const Leaderboard = ({ title = 'Leaderboard', entries, isLoading = false }: Lead
                   <TableCell className="text-right">
                     {entry.matchesWon}/{entry.matchesPlayed}
                   </TableCell>
-                  <TableCell className="text-right">
-                    {(entry.matchWinRate * 100).toFixed(1)}%
-                  </TableCell>
+                  <TableCell className="text-right">{(entry.matchWinRate * 100).toFixed(1)}%</TableCell>
                 </TableRow>
               ))}
             </TableBody>
