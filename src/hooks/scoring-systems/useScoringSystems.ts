@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { scoringSystemKeys } from './keys';
-import type { ScoringSystemSummary } from '@/types/scoring-system';
+import type { ScoringSystemWithRelations } from '@/types/scoring-system';
 
-const fetchScoringSystems = async (): Promise<ScoringSystemSummary[]> => {
+const fetchScoringSystems = async (): Promise<ScoringSystemWithRelations[]> => {
   const res = await fetch('/api/scoring-systems');
   if (!res.ok) {
     throw new Error('Failed to fetch scoring systems');
@@ -12,9 +12,8 @@ const fetchScoringSystems = async (): Promise<ScoringSystemSummary[]> => {
 };
 
 export const useScoringSystems = () => {
-  return useQuery<ScoringSystemSummary[], Error>({
+  return useQuery<ScoringSystemWithRelations[], Error>({
     queryKey: scoringSystemKeys.list(),
-    queryFn: fetchScoringSystems,
-    initialData: () => []
+    queryFn: fetchScoringSystems
   });
 };

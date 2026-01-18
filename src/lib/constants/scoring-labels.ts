@@ -21,6 +21,16 @@ export const TIE_BREAKER_LABELS: Record<TieBreakerType, string> = {
   MATCH_WINS_TIE: "Match Wins",
 };
 
+export const TIE_BREAKER_SHORT_LABELS: Record<TieBreakerType, string> = {
+  LEAGUE_POINTS: "LP",
+  MATCH_POINTS: "MP",
+  OPP_MATCH_WIN_PCT: "OMW %",
+  GAME_WIN_PCT: "GW %",
+  OPP_GAME_WIN_PCT: "OGW %",
+  EVENT_ATTENDANCE_TIE: "Attn",
+  MATCH_WINS_TIE: "MW",
+};
+
 export const POINT_METRIC_OPTIONS = Object.entries(POINT_METRIC_LABELS).map(
   ([value, label]) => ({ value: value as PointMetricType, label })
 );

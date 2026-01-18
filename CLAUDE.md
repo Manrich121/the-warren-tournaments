@@ -31,4 +31,7 @@ Constitution @.specify/memory/constitution.md
 When adding shadcn/ui components, use `pnpx shadcn@latest add <component-name>` instead of `pnpx shadcn-ui@latest add <component-name>`
 
 Use `pnpx` and `pnpm` instead of `npx` and `npm`.
+
+Component file names should be CamelCase
+
 <!-- MANUAL ADDITIONS END -->
