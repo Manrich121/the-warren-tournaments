@@ -174,11 +174,10 @@ export function calculateLeagueLeaderboard(
     const gameWinRate = calculateGameWinPercentage(player.id, playerMatches)
 
     // Calculate opponent stats using existing functions
-    // Convert percentages (0-100) to rates (0-1) for consistency
     const opponentsMatchWinRate =
-      calculateOpponentMatchWinPercentage(player.id, playerMatches, leagueMatches) / 100;
+      calculateOpponentMatchWinPercentage(player.id, playerMatches, leagueMatches);
     const opponentsGameWinRate =
-      calculateOpponentGameWinPercentage(player.id, playerMatches, leagueMatches) / 100;
+      calculateOpponentGameWinPercentage(player.id, playerMatches, leagueMatches);
 
     return {
       playerId: player.id,

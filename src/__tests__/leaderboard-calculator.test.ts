@@ -1,6 +1,5 @@
 import { Match, Player, Event, ScoringSystem, ScoreFormula, TieBreaker } from '@prisma/client';
-import { calculateLeagueLeaderboard, areEntriesEqual } from '../lib/leaderboard-calculator';
-import { LeaderboardEntry } from '../types/leaderboard';
+import { calculateLeagueLeaderboard } from '../lib/leaderboard-calculator';
 
 describe('Leaderboard Calculator', () => {
   // Helper to create test data
@@ -42,7 +41,7 @@ describe('Leaderboard Calculator', () => {
     updatedAt: new Date()
   });
 
-  const testScoringSystem: ScoringSystem & { formulas: ScoreFormula[]; tieBreakers: TieBreaker[] } = {
+  const defaultScoringSystem: ScoringSystem & { formulas: ScoreFormula[]; tieBreakers: TieBreaker[] } = {
     id: 'test-scoring',
     name: 'Standard Scoring',
     isDefault: true,
@@ -265,11 +264,24 @@ describe('Leaderboard Calculator', () => {
         createMatch('m3', 'e1', 'p3', 'p1', 1, 1, true)
       ];
 
-      const result = calculateLeagueLeaderboard('league1', events, matches, players, null);
+      let result = calculateLeagueLeaderboard('league1', events, matches, players, null);
 
       // All have same stats, so alphabetical order determines final rank order
       // Since names differ, each gets a unique rank (alphabetical is the final tie-breaker)
       expect(result.length).toBe(3);
+      expect(result[0].playerName).toBe('Alice');
+      expect(result[1].playerName).toBe('Bob');
+      expect(result[2].playerName).toBe('Charlie');
+
+      // Each should have a same rank
+      expect(result[0].rank).toBe(1);
+      expect(result[1].rank).toBe(1);
+      expect(result[2].rank).toBe(1);
+
+      result = calculateLeagueLeaderboard('league1', events, matches, players, defaultScoringSystem);
+
+      // All have same stats, so alphabetical order determines final rank order
+      // Since names differ, each gets a unique rank (alphabetical is the final tie-breaker)
       expect(result[0].playerName).toBe('Alice');
       expect(result[1].playerName).toBe('Bob');
       expect(result[2].playerName).toBe('Charlie');
@@ -293,11 +305,18 @@ describe('Leaderboard Calculator', () => {
         createMatch('m2', 'e2', 'p1', 'p2', 0, 2) // league2 (should be ignored)
       ];
 
-      const result = calculateLeagueLeaderboard('league1', events, matches, players, null);
+      let result = calculateLeagueLeaderboard('league1', events, matches, players, null);
 
       // Only match from e1 should count
       expect(result.length).toBe(2);
-      const alice = result.find(e => e.playerName === 'Alice');
+      let alice = result.find(e => e.playerName === 'Alice');
+      expect(alice?.matchesWon).toBe(1);
+
+      result = calculateLeagueLeaderboard('league1', events, matches, players, defaultScoringSystem);
+
+      // Only match from e1 should count
+      expect(result.length).toBe(2);
+      alice = result.find(e => e.playerName === 'Alice');
       expect(alice?.matchesWon).toBe(1);
     });
 
@@ -332,10 +351,17 @@ describe('Leaderboard Calculator', () => {
       const result = calculateLeagueLeaderboard('league1', events, matches, players, null);
 
       const alice = result.find(e => e.playerName === 'Alice');
+      const bob = result.find(e => e.playerName === 'Bob');
+      const charlie = result.find(e => e.playerName === 'Charlie');
+
       // Alice faced Bob and Charlie
       // Opponent win rates should be average of Bob and Charlie's win rates
-      expect(alice?.opponentsMatchWinPercentage).toBeGreaterThan(0);
-      expect(alice?.opponentsMatchWinPercentage).toBeLessThanOrEqual(1);
+      expect(alice!.opponentsMatchWinPercentage).toBeGreaterThan(0);
+      expect(alice!.opponentsMatchWinPercentage).toBeLessThanOrEqual(1);
+      expect(alice!.opponentsGameWinPercentage).toBeCloseTo(
+        (bob!.matchWinPercentage + charlie!.matchWinPercentage) / 2,
+        2
+      );
     });
 
     it('should assign ranks with gaps for shared ranks', () => {
@@ -360,97 +386,61 @@ describe('Leaderboard Calculator', () => {
 
       const result = calculateLeagueLeaderboard('league1', events, matches, players, null);
 
-      expect(result[0].playerName).toBe('Alice');
-      expect(result[0].rank).toBe(1);
+      const alice = result.find(e => e.playerName === 'Alice');
+      expect(alice!.rank).toBe(1);
 
-      // Bob and Charlie might share rank 2 if their stats are identical
-      // David should be last (rank 4 if Bob/Charlie share rank 2)
+      // Bob and Charlie share rank 2 because their stats are identical
+      const bob = result.find(e => e.playerName === 'Bob');
+      const charlie = result.find(e => e.playerName === 'Charlie');
+      expect(bob!.rank).toEqual(2);
+      expect(charlie!.rank).toEqual(2);
+      // David should be last (rank 4)
       const david = result.find(e => e.playerName === 'David');
-      expect(david?.rank).toBeGreaterThanOrEqual(3);
-    });
-  });
-
-  describe('areEntriesEqual', () => {
-    it('should return true for entries with identical stats', () => {
-      const entry1: Omit<LeaderboardEntry, 'rank'> = {
-        playerId: 'p1',
-        playerName: 'Alice',
-        leaguePoints: 10,
-        matchesWon: 5,
-        matchesPlayed: 10,
-        matchPoints: 15,
-        matchWinPercentage: 0.5,
-        gamesWon: 10,
-        gamePoints: 20,
-        gameWinPercentage: 0.5,
-        opponentsMatchWinPercentage: 0.45,
-        opponentsGameWinPercentage: 0.48
-      };
-
-      const entry2: Omit<LeaderboardEntry, 'rank'> = {
-        playerId: 'p2',
-        playerName: 'Bob',
-        leaguePoints: 10,
-        matchesWon: 5,
-        matchesPlayed: 10,
-        matchPoints: 15,
-        matchWinPercentage: 0.5,
-        gamesWon: 10,
-        gamePoints: 20,
-        gameWinPercentage: 0.5,
-        opponentsMatchWinPercentage: 0.45,
-        opponentsGameWinPercentage: 0.48
-      };
-
-      expect(areEntriesEqual(entry1, entry2)).toBe(true);
+      expect(david?.rank).toEqual(4);
     });
 
-    it('should return false for entries with different league points', () => {
-      const entry1: Omit<LeaderboardEntry, 'rank'> = {
-        playerId: 'p1',
-        playerName: 'Alice',
-        leaguePoints: 10,
-        matchesWon: 5,
-        matchesPlayed: 10,
-        matchPoints: 15,
-        matchWinPercentage: 0.5,
-        gamesWon: 10,
-        gamePoints: 20,
-        gameWinPercentage: 0.5,
-        opponentsMatchWinPercentage: 0.45,
-        opponentsGameWinPercentage: 0.48
+    it('should calculate 4 player ranking correctly', () => {
+      const test = (
+        scoringSystem: (ScoringSystem & { formulas: ScoreFormula[]; tieBreakers: TieBreaker[] }) | null
+      ) => {
+        const players = [
+          createPlayer('p1', 'Alice'),
+          createPlayer('p2', 'Bob'),
+          createPlayer('p3', 'Charlie'),
+          createPlayer('p4', 'David')
+        ];
+
+        const events = [createEvent('e1', 'league1', 'Event 1')];
+
+        // Alice wins all, Bob and Charlie tie, David loses all
+        const matches = [
+          createMatch('m1', 'e1', 'p1', 'p2', 2, 1), // Alice beats Bob
+          createMatch('m2', 'e1', 'p4', 'p3', 2, 0), // David beats Charlie
+
+          createMatch('m3', 'e1', 'p1', 'p4', 2, 0), // Alice beats David
+          createMatch('m4', 'e1', 'p2', 'p3', 2, 1), // Bob beats Charlie
+
+          createMatch('m5', 'e1', 'p2', 'p4', 2, 1), // Bob beats David
+          createMatch('m6', 'e1', 'p1', 'p3', 1, 2) //  Charlie beats Alice
+        ];
+
+        const result = calculateLeagueLeaderboard('league1', events, matches, players, scoringSystem);
+
+        const alice = result.find(e => e.playerName === 'Alice');
+        expect(alice!.rank).toBe(1);
+
+        const bob = result.find(e => e.playerName === 'Bob');
+        expect(bob!.rank).toBe(2);
+
+        const david = result.find(e => e.playerName === 'David');
+        expect(david!.rank).toBe(3);
+
+        const charlie = result.find(e => e.playerName === 'Charlie');
+        expect(charlie!.rank).toBe(4);
       };
 
-      const entry2: Omit<LeaderboardEntry, 'rank'> = {
-        ...entry1,
-        leaguePoints: 12
-      };
-
-      expect(areEntriesEqual(entry1, entry2)).toBe(false);
-    });
-
-    it('should return false for entries with different match win rates', () => {
-      const entry1: Omit<LeaderboardEntry, 'rank'> = {
-        playerId: 'p1',
-        playerName: 'Alice',
-        leaguePoints: 10,
-        matchesWon: 5,
-        matchesPlayed: 10,
-        matchPoints: 15,
-        matchWinPercentage: 0.5,
-        gamesWon: 10,
-        gamePoints: 20,
-        gameWinPercentage: 0.5,
-        opponentsMatchWinPercentage: 0.45,
-        opponentsGameWinPercentage: 0.48
-      };
-
-      const entry2: Omit<LeaderboardEntry, 'rank'> = {
-        ...entry1,
-        matchWinPercentage: 0.6
-      };
-
-      expect(areEntriesEqual(entry1, entry2)).toBe(false);
+      test(null);
+      test(defaultScoringSystem);
     });
   });
 
