@@ -1,5 +1,7 @@
 import { render, screen } from '@testing-library/react';
-import { QuickStats, LeagueStats } from '@/components/QuickStats';
+import { QuickStats } from '@/components/QuickStats';
+import { mockLeagueStats } from '../__fixtures__/mockData';
+import { LeagueStats } from '@/types/LeagueStats';
 
 // Mock Next.js Link component
 jest.mock('next/link', () => {
@@ -7,14 +9,6 @@ jest.mock('next/link', () => {
 });
 
 describe('QuickStats', () => {
-  const mockStats: LeagueStats = {
-    totalLeagues: 5,
-    activeLeagues: 2,
-    eventsCount: 12,
-    playersCount: 45,
-    matchesCount: 120
-  };
-
   describe('Loading State', () => {
     it('should render loading skeletons when isLoading is true', () => {
       const { container } = render(<QuickStats stats={null} isLoading={true} />);
@@ -25,7 +19,7 @@ describe('QuickStats', () => {
     });
 
     it('should not render actual stats when loading', () => {
-      render(<QuickStats stats={mockStats} isLoading={true} />);
+      render(<QuickStats stats={mockLeagueStats} isLoading={true} />);
 
       // Stats should not be visible during loading
       expect(screen.queryByText('5')).not.toBeInTheDocument();
@@ -43,7 +37,7 @@ describe('QuickStats', () => {
 
   describe('Stats Display', () => {
     it('should render all four stat cards with correct titles', () => {
-      render(<QuickStats stats={mockStats} isLoading={false} />);
+      render(<QuickStats stats={mockLeagueStats} isLoading={false} />);
 
       expect(screen.getByText('Total Leagues')).toBeInTheDocument();
       expect(screen.getByText('Total Events')).toBeInTheDocument();
@@ -52,7 +46,7 @@ describe('QuickStats', () => {
     });
 
     it('should display correct global league count', () => {
-      render(<QuickStats stats={mockStats} isLoading={false} />);
+      render(<QuickStats stats={mockLeagueStats} isLoading={false} />);
 
       // Total Leagues should show global count
       const totalLeaguesCard = screen.getByText('Total Leagues').closest('a');
@@ -61,7 +55,7 @@ describe('QuickStats', () => {
     });
 
     it('should display correct league-specific counts', () => {
-      render(<QuickStats stats={mockStats} isLoading={false} />);
+      render(<QuickStats stats={mockLeagueStats} isLoading={false} />);
 
       // Events count (league-specific)
       const eventsCard = screen.getByText('Total Events').closest('a');
@@ -80,7 +74,7 @@ describe('QuickStats', () => {
     });
 
     it('should render correct links for navigation', () => {
-      render(<QuickStats stats={mockStats} isLoading={false} />);
+      render(<QuickStats stats={mockLeagueStats} isLoading={false} />);
 
       const leaguesLink = screen.getByText('Total Leagues').closest('a');
       expect(leaguesLink).toHaveAttribute('href', '/leagues');
@@ -132,7 +126,7 @@ describe('QuickStats', () => {
 
     it('should display correct subtitle when no active leagues', () => {
       const noActiveStats: LeagueStats = {
-        ...mockStats,
+        ...mockLeagueStats,
         activeLeagues: 0
       };
 
@@ -145,7 +139,7 @@ describe('QuickStats', () => {
 
   describe('Accessibility', () => {
     it('should have proper link semantics for screen readers', () => {
-      render(<QuickStats stats={mockStats} isLoading={false} />);
+      render(<QuickStats stats={mockLeagueStats} isLoading={false} />);
 
       const links = screen.getAllByRole('link');
       expect(links.length).toBe(4);
@@ -156,7 +150,7 @@ describe('QuickStats', () => {
     });
 
     it('should maintain proper document structure with headings', () => {
-      render(<QuickStats stats={mockStats} isLoading={false} />);
+      render(<QuickStats stats={mockLeagueStats} isLoading={false} />);
 
       // Card titles should be rendered properly
       const titles = [

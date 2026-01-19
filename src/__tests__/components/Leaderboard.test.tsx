@@ -1,71 +1,24 @@
 import { render, screen } from '@testing-library/react';
 import Leaderboard from '@/components/Leaderboard';
 import { LeaderboardEntry } from '@/types/leaderboard';
+import { mockLeaderboard } from '../__fixtures__/mockData';
 
 describe('Leaderboard Component', () => {
-  const mockEntries: LeaderboardEntry[] = [
-    {
-      playerId: '1',
-      playerName: 'Alice',
-      rank: 1,
-      leaguePoints: 12,
-      matchesWon: 4,
-      matchesPlayed: 5,
-      matchPoints: 5,
-      matchWinPercentage: 0.8,
-      gamesWon: 12,
-      gamePoints: 12,
-      gameWinPercentage: 0.8,
-      opponentsMatchWinPercentage: 0.6,
-      opponentsGameWinPercentage: 0.65
-    },
-    {
-      playerId: '2',
-      playerName: 'Bob',
-      rank: 2,
-      leaguePoints: 9,
-      matchesWon: 3,
-      matchesPlayed: 5,
-      matchPoints: 5,
-      matchWinPercentage: 0.6,
-      gamesWon: 9,
-      gamePoints: 9,
-      gameWinPercentage: 0.6,
-      opponentsMatchWinPercentage: 0.5,
-      opponentsGameWinPercentage: 0.55
-    },
-    {
-      playerId: '3',
-      playerName: 'Charlie',
-      rank: 3,
-      leaguePoints: 6,
-      matchesWon: 2,
-      matchesPlayed: 5,
-      matchPoints: 5,
-      matchWinPercentage: 0.4,
-      gamesWon: 6,
-      gamePoints: 6,
-      gameWinPercentage: 0.4,
-      opponentsMatchWinPercentage: 0.45,
-      opponentsGameWinPercentage: 0.5
-    }
-  ];
-
   describe('Rendering with data', () => {
     it('should render the leaderboard with default title', () => {
-      render(<Leaderboard entries={mockEntries} />);
+      render(<Leaderboard entries={mockLeaderboard} />);
 
       expect(screen.getByText('Leaderboard')).toBeInTheDocument();
     });
 
     it('should render the leaderboard with custom title', () => {
-      render(<Leaderboard title="Summer League 2024 Leaderboard" entries={mockEntries} />);
+      render(<Leaderboard title="Summer League 2024 Leaderboard" entries={mockLeaderboard} />);
 
       expect(screen.getByText('Summer League 2024 Leaderboard')).toBeInTheDocument();
     });
 
     it('should render all player names', () => {
-      render(<Leaderboard entries={mockEntries} />);
+      render(<Leaderboard entries={mockLeaderboard} />);
 
       expect(screen.getByText('Alice')).toBeInTheDocument();
       expect(screen.getByText('Bob')).toBeInTheDocument();
@@ -73,7 +26,7 @@ describe('Leaderboard Component', () => {
     });
 
     it('should render rank numbers correctly', () => {
-      render(<Leaderboard entries={mockEntries} />);
+      render(<Leaderboard entries={mockLeaderboard} />);
 
       // Check rank column values
       const ranks = screen
@@ -85,7 +38,7 @@ describe('Leaderboard Component', () => {
     });
 
     it('should render league points correctly', () => {
-      render(<Leaderboard entries={mockEntries} />);
+      render(<Leaderboard entries={mockLeaderboard} />);
 
       expect(screen.getByText('12')).toBeInTheDocument(); // Alice's points
       expect(screen.getByText('9')).toBeInTheDocument(); // Bob's points
@@ -93,7 +46,7 @@ describe('Leaderboard Component', () => {
     });
 
     it('should render matches in W/L format', () => {
-      render(<Leaderboard entries={mockEntries} />);
+      render(<Leaderboard entries={mockLeaderboard} />);
 
       expect(screen.getByText('4/5')).toBeInTheDocument(); // Alice: 4 wins / 5 played
       expect(screen.getByText('3/5')).toBeInTheDocument(); // Bob: 3 wins / 5 played
@@ -101,7 +54,7 @@ describe('Leaderboard Component', () => {
     });
 
     it('should render win rate as percentage with one decimal', () => {
-      render(<Leaderboard entries={mockEntries} />);
+      render(<Leaderboard entries={mockLeaderboard} />);
 
       expect(screen.getByText('80.0%')).toBeInTheDocument(); // Alice: 80%
       expect(screen.getByText('60.0%')).toBeInTheDocument(); // Bob: 60%
@@ -109,7 +62,7 @@ describe('Leaderboard Component', () => {
     });
 
     it('should render table headers', () => {
-      render(<Leaderboard entries={mockEntries} />);
+      render(<Leaderboard entries={mockLeaderboard} />);
 
       expect(screen.getByText('Rank')).toBeInTheDocument();
       expect(screen.getByText('Player')).toBeInTheDocument();
@@ -119,7 +72,7 @@ describe('Leaderboard Component', () => {
     });
 
     it('should render entries in order', () => {
-      render(<Leaderboard entries={mockEntries} />);
+      render(<Leaderboard entries={mockLeaderboard} />);
 
       const playerCells = screen
         .getAllByRole('cell')
@@ -185,7 +138,7 @@ describe('Leaderboard Component', () => {
     });
 
     it('should prioritize loading state over data', () => {
-      render(<Leaderboard entries={mockEntries} isLoading={true} />);
+      render(<Leaderboard entries={mockLeaderboard} isLoading={true} />);
 
       // Should show loading, not the data
       expect(screen.getByText('Loading leaderboard...')).toBeInTheDocument();
@@ -195,7 +148,7 @@ describe('Leaderboard Component', () => {
 
   describe('Edge cases', () => {
     it('should handle single player leaderboard', () => {
-      const singleEntry: LeaderboardEntry[] = [mockEntries[0]];
+      const singleEntry: LeaderboardEntry[] = [mockLeaderboard[0]];
 
       render(<Leaderboard entries={singleEntry} />);
 
@@ -255,9 +208,9 @@ describe('Leaderboard Component', () => {
 
     it('should handle shared ranks', () => {
       const sharedRankEntries: LeaderboardEntry[] = [
-        { ...mockEntries[0], rank: 1 },
-        { ...mockEntries[1], playerId: '2b', playerName: 'Bob Jr', rank: 1 }, // Same rank
-        { ...mockEntries[2], rank: 3 }
+        { ...mockLeaderboard[0], rank: 1 },
+        { ...mockLeaderboard[1], playerId: '2b', playerName: 'Bob Jr', rank: 1 }, // Same rank
+        { ...mockLeaderboard[2], rank: 3 }
       ];
 
       render(<Leaderboard entries={sharedRankEntries} />);
@@ -273,7 +226,7 @@ describe('Leaderboard Component', () => {
     it('should handle very long player names', () => {
       const longNameEntry: LeaderboardEntry[] = [
         {
-          ...mockEntries[0],
+          ...mockLeaderboard[0],
           playerName: 'ThisIsAVeryLongPlayerNameThatShouldStillRenderCorrectly'
         }
       ];
@@ -309,7 +262,7 @@ describe('Leaderboard Component', () => {
 
   describe('Responsive design', () => {
     it('should have overflow-x-auto wrapper for table', () => {
-      const { container } = render(<Leaderboard entries={mockEntries} />);
+      const { container } = render(<Leaderboard entries={mockLeaderboard} />);
 
       const overflowWrapper = container.querySelector('.overflow-x-auto');
       expect(overflowWrapper).toBeInTheDocument();

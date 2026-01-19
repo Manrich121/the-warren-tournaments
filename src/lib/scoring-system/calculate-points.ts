@@ -1,27 +1,5 @@
-// src/lib/utils/calculate-points.ts
-
 import type { PointMetricType } from "@prisma/client";
-
-/**
- * Player performance data for point calculation
- */
-export type PlayerPerformanceData = {
-  eventAttendance: number;
-  matchWins: number;
-  gameWins: number;
-  firstPlaceFinishes: number;
-  secondPlaceFinishes: number;
-  thirdPlaceFinishes: number;
-};
-
-/**
- * Scoring formula with multiplier and point metric
- */
-export type ScoringFormula = {
-  multiplier: number;
-  pointMetric: PointMetricType;
-  order: number;
-};
+import { PlayerPerformanceData, ScoreFormula } from '@/types/scoring-system';
 
 /**
  * Calculate league points for a player based on performance data and scoring formulas
@@ -44,7 +22,7 @@ export type ScoringFormula = {
  */
 export function calculateLeaguePoints(
   performanceData: PlayerPerformanceData,
-  formulas: ScoringFormula[]
+  formulas: ScoreFormula[]
 ): number {
   // Edge case: No formulas provided
   if (!formulas || formulas.length === 0) {
@@ -106,7 +84,7 @@ function getMetricValue(
  */
 export function calculatePointsForPlayers(
   playersData: Array<{ playerId: string } & PlayerPerformanceData>,
-  formulas: ScoringFormula[]
+  formulas: ScoreFormula[]
 ): Array<{ playerId: string; leaguePoints: number }> {
   return playersData.map((playerData) => ({
     playerId: playerData.playerId,

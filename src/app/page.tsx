@@ -21,10 +21,11 @@ import { useActiveLeague } from '@/hooks/useActiveLeague';
 import { useMostRecentLeague } from '@/hooks/useMostRecentLeague';
 import { useLeagueLeaderboard } from '@/hooks/useLeagueLeaderboard';
 import { useLeagues } from '@/hooks/useLeagues';
-import { QuickStats, LeagueStats } from '@/components/QuickStats';
+import { QuickStats } from '@/components/QuickStats';
 import { LeagueSelector } from '@/components/LeagueSelector';
 import { genericSort } from '@/lib/utils';
 import { formatLeagueOption } from '@/lib/league-utils';
+import { LeagueStats } from '@/types/LeagueStats';
 
 export default function DashboardPage() {
   const { status } = useSession();

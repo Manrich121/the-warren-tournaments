@@ -2,6 +2,8 @@
  * Mock data fixtures for testing table components
  */
 
+import { LeaderboardEntry } from '@/types/leaderboard';
+import { LeagueStats } from '@/types/LeagueStats';
 import { League, Event, Match, Player } from '@prisma/client';
 
 /**
@@ -10,30 +12,30 @@ import { League, Event, Match, Player } from '@prisma/client';
 export const mockLeagues: League[] = [
   {
     id: 'league-1',
-    name: 'Summer League 2025',
-    startDate: new Date('2025-06-01'),
-    endDate: new Date('2025-08-31'),
+    name: 'Summer League 2024',
+    startDate: new Date('2024-06-01'),
+    endDate: new Date('2024-08-31'),
     scoringSystemId: null,
-    createdAt: new Date('2025-01-01'),
-    updatedAt: new Date('2025-01-01')
+    createdAt: new Date('2024-05-01'),
+    updatedAt: new Date('2024-05-01')
   },
   {
     id: 'league-2',
-    name: 'Winter League 2025',
-    startDate: new Date('2025-12-01'),
-    endDate: new Date('2026-02-28'),
+    name: 'Fall League 2024',
+    startDate: new Date('2024-09-01'),
+    endDate: new Date('2024-11-30'),
     scoringSystemId: null,
-    createdAt: new Date('2025-01-15'),
-    updatedAt: new Date('2025-01-15')
+    createdAt: new Date('2024-08-01'),
+    updatedAt: new Date('2024-08-01')
   },
   {
     id: 'league-3',
-    name: 'Spring Championship',
-    startDate: new Date('2025-03-01'),
-    endDate: new Date('2025-05-31'),
+    name: 'Winter League 2024',
+    startDate: new Date('2024-12-01'),
+    endDate: new Date('2025-02-28'),
     scoringSystemId: null,
-    createdAt: new Date('2024-12-01'),
-    updatedAt: new Date('2024-12-01')
+    createdAt: new Date('2024-11-01'),
+    updatedAt: new Date('2024-11-01')
   }
 ];
 
@@ -138,6 +140,62 @@ export const mockMatches: Match[] = [
     updatedAt: new Date('2025-07-15')
   }
 ];
+
+export const mockLeaderboard: LeaderboardEntry[] = [
+  {
+    playerId: 'player-1',
+    playerName: 'Alice',
+    rank: 1,
+    leaguePoints: 12,
+    matchesWon: 4,
+    matchesPlayed: 5,
+    matchPoints: 5,
+    matchWinPercentage: 0.8,
+    gamesWon: 12,
+    gamePoints: 12,
+    gameWinPercentage: 0.8,
+    opponentsMatchWinPercentage: 0.6,
+    opponentsGameWinPercentage: 0.65
+  },
+  {
+    playerId: 'player-2',
+    playerName: 'Bob',
+    rank: 2,
+    leaguePoints: 9,
+    matchesWon: 3,
+    matchesPlayed: 5,
+    matchPoints: 5,
+    matchWinPercentage: 0.6,
+    gamesWon: 9,
+    gamePoints: 9,
+    gameWinPercentage: 0.6,
+    opponentsMatchWinPercentage: 0.5,
+    opponentsGameWinPercentage: 0.55
+  },
+  {
+    playerId: 'player-3',
+    playerName: 'Charlie',
+    rank: 3,
+    leaguePoints: 6,
+    matchesWon: 2,
+    matchesPlayed: 5,
+    matchPoints: 5,
+    matchWinPercentage: 0.4,
+    gamesWon: 6,
+    gamePoints: 6,
+    gameWinPercentage: 0.4,
+    opponentsMatchWinPercentage: 0.45,
+    opponentsGameWinPercentage: 0.5
+  }
+];
+
+export const mockLeagueStats: LeagueStats = {
+  totalLeagues: 5,
+  activeLeagues: 2,
+  eventsCount: 12,
+  playersCount: 45,
+  matchesCount: 120
+};
 
 /**
  * Helper function to generate large dataset for performance testing

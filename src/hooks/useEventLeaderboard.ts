@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import { RankedPlayer } from '@/lib/playerStats';
 import { keys } from '@/hooks/keys';
+import { EventRankedPlayer } from '@/types/PlayerStats';
 
-const fetchEventLeaderboard = async (eventId: string): Promise<RankedPlayer[]> => {
+const fetchEventLeaderboard = async (eventId: string): Promise<EventRankedPlayer[]> => {
   const res = await fetch(`/api/events/${eventId}/leaderboard`);
   if (!res.ok) {
     throw new Error('Failed to fetch event leaderboard');
@@ -11,7 +11,7 @@ const fetchEventLeaderboard = async (eventId: string): Promise<RankedPlayer[]> =
 };
 
 export const useEventLeaderboard = (eventId: string) => {
-  return useQuery<RankedPlayer[], Error>({
+  return useQuery<EventRankedPlayer[], Error>({
     queryKey: keys.eventLeaderboard(eventId),
     queryFn: () => fetchEventLeaderboard(eventId),
     enabled: !!eventId

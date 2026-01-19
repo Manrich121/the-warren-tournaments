@@ -1,4 +1,4 @@
-import { getMostRecentLeague, getLeagueStatus, formatDateRange, formatLeagueOption, League } from '../lib/league-utils';
+import { getMostRecentLeague, getLeagueStatus, formatDateRange, formatLeagueOption, League } from '@/lib/league-utils';
 
 describe('League Utilities', () => {
   describe('getMostRecentLeague', () => {

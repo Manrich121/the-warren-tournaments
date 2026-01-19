@@ -4,19 +4,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Trophy, Users, Calendar, Target } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-
-export interface LeagueStats {
-  /** Total number of leagues across the entire application (global) */
-  totalLeagues: number;
-  /** Number of active leagues (global) */
-  activeLeagues: number;
-  /** Number of events in the selected league */
-  eventsCount: number;
-  /** Number of unique players in the selected league */
-  playersCount: number;
-  /** Number of matches in the selected league */
-  matchesCount: number;
-}
+import { LeagueStats } from '@/types/LeagueStats';
 
 interface QuickStatsProps {
   stats: LeagueStats | null;
