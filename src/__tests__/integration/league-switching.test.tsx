@@ -20,70 +20,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useLeagues } from '@/hooks/useLeagues';
 import { useMostRecentLeague } from '@/hooks/useMostRecentLeague';
 import { useLeagueLeaderboard } from '@/hooks/useLeagueLeaderboard';
-import { League } from '@prisma/client';
-import { LeaderboardEntry } from '@/types/leaderboard';
+import { mockLeaderboard, mockLeagues } from '../__fixtures__/mockData';
 
 // Mock fetch for API responses
 global.fetch = jest.fn();
-
-const mockLeagues: League[] = [
-  {
-    id: 'league-1',
-    name: 'Summer League 2024',
-    startDate: new Date('2024-06-01'),
-    endDate: new Date('2024-08-31'),
-    scoringSystemId: null,
-    createdAt: new Date('2024-05-01'),
-    updatedAt: new Date('2024-05-01')
-  },
-  {
-    id: 'league-2',
-    name: 'Fall League 2024',
-    startDate: new Date('2024-09-01'),
-    endDate: new Date('2024-11-30'),
-    scoringSystemId: null,
-    createdAt: new Date('2024-08-01'),
-    updatedAt: new Date('2024-08-01')
-  },
-  {
-    id: 'league-3',
-    name: 'Winter League 2024',
-    startDate: new Date('2024-12-01'),
-    endDate: new Date('2025-02-28'),
-    scoringSystemId: null,
-    createdAt: new Date('2024-11-01'),
-    updatedAt: new Date('2024-11-01')
-  }
-];
-
-const mockLeaderboard: LeaderboardEntry[] = [
-  {
-    playerId: 'player-1',
-    playerName: 'Alice',
-    rank: 1,
-    leaguePoints: 100,
-    matchesWon: 10,
-    matchesPlayed: 12,
-    matchWinPercentage: 0.833,
-    gamePoints: 120,
-    gameWinPercentage: 0.833,
-    opponentsMatchWinPercentage: 0.65,
-    opponentsGameWinPercentage: 0.6
-  },
-  {
-    playerId: 'player-2',
-    playerName: 'Bob',
-    rank: 2,
-    leaguePoints: 80,
-    matchesWon: 8,
-    matchesPlayed: 12,
-    matchWinPercentage: 0.667,
-    gamePoints: 96,
-    gameWinPercentage: 0.667,
-    opponentsMatchWinPercentage: 0.7,
-    opponentsGameWinPercentage: 0.65
-  }
-];
 
 describe('League Switching Integration', () => {
   let queryClient: QueryClient;

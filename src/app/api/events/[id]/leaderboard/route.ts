@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/prisma';
-import { calculateEventRanking } from '@/lib/playerStats';
+import { calculateEventRanking } from '@/lib/PlayerStats';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {

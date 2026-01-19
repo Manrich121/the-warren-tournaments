@@ -13,7 +13,7 @@
  * 6. Player name alphabetically (A-Z)
  */
 
-import { Match, Player, Event, ScoringSystem, ScoreFormula, TieBreaker } from '@prisma/client';
+import { Match, Player, Event } from '@prisma/client';
 import { LeaderboardEntry } from '@/types/leaderboard';
 import {
   calculateMatchPoints,
@@ -22,10 +22,12 @@ import {
   calculateGameWinPercentage,
   calculateOpponentMatchWinPercentage,
   calculateOpponentGameWinPercentage,
-  calculateEventRanking,
-} from './playerStats';
-import { calculateLeaguePoints, type PlayerPerformanceData } from './utils/calculate-points';
-import { applyTieBreakers, type PlayerWithMetrics } from './utils/apply-tie-breakers';
+  calculateEventRanking, calculateEventAttendance, calculateMatchesWonCount, calculateGamesWonCount,
+} from './PlayerStats';
+import { calculateLeaguePoints } from '@/lib/scoring-system/calculate-points';
+import { applyTieBreakers } from '@/lib/scoring-system/apply-tie-breakers';
+import { PlayerPerformanceData, ScoringSystemFormData } from '@/types/scoring-system';
+import { LeaguePlayerStats } from '@/types/PlayerStats';
 
 /**
  * Calculates the complete leaderboard for a league with proper tie-breaking.
@@ -64,7 +66,7 @@ export function calculateLeagueLeaderboard(
   events: Event[],
   matches: Match[],
   players: Player[],
-  scoringSystem: (ScoringSystem & { formulas: ScoreFormula[]; tieBreakers: TieBreaker[] }) | null
+  scoringSystem: ScoringSystemFormData | null
 ): LeaderboardEntry[] {
   // Filter events for this league
   const leagueEvents = events.filter((e) => e.leagueId === leagueId);
@@ -127,10 +129,10 @@ export function calculateLeagueLeaderboard(
     
     for (const eventRanking of eventRankings) {
       for (const rankedPlayer of eventRanking) {
-        if (leaguePoints[rankedPlayer.player.id] !== undefined) {
+        if (leaguePoints[rankedPlayer.playerId] !== undefined) {
           // Legacy: 1 point per event + bonus for placements
           const eventPoints = rankedPlayer.rank === 1 ? 4 : rankedPlayer.rank === 2 ? 3 : rankedPlayer.rank === 3 ? 2 : 1;
-          leaguePoints[rankedPlayer.player.id] += eventPoints;
+          leaguePoints[rankedPlayer.playerId] += eventPoints;
         }
       }
     }
@@ -143,22 +145,9 @@ export function calculateLeagueLeaderboard(
     );
 
     // Count matches won (exclude draws)
-    const matchesWon = playerMatches.filter((m) => {
-      if (m.draw) return false;
-      if (m.player1Id === player.id && m.player1Score > m.player2Score) return true;
-      if (m.player2Id === player.id && m.player2Score > m.player1Score) return true;
-      return false;
-    }).length;
+    const matchesWon = calculateMatchesWonCount(player.id, playerMatches);
 
-    const gamesWon = playerMatches.reduce((sum, m) => {
-      if(m.draw) return sum;
-      if (m.player1Id === player.id) {
-        return sum + m.player1Score;
-      } else if (m.player2Id === player.id) {
-        return sum + m.player2Score;
-      }
-      return sum;
-    }, 0);
+    const gamesWon = calculateGamesWonCount(player.id, playerMatches);
 
     const matchesPlayed = playerMatches.length;
 
@@ -198,7 +187,7 @@ export function calculateLeagueLeaderboard(
   // Apply tie-breakers from scoring system or use legacy tie-breaking
   if (scoringSystem && scoringSystem.tieBreakers && scoringSystem.tieBreakers.length > 0) {
     // Use configured tie-breakers from scoring system
-    const playersWithMetrics: PlayerWithMetrics[] = leaderboardEntries.map(entry => ({
+    const playersWithMetrics: LeaguePlayerStats[] = leaderboardEntries.map(entry => ({
       playerId: entry.playerId,
       playerName: entry.playerName,
       leaguePoints: entry.leaguePoints,
@@ -210,7 +199,7 @@ export function calculateLeagueLeaderboard(
       gameWinPercentage: entry.gameWinPercentage,
       oppMatchWinPercentage: entry.opponentsMatchWinPercentage,
       oppGameWinPercentage: entry.opponentsGameWinPercentage,
-      eventAttendance: extractPlayerPerformance(entry.playerId, eventRankings, leagueMatches).eventAttendance,
+      eventAttendance: calculateEventAttendance(entry.playerId, leagueMatches),
     }));
 
     const rankedPlayers = applyTieBreakers(playersWithMetrics, scoringSystem.tieBreakers);
@@ -342,7 +331,7 @@ function extractPlayerPerformance(
 
   // Count placements across all events
   for (const eventRanking of eventRankings) {
-    const playerResult = eventRanking.find(r => r.player.id === playerId);
+    const playerResult = eventRanking.find(r => r.playerId === playerId);
     
     if (playerResult) {
       eventAttendance++;
@@ -391,20 +380,4 @@ function extractPlayerPerformance(
     secondPlaceFinishes,
     thirdPlaceFinishes,
   };
-}
-
-/**
- * Helper function to check if two leaderboard entries are equal across all criteria.
- *
- * This is useful for testing and validation purposes.
- *
- * @param a - First entry
- * @param b - Second entry
- * @returns True if entries are identical, false otherwise
- */
-export function areEntriesEqual(
-  a: Omit<LeaderboardEntry, 'rank'>,
-  b: Omit<LeaderboardEntry, 'rank'>
-): boolean {
-  return compareLeaderboardEntries(a, b) === 0;
 }

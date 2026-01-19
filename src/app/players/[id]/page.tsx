@@ -14,7 +14,7 @@ import {
   calculateMatchWinPercentage,
   calculateGameWinPercentage,
   calculateOpponentMatchWinPercentage
-} from '@/lib/playerStats';
+} from '@/lib/PlayerStats';
 import { Match } from '@prisma/client';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useEvents } from '@/hooks/useEvents';

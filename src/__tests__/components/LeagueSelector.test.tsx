@@ -2,37 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { LeagueSelector } from '@/components/LeagueSelector';
 import { League } from '@prisma/client';
-
-// Mock league data
-const mockLeagues: League[] = [
-  {
-    id: 'league-1',
-    name: 'Summer League 2024',
-    startDate: new Date('2024-06-01'),
-    endDate: new Date('2024-08-31'),
-    scoringSystemId: null,
-    createdAt: new Date('2024-05-01'),
-    updatedAt: new Date('2024-05-01')
-  },
-  {
-    id: 'league-2',
-    name: 'Fall League 2024',
-    startDate: new Date('2024-09-01'),
-    endDate: new Date('2024-11-30'),
-    scoringSystemId: null,
-    createdAt: new Date('2024-08-01'),
-    updatedAt: new Date('2024-08-01')
-  },
-  {
-    id: 'league-3',
-    name: 'Winter League 2024',
-    startDate: new Date('2024-12-01'),
-    endDate: new Date('2025-02-28'),
-    scoringSystemId: null,
-    createdAt: new Date('2024-11-01'),
-    updatedAt: new Date('2024-11-01')
-  }
-];
+import { mockLeagues } from '../__fixtures__/mockData';
 
 describe('LeagueSelector', () => {
   const mockOnSelectLeague = jest.fn();

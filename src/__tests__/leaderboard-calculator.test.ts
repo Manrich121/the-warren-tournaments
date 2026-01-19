@@ -1,5 +1,5 @@
 import { Match, Player, Event, ScoringSystem, ScoreFormula, TieBreaker } from '@prisma/client';
-import { calculateLeagueLeaderboard } from '../lib/leaderboard-calculator';
+import { calculateLeagueLeaderboard } from '@/lib/leaderboard-calculator';
 
 describe('Leaderboard Calculator', () => {
   // Helper to create test data

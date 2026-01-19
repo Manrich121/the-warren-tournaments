@@ -1,39 +1,8 @@
 // src/lib/utils/apply-tie-breakers.ts
 
 import type { TieBreakerType } from "@prisma/client";
-
-/**
- * Player data with all metrics needed for tie-breaking
- */
-export type PlayerWithMetrics = {
-  playerId: string;
-  playerName: string;
-  leaguePoints: number;
-  matchesWon: number;
-  matchPoints: number;
-  matchWinPercentage: number;
-  gamesWon: number;
-  gamePoints: number;
-  gameWinPercentage: number;
-  oppMatchWinPercentage: number;
-  oppGameWinPercentage: number;
-  eventAttendance: number;
-};
-
-/**
- * Tie-breaker configuration
- */
-export type TieBreaker = {
-  type: TieBreakerType;
-  order: number;
-};
-
-/**
- * Player with calculated rank
- */
-export type RankedPlayer = PlayerWithMetrics & {
-  rank: number;
-};
+import { TieBreaker } from '@/types/scoring-system';
+import { LeaguePlayerStats, LeagueRankedPlayer } from '@/types/PlayerStats';
 
 /**
  * Apply tie-breakers to rank players with equal league points
@@ -62,9 +31,9 @@ export type RankedPlayer = PlayerWithMetrics & {
  * ```
  */
 export function applyTieBreakers(
-  players: PlayerWithMetrics[],
+  players: LeaguePlayerStats[],
   tieBreakers: TieBreaker[]
-): RankedPlayer[] {
+): LeagueRankedPlayer[] {
   // Edge case: No players
   if (!players || players.length === 0) {
     return [];
@@ -82,9 +51,9 @@ export function applyTieBreakers(
   });
 
   // Assign ranks with shared rank handling
-  const rankedPlayers: RankedPlayer[] = [];
+  const rankedPlayers: LeagueRankedPlayer[] = [];
   let currentRank = 1;
-  let previousPlayer: PlayerWithMetrics | null = null;
+  let previousPlayer: LeaguePlayerStats | null = null;
 
   for (let i = 0; i < sortedPlayers.length; i++) {
     const player = sortedPlayers[i]!;
@@ -120,8 +89,8 @@ export function applyTieBreakers(
  * @returns Negative if a ranks higher, positive if b ranks higher, 0 if tied
  */
 function applyTieBreakersComparison(
-  a: PlayerWithMetrics,
-  b: PlayerWithMetrics,
+  a: LeaguePlayerStats,
+  b: LeaguePlayerStats,
   tieBreakers: TieBreaker[]
 ): number {
   // If no tie-breakers, consider them tied
@@ -157,8 +126,8 @@ function applyTieBreakersComparison(
  * @returns True if players are tied on all metrics
  */
 function arePlayersTied(
-  a: PlayerWithMetrics,
-  b: PlayerWithMetrics,
+  a: LeaguePlayerStats,
+  b: LeaguePlayerStats,
   tieBreakers: TieBreaker[]
 ): boolean {
   // Must have equal league points
@@ -178,7 +147,7 @@ function arePlayersTied(
  * @returns Metric value, treating missing data as zero (FR-016a)
  */
 function getTieBreakerValue(
-  player: PlayerWithMetrics,
+  player: LeaguePlayerStats,
   tieBreakerType: TieBreakerType
 ): number {
   switch (tieBreakerType) {
@@ -200,16 +169,4 @@ function getTieBreakerValue(
       // Unknown tie-breaker type - treat as zero
       return 0;
   }
-}
-
-/**
- * Rank players by league points only (no tie-breakers)
- *
- * @param players - Array of players to rank
- * @returns Array of players with ranks assigned
- */
-export function rankPlayersByPoints(
-  players: PlayerWithMetrics[]
-): RankedPlayer[] {
-  return applyTieBreakers(players, []);
 }
