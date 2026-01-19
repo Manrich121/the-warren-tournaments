@@ -59,8 +59,9 @@ const Leaderboard = ({ title = 'Leaderboard', entries, isLoading = false }: Lead
                 <TableHead className="w-16">Rank</TableHead>
                 <TableHead>Player</TableHead>
                 <TableHead className="text-right">League Points</TableHead>
+                <TableHead className="text-right"># Events</TableHead>
                 <TableHead className="text-right">Matches</TableHead>
-                <TableHead className="text-right">Win Rate</TableHead>
+                <TableHead className="text-right">Match Win %</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -69,6 +70,7 @@ const Leaderboard = ({ title = 'Leaderboard', entries, isLoading = false }: Lead
                   <TableCell className="font-medium">{entry.rank}</TableCell>
                   <TableCell>{entry.playerName}</TableCell>
                   <TableCell className="text-right font-semibold">{entry.leaguePoints}</TableCell>
+                  <TableCell className="text-right">{entry.eventAttendance}</TableCell>
                   <TableCell className="text-right">
                     {entry.matchesWon}/{entry.matchesPlayed}
                   </TableCell>

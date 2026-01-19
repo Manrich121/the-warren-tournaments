@@ -162,12 +162,6 @@ export function calculateLeagueLeaderboard(
     // Calculate game win rate (0 if no games)
     const gameWinRate = calculateGameWinPercentage(player.id, playerMatches)
 
-    // Calculate opponent stats using existing functions
-    const opponentsMatchWinRate =
-      calculateOpponentMatchWinPercentage(player.id, playerMatches, leagueMatches);
-    const opponentsGameWinRate =
-      calculateOpponentGameWinPercentage(player.id, playerMatches, leagueMatches);
-
     return {
       playerId: player.id,
       playerName: player.name,
@@ -179,8 +173,9 @@ export function calculateLeagueLeaderboard(
       gamesWon,
       gamePoints,
       gameWinPercentage: gameWinRate,
-      opponentsMatchWinPercentage: opponentsMatchWinRate,
-      opponentsGameWinPercentage: opponentsGameWinRate,
+      opponentsMatchWinPercentage: calculateOpponentMatchWinPercentage(player.id, playerMatches, leagueMatches),
+      opponentsGameWinPercentage: calculateOpponentGameWinPercentage(player.id, playerMatches, leagueMatches),
+      eventAttendance: calculateEventAttendance(player.id, leagueMatches),
     };
   });
 

@@ -47,6 +47,8 @@ export interface LeaderboardEntry {
 
   /** Average game win rate of all opponents faced */
   opponentsGameWinPercentage: number;
+
+  eventAttendance: number;
 }
 
 /**
