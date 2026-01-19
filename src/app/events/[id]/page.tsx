@@ -7,18 +7,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Trophy, Users, Calendar, Target, ArrowLeft, ChevronUpIcon, ChevronDownIcon } from 'lucide-react';
+import { Trophy, Users, Calendar, Target, ArrowLeft } from 'lucide-react';
 import { useLeagues } from '@/hooks/useLeagues';
 import { useEvents } from '@/hooks/useEvents';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useMatches } from '@/hooks/useMatches';
-import type { Event, Player, Match } from '@prisma/client';
-import { AddMatchDialog } from '@/components/AddMatchDialog';
+import type { Event, Match } from '@prisma/client';
+import { AddMatchDialog } from '@/components/matches/AddMatchDialog';
 import { genericSort } from '@/lib/utils';
 import { Header } from '@/components/Header';
 import { Nav } from '@/components/Nav';
-import EventLeaderboard from '@/components/EventLeaderboard';
+import EventLeaderboard from '@/components/events/EventLeaderboard';
 import { useEventLeaderboard } from '@/hooks/useEventLeaderboard';
+import { formatDate } from '@/lib/utils/format';
 
 interface EventPageProps {
   params: Promise<{
@@ -89,10 +90,6 @@ export default function EventPage({ params }: EventPageProps) {
     if (eventDate > now) return 'Upcoming';
     if (eventDate.toDateString() === now.toDateString()) return 'Today';
     return 'Completed';
-  };
-
-  const formatDate = (date: Date | string) => {
-    return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   };
 
   const isLoading =

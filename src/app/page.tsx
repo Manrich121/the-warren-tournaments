@@ -6,23 +6,23 @@ import { useMemo, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Users, Calendar, Target, ArrowRight } from 'lucide-react';
+import { Trophy, ArrowRight } from 'lucide-react';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useEvents } from '@/hooks/useEvents';
 import { usePrizePools } from '@/hooks/usePrizePools';
 import { useMatches } from '@/hooks/useMatches';
 import type { League, Player } from '@prisma/client';
-import { AddLeagueDialog } from '@/components/AddLeagueDialog';
-import { AddEventDialog } from '@/components/AddEventDialog';
+import { AddLeagueDialog } from '@/components/leagues/AddLeagueDialog';
+import { AddEventDialog } from '@/components/events/AddEventDialog';
 import { Header } from '@/components/Header';
 import { Nav } from '@/components/Nav';
-import Leaderboard from '@/components/Leaderboard';
+import Leaderboard from '@/components/leagues/Leaderboard';
 import { useActiveLeague } from '@/hooks/useActiveLeague';
 import { useMostRecentLeague } from '@/hooks/useMostRecentLeague';
 import { useLeagueLeaderboard } from '@/hooks/useLeagueLeaderboard';
 import { useLeagues } from '@/hooks/useLeagues';
 import { QuickStats } from '@/components/QuickStats';
-import { LeagueSelector } from '@/components/LeagueSelector';
+import { LeagueSelector } from '@/components/leagues/LeagueSelector';
 import { genericSort } from '@/lib/utils';
 import { formatLeagueOption } from '@/lib/league-utils';
 import { LeagueStats } from '@/types/LeagueStats';
@@ -33,7 +33,7 @@ export default function DashboardPage() {
 
   const { data: players, isLoading: playersLoading, error: playersError } = usePlayers();
   const { data: events, isLoading: eventsLoading, error: eventsError } = useEvents();
-  const { data: prizePools, isLoading: prizePoolsLoading, error: prizePoolsError } = usePrizePools();
+  const { data: prizePools, error: prizePoolsError } = usePrizePools();
   const { data: matchesData, isLoading: matchesLoading, error: matchesError } = useMatches();
   const { data: activeLeague } = useActiveLeague();
   const { data: mostRecentLeague, isLoading: mostRecentLeagueLoading } = useMostRecentLeague();
@@ -75,13 +75,8 @@ export default function DashboardPage() {
     }));
   }, [matchesData, players]);
 
-  const isLoading =
-    playersLoading ||
-    eventsLoading ||
-    prizePoolsLoading ||
-    matchesLoading ||
-    mostRecentLeagueLoading ||
-    status === 'loading';
+  const isLoading = mostRecentLeagueLoading || status === 'loading';
+  const isStatsLoading = playersLoading || eventsLoading || matchesLoading;
   const error = playersError || eventsError || prizePoolsError || matchesError || leaderboardError;
 
   const getLeagueStatus = (league: League) => {
@@ -190,7 +185,7 @@ export default function DashboardPage() {
                   New League
                 </Button>
                 <AddEventDialog
-                  open={addLeagueOpen}
+                  open={addEventOpen}
                   onOpenChange={open => {
                     if (!open) {
                       setAddEventOpen(false);
@@ -215,7 +210,7 @@ export default function DashboardPage() {
           )}
 
           {/* Quick Stats Grid - League-Specific Stats (FR-002, FR-003) */}
-          <QuickStats stats={leagueStats} isLoading={isLoading} />
+          <QuickStats stats={leagueStats} isLoading={isStatsLoading} />
 
           {/* Current League Summary */}
           {activeLeague && (

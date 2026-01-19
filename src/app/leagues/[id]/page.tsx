@@ -7,20 +7,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Trophy, Users, Calendar, Target, ArrowLeft, Plus, PencilIcon, Calculator } from 'lucide-react';
+import { Trophy, Users, Calendar, Target, ArrowLeft } from 'lucide-react';
 import { useLeagues, LeagueWithScoringSystem } from '@/hooks/useLeagues';
 import { useEvents } from '@/hooks/useEvents';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useMatches } from '@/hooks/useMatches';
 import { usePrizePools } from '@/hooks/usePrizePools';
 import type { Event, Player } from '@prisma/client';
-import { AddEventDialog } from '@/components/AddEventDialog';
-import { AddLeagueDialog } from '@/components/AddLeagueDialog';
+import { AddEventDialog } from '@/components/events/AddEventDialog';
+import { AddLeagueDialog } from '@/components/leagues/AddLeagueDialog';
 import { PrizePoolDialog } from '@/components/PrizePoolDialog';
 import { Header } from '@/components/Header';
 import { Nav } from '@/components/Nav';
-import Leaderboard from '@/components/Leaderboard';
+import Leaderboard from '@/components/leagues/Leaderboard';
 import { useLeagueLeaderboard } from '@/hooks/useLeagueLeaderboard';
+import { formatDate, formatDateRange } from '@/lib/utils/format';
 
 interface LeaguePageProps {
   params: Promise<{
@@ -99,14 +100,6 @@ export default function LeaguePage({ params }: LeaguePageProps) {
     return 'Completed';
   };
 
-  const formatDate = (date: Date | string) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
   const isLoading =
     leaguesLoading ||
     eventsLoading ||
@@ -181,9 +174,7 @@ export default function LeaguePage({ params }: LeaguePageProps) {
                     {getLeagueStatus(league)}
                   </Badge>
                 </div>
-                <p className="text-muted-foreground">
-                  {formatDate(league.startDate)} - {formatDate(league.endDate)}
-                </p>
+                <p className="text-muted-foreground">{formatDateRange(league.startDate, league.endDate)}</p>
                 {league.scoringSystem && (
                   <p className="text-sm text-muted-foreground mt-1">
                     Scoring: <span className="font-medium">{league.scoringSystem.name}</span>
@@ -204,7 +195,6 @@ export default function LeaguePage({ params }: LeaguePageProps) {
                   }}
                 />
                 <Button variant="outline" onClick={() => setEditLeagueOpen(true)}>
-                  <PencilIcon className="mr-2 h-4 w-4" />
                   Edit League
                 </Button>
 
@@ -218,10 +208,7 @@ export default function LeaguePage({ params }: LeaguePageProps) {
                   }}
                 />
 
-                <Button onClick={() => setAddEventOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Event
-                </Button>
+                <Button onClick={() => setAddEventOpen(true)}>Add Event</Button>
               </div>
             )}
           </div>
@@ -346,10 +333,7 @@ export default function LeaguePage({ params }: LeaguePageProps) {
                           }
                         }}
                       />
-                      <Button onClick={() => setAddEventOpen(true)}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Create First Event
-                      </Button>
+                      <Button onClick={() => setAddEventOpen(true)}>Create First Event</Button>
                     </>
                   )}
                 </div>
