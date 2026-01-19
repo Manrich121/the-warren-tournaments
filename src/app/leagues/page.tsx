@@ -9,7 +9,7 @@ import { DataTable } from '@/components/DataTable';
 import { TableRowActions } from '@/components/TableRowActions';
 import { useLeagues, LeagueWithScoringSystem } from '@/hooks/useLeagues';
 import { useDeleteLeague } from '@/hooks/useDeleteLeague';
-import { AddLeagueDialog } from '@/components/AddLeagueDialog';
+import { AddLeagueDialog } from '@/components/leagues/AddLeagueDialog';
 import { ScoringSystemTable } from '@/components/scoring-system/ScoringSystemTable';
 import { Header } from '@/components/Header';
 import { Nav } from '@/components/Nav';

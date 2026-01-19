@@ -8,7 +8,7 @@ import { TableRowActions } from '@/components/TableRowActions';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useDeletePlayer } from '@/hooks/useDeletePlayer';
 import { Player } from '@prisma/client';
-import { AddPlayerDialog } from '@/components/AddPlayerDialog';
+import { AddPlayerDialog } from '@/components/players/AddPlayerDialog';
 import { Header } from '@/components/Header';
 import { Nav } from '@/components/Nav';
 import { useMemo, useState } from 'react';

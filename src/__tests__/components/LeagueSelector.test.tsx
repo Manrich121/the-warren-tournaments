@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { LeagueSelector } from '@/components/LeagueSelector';
+import { LeagueSelector } from '@/components/leagues/LeagueSelector';
 import { League } from '@prisma/client';
 import { mockLeagues } from '../__fixtures__/mockData';
 
