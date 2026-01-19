@@ -24,6 +24,7 @@ import { useLeagues } from '@/hooks/useLeagues';
 import { QuickStats, LeagueStats } from '@/components/QuickStats';
 import { LeagueSelector } from '@/components/LeagueSelector';
 import { genericSort } from '@/lib/utils';
+import { formatLeagueOption } from '@/lib/league-utils';
 
 export default function DashboardPage() {
   const { status } = useSession();

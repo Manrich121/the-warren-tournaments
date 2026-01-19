@@ -7,13 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Trophy, Users, Calendar, Target, ArrowLeft, Plus, PencilIcon } from 'lucide-react';
-import { useLeagues } from '@/hooks/useLeagues';
+import { Trophy, Users, Calendar, Target, ArrowLeft, Plus, PencilIcon, Calculator } from 'lucide-react';
+import { useLeagues, LeagueWithScoringSystem } from '@/hooks/useLeagues';
 import { useEvents } from '@/hooks/useEvents';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useMatches } from '@/hooks/useMatches';
 import { usePrizePools } from '@/hooks/usePrizePools';
-import type { League, Event, Player } from '@prisma/client';
+import type { Event, Player } from '@prisma/client';
 import { AddEventDialog } from '@/components/AddEventDialog';
 import { AddLeagueDialog } from '@/components/AddLeagueDialog';
 import { PrizePoolDialog } from '@/components/PrizePoolDialog';
@@ -82,7 +82,7 @@ export default function LeaguePage({ params }: LeaguePageProps) {
   const [editLeagueOpen, setEditLeagueOpen] = useState<boolean>(false);
   const [addEventOpen, setAddEventOpen] = useState<boolean>(false);
 
-  const getLeagueStatus = (league: League) => {
+  const getLeagueStatus = (league: LeagueWithScoringSystem) => {
     const now = new Date();
     const startDate = new Date(league.startDate);
     const endDate = new Date(league.endDate);
@@ -184,6 +184,12 @@ export default function LeaguePage({ params }: LeaguePageProps) {
                 <p className="text-muted-foreground">
                   {formatDate(league.startDate)} - {formatDate(league.endDate)}
                 </p>
+                {league.scoringSystem && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Scoring: <span className="font-medium">{league.scoringSystem.name}</span>
+                    {league.scoringSystem.isDefault && ' (Default)'}
+                  </p>
+                )}
               </div>
             </div>
             {isAdmin && (

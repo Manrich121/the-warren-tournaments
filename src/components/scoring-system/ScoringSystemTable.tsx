@@ -69,10 +69,7 @@ export function ScoringSystemTable() {
           <h2 className="text-2xl font-bold tracking-tight">Scoring Systems</h2>
           <p className="text-muted-foreground">Configure how players earn points in leagues</p>
         </div>
-        <Button onClick={handleCreate}>
-          <Plus className="h-4 w-4 mr-2" />
-          Create Scoring System
-        </Button>
+        <Button onClick={handleCreate}>New Scoring System</Button>
       </div>
 
       {/* Table */}
@@ -84,10 +81,7 @@ export function ScoringSystemTable() {
         <div className="rounded-lg border border-dashed p-12 text-center">
           <p className="text-lg font-medium mb-2">No scoring systems yet</p>
           <p className="text-sm text-muted-foreground mb-4">Create your first scoring system to get started</p>
-          <Button onClick={handleCreate}>
-            <Plus className="h-4 w-4 mr-2" />
-            New Scoring System
-          </Button>
+          <Button onClick={handleCreate}>New Scoring System</Button>
         </div>
       ) : (
         <div className="rounded-md border">

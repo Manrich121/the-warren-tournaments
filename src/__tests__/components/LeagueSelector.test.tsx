@@ -10,6 +10,7 @@ const mockLeagues: League[] = [
     name: 'Summer League 2024',
     startDate: new Date('2024-06-01'),
     endDate: new Date('2024-08-31'),
+    scoringSystemId: null,
     createdAt: new Date('2024-05-01'),
     updatedAt: new Date('2024-05-01')
   },
@@ -18,6 +19,7 @@ const mockLeagues: League[] = [
     name: 'Fall League 2024',
     startDate: new Date('2024-09-01'),
     endDate: new Date('2024-11-30'),
+    scoringSystemId: null,
     createdAt: new Date('2024-08-01'),
     updatedAt: new Date('2024-08-01')
   },
@@ -26,6 +28,7 @@ const mockLeagues: League[] = [
     name: 'Winter League 2024',
     startDate: new Date('2024-12-01'),
     endDate: new Date('2025-02-28'),
+    scoringSystemId: null,
     createdAt: new Date('2024-11-01'),
     updatedAt: new Date('2024-11-01')
   }
