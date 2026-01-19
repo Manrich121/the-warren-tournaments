@@ -19,7 +19,7 @@ import { AddLeagueDialog } from '@/components/leagues/AddLeagueDialog';
 import { PrizePoolDialog } from '@/components/PrizePoolDialog';
 import { Header } from '@/components/Header';
 import { Nav } from '@/components/Nav';
-import Leaderboard from '@/components/leagues/Leaderboard';
+import { Leaderboard } from '@/components/leagues/Leaderboard';
 import { useLeagueLeaderboard } from '@/hooks/useLeagueLeaderboard';
 import { formatDate, formatDateRange } from '@/lib/utils/format';
 

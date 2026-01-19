@@ -17,7 +17,7 @@ interface LeaderboardProps {
  * - Loading skeleton support
  * - Responsive table layout
  */
-const Leaderboard = ({ title = 'Leaderboard', entries, isLoading = false }: LeaderboardProps) => {
+export const Leaderboard = ({ title = 'Leaderboard', entries, isLoading = false }: LeaderboardProps) => {
   // Handle empty state
   if (!isLoading && entries.length === 0) {
     return (
@@ -60,7 +60,7 @@ const Leaderboard = ({ title = 'Leaderboard', entries, isLoading = false }: Lead
                 <TableHead>Player</TableHead>
                 <TableHead className="text-right">League Points</TableHead>
                 <TableHead className="text-right"># Events</TableHead>
-                <TableHead className="text-right">Matches</TableHead>
+                <TableHead className="text-right">Match Points</TableHead>
                 <TableHead className="text-right">Match Win %</TableHead>
               </TableRow>
             </TableHeader>
@@ -71,9 +71,7 @@ const Leaderboard = ({ title = 'Leaderboard', entries, isLoading = false }: Lead
                   <TableCell>{entry.playerName}</TableCell>
                   <TableCell className="text-right font-semibold">{entry.leaguePoints}</TableCell>
                   <TableCell className="text-right">{entry.eventAttendance}</TableCell>
-                  <TableCell className="text-right">
-                    {entry.matchesWon}/{entry.matchesPlayed}
-                  </TableCell>
+                  <TableCell className="text-right">{entry.matchPoints}</TableCell>
                   <TableCell className="text-right">{(entry.matchWinPercentage * 100).toFixed(1)}%</TableCell>
                 </TableRow>
               ))}
@@ -84,5 +82,3 @@ const Leaderboard = ({ title = 'Leaderboard', entries, isLoading = false }: Lead
     </Card>
   );
 };
-
-export default Leaderboard;
