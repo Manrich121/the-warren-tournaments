@@ -56,7 +56,7 @@ export const calculateMatchWinPercentage = (playerId: string, matches: Match[]):
 
   const matchPoints = calculateMatchPoints(playerId, matches);
 
-  return Math.max(0.33, (matchPoints / (numRounds * 3)));
+  return Math.max(0.33, matchPoints / (numRounds * 3));
 };
 
 

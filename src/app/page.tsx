@@ -16,7 +16,7 @@ import { AddLeagueDialog } from '@/components/leagues/AddLeagueDialog';
 import { AddEventDialog } from '@/components/events/AddEventDialog';
 import { Header } from '@/components/Header';
 import { Nav } from '@/components/Nav';
-import Leaderboard from '@/components/leagues/Leaderboard';
+import { Leaderboard } from '@/components/leagues/Leaderboard';
 import { useActiveLeague } from '@/hooks/useActiveLeague';
 import { useMostRecentLeague } from '@/hooks/useMostRecentLeague';
 import { useLeagueLeaderboard } from '@/hooks/useLeagueLeaderboard';
@@ -264,7 +264,7 @@ export default function DashboardPage() {
             <div>
               {displayLeague ? (
                 <Leaderboard
-                  title={`Leaderboard: ${formatLeagueOption(displayLeague)}`}
+                  title={formatLeagueOption(displayLeague)}
                   entries={leaderboard || []}
                   isLoading={leaderboardLoading}
                 />

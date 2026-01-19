@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import Leaderboard from '@/components/leagues/Leaderboard';
+import { Leaderboard } from '@/components/leagues/Leaderboard';
 import { LeaderboardEntry } from '@/types/leaderboard';
 import { mockLeaderboard } from '../__fixtures__/mockData';
 
