@@ -61,7 +61,6 @@ describe('LeagueSelector', () => {
       // Summer League 2024 should be selected and displayed
       const trigger = screen.getByRole('combobox');
       expect(trigger).toHaveTextContent('Summer League 2024');
-      expect(trigger).toHaveTextContent('Jun 1 - Aug 31');
     });
   });
 

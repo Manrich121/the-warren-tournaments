@@ -2,7 +2,6 @@
 
 import { League } from '@prisma/client';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { formatLeagueOption } from '@/lib/league-utils';
 
 interface LeagueSelectorProps {
   /** Array of all available leagues */
@@ -68,7 +67,7 @@ export function LeagueSelector({ leagues, selectedLeagueId, onSelectLeague, clas
         <SelectContent>
           {leagues.map(league => (
             <SelectItem key={league.id} value={league.id}>
-              {formatLeagueOption(league)}
+              {league.name}
             </SelectItem>
           ))}
         </SelectContent>

@@ -268,7 +268,7 @@ export default function DashboardPage() {
             <div>
               {displayLeague ? (
                 <Leaderboard
-                  title={`${displayLeague.name} Leaderboard`}
+                  title={`Leaderboard: ${formatLeagueOption(displayLeague)}`}
                   entries={leaderboard || []}
                   isLoading={leaderboardLoading}
                 />

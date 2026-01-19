@@ -30,13 +30,20 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Bad Request', message: 'Invalid league ID format' }, { status: 400 });
     }
 
-    // Fetch league with events and matches
+    // Fetch league with events, matches, and scoring system
     const league = await prisma.league.findUnique({
       where: { id },
       include: {
         events: {
           include: {
             matches: true
+          }
+        },
+        scoringSystem: {
+          include: {
+            formulas: {
+              orderBy: { order: 'asc' }
+            }
           }
         }
       }
@@ -66,8 +73,21 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const allEvents = league.events;
     const allMatches = league.events.flatMap(event => event.matches);
 
-    // Calculate leaderboard with new tie-breaking logic
-    const leaderboard = calculateLeagueLeaderboard(id, allEvents, allMatches, players);
+    // Get scoring system (use default if league doesn't have one)
+    let scoringSystem = league.scoringSystem;
+    if (!scoringSystem) {
+      scoringSystem = await prisma.scoringSystem.findFirst({
+        where: { isDefault: true },
+        include: {
+          formulas: {
+            orderBy: { order: 'asc' }
+          }
+        }
+      });
+    }
+
+    // Calculate leaderboard with scoring system formulas
+    const leaderboard = calculateLeagueLeaderboard(id, allEvents, allMatches, players, scoringSystem);
 
     return NextResponse.json(leaderboard);
   } catch (error) {
