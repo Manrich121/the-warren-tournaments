@@ -135,15 +135,10 @@ export function formatDateRange(startDate: Date | string, endDate: Date | string
     day: 'numeric'
   };
 
-  const startFormatted = start.toLocaleDateString('en-US', formatOptions);
-  const endFormatted = end.toLocaleDateString('en-US', formatOptions);
+  const startFormatted = start.toLocaleDateString('en-UK', formatOptions);
+  const endFormatted = end.toLocaleDateString('en-UK', formatOptions);
 
-  // If dates span different years, include year in the format
-  if (startYear !== endYear) {
-    return `${startFormatted}, ${startYear} - ${endFormatted}, ${endYear}`;
-  }
-
-  return `${startFormatted} - ${endFormatted}`;
+  return `${startFormatted} ${startYear} - ${endFormatted} ${endYear}`;
 }
 
 /**
