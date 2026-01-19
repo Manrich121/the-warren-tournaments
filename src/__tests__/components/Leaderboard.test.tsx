@@ -11,12 +11,13 @@ describe('Leaderboard Component', () => {
       leaguePoints: 12,
       matchesWon: 4,
       matchesPlayed: 5,
-      matchWinRate: 0.8,
+      matchPoints: 5,
+      matchWinPercentage: 0.8,
+      gamesWon: 12,
       gamePoints: 12,
-      gamePossiblePoints: 15,
-      gameWinRate: 0.8,
-      opponentsMatchWinRate: 0.6,
-      opponentsGameWinRate: 0.65
+      gameWinPercentage: 0.8,
+      opponentsMatchWinPercentage: 0.6,
+      opponentsGameWinPercentage: 0.65
     },
     {
       playerId: '2',
@@ -25,12 +26,13 @@ describe('Leaderboard Component', () => {
       leaguePoints: 9,
       matchesWon: 3,
       matchesPlayed: 5,
-      matchWinRate: 0.6,
+      matchPoints: 5,
+      matchWinPercentage: 0.6,
+      gamesWon: 9,
       gamePoints: 9,
-      gamePossiblePoints: 15,
-      gameWinRate: 0.6,
-      opponentsMatchWinRate: 0.5,
-      opponentsGameWinRate: 0.55
+      gameWinPercentage: 0.6,
+      opponentsMatchWinPercentage: 0.5,
+      opponentsGameWinPercentage: 0.55
     },
     {
       playerId: '3',
@@ -39,12 +41,13 @@ describe('Leaderboard Component', () => {
       leaguePoints: 6,
       matchesWon: 2,
       matchesPlayed: 5,
-      matchWinRate: 0.4,
+      matchPoints: 5,
+      matchWinPercentage: 0.4,
+      gamesWon: 6,
       gamePoints: 6,
-      gamePossiblePoints: 15,
-      gameWinRate: 0.4,
-      opponentsMatchWinRate: 0.45,
-      opponentsGameWinRate: 0.5
+      gameWinPercentage: 0.4,
+      opponentsMatchWinPercentage: 0.45,
+      opponentsGameWinPercentage: 0.5
     }
   ];
 
@@ -209,12 +212,13 @@ describe('Leaderboard Component', () => {
           leaguePoints: 0,
           matchesWon: 0,
           matchesPlayed: 0,
-          matchWinRate: 0,
+          matchPoints: 0,
+          matchWinPercentage: 0,
+          gamesWon: 0,
           gamePoints: 0,
-          gamePossiblePoints: 0,
-          gameWinRate: 0,
-          opponentsMatchWinRate: 0,
-          opponentsGameWinRate: 0
+          gameWinPercentage: 0,
+          opponentsMatchWinPercentage: 0,
+          opponentsGameWinPercentage: 0
         }
       ];
 
@@ -234,12 +238,13 @@ describe('Leaderboard Component', () => {
           leaguePoints: 15,
           matchesWon: 5,
           matchesPlayed: 5,
-          matchWinRate: 1.0,
+          matchPoints: 5,
+          matchWinPercentage: 1.0,
+          gamesWon: 15,
           gamePoints: 15,
-          gamePossiblePoints: 15,
-          gameWinRate: 1.0,
-          opponentsMatchWinRate: 0.5,
-          opponentsGameWinRate: 0.5
+          gameWinPercentage: 1.0,
+          opponentsMatchWinPercentage: 0.5,
+          opponentsGameWinPercentage: 0.5
         }
       ];
 
@@ -285,13 +290,14 @@ describe('Leaderboard Component', () => {
         rank: i + 1,
         leaguePoints: 50 - i,
         matchesWon: 10 - (i % 10),
+        matchPoints: 50 - i,
         matchesPlayed: 10,
-        matchWinRate: (10 - (i % 10)) / 10,
+        matchWinPercentage: (10 - (i % 10)) / 10,
         gamePoints: 30 - i,
-        gamePossiblePoints: 30,
-        gameWinRate: (30 - i) / 30,
-        opponentsMatchWinRate: 0.5,
-        opponentsGameWinRate: 0.5
+        gamesWon: 100 - i,
+        gameWinPercentage: (30 - i) / 30,
+        opponentsMatchWinPercentage: 0.5,
+        opponentsGameWinPercentage: 0.5
       }));
 
       render(<Leaderboard entries={manyEntries} />);

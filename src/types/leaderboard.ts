@@ -21,29 +21,32 @@ export interface LeaderboardEntry {
   /** Total league points earned across all events in the league */
   leaguePoints: number;
 
-  /** Number of matches won (draws excluded) */
-  matchesWon: number;
-
   /** Total number of matches played (including draws) */
   matchesPlayed: number;
 
-  /** Match win rate: matchesWon / matchesPlayed (0 if no matches) */
-  matchWinRate: number;
+  /** Number of matches won (draws excluded) */
+  matchesWon: number;
+
+  /** Number of match points */
+  matchPoints: number;
+
+  /** Match win percentage: */
+  matchWinPercentage: number;
+
+  /** Number of games won (draws excluded) */
+  gamesWon: number;
 
   /** Total game points scored across all matches */
   gamePoints: number;
 
-  /** Total game points possible (sum of both players' scores in all matches) */
-  gamePossiblePoints: number;
-
-  /** Game win rate: gamePoints / gamePossiblePoints (0 if no games) */
-  gameWinRate: number;
+  /** Game win percentage */
+  gameWinPercentage: number;
 
   /** Average match win rate of all opponents faced */
-  opponentsMatchWinRate: number;
+  opponentsMatchWinPercentage: number;
 
   /** Average game win rate of all opponents faced */
-  opponentsGameWinRate: number;
+  opponentsGameWinPercentage: number;
 }
 
 /**

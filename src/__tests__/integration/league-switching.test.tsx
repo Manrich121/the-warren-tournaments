@@ -64,12 +64,11 @@ const mockLeaderboard: LeaderboardEntry[] = [
     leaguePoints: 100,
     matchesWon: 10,
     matchesPlayed: 12,
-    matchWinRate: 0.833,
+    matchWinPercentage: 0.833,
     gamePoints: 120,
-    gamePossiblePoints: 144,
-    gameWinRate: 0.833,
-    opponentsMatchWinRate: 0.65,
-    opponentsGameWinRate: 0.6
+    gameWinPercentage: 0.833,
+    opponentsMatchWinPercentage: 0.65,
+    opponentsGameWinPercentage: 0.6
   },
   {
     playerId: 'player-2',
@@ -78,12 +77,11 @@ const mockLeaderboard: LeaderboardEntry[] = [
     leaguePoints: 80,
     matchesWon: 8,
     matchesPlayed: 12,
-    matchWinRate: 0.667,
+    matchWinPercentage: 0.667,
     gamePoints: 96,
-    gamePossiblePoints: 144,
-    gameWinRate: 0.667,
-    opponentsMatchWinRate: 0.7,
-    opponentsGameWinRate: 0.65
+    gameWinPercentage: 0.667,
+    opponentsMatchWinPercentage: 0.7,
+    opponentsGameWinPercentage: 0.65
   }
 ];
 

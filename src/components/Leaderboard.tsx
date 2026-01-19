@@ -72,7 +72,7 @@ const Leaderboard = ({ title = 'Leaderboard', entries, isLoading = false }: Lead
                   <TableCell className="text-right">
                     {entry.matchesWon}/{entry.matchesPlayed}
                   </TableCell>
-                  <TableCell className="text-right">{(entry.matchWinRate * 100).toFixed(1)}%</TableCell>
+                  <TableCell className="text-right">{(entry.matchWinPercentage * 100).toFixed(1)}%</TableCell>
                 </TableRow>
               ))}
             </TableBody>

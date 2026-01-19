@@ -43,6 +43,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
           include: {
             formulas: {
               orderBy: { order: 'asc' }
+            },
+            tieBreakers: {
+              orderBy: { order: 'asc' }
             }
           }
         }
@@ -80,6 +83,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
         where: { isDefault: true },
         include: {
           formulas: {
+            orderBy: { order: 'asc' }
+          },
+          tieBreakers: {
             orderBy: { order: 'asc' }
           }
         }

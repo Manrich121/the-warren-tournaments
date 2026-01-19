@@ -176,13 +176,13 @@ Project structure per plan.md:
 
 ### Implementation for User Story 6
 
-- [ ] T059 [US6] Implement applyTieBreakers function in src/lib/utils/apply-tie-breakers.ts (takes players with equal points, tie-breaker order, returns ranked list)
-- [ ] T060 [US6] Implement tie-breaker metric calculation functions (Opponent Match Win %, Game Win %, Opponent Game Win %)
-- [ ] T061 [US6] Integrate applyTieBreakers into leaderboard generation (rank by points first, then apply tie-breakers for each tied group)
-- [ ] T062 [US6] Implement shared rank logic (FR-016b: players tied on all metrics get same rank, subsequent ranks skip positions)
-- [ ] T063 [US6] Handle missing tie-breaker data (FR-016a: treat as zero)
-- [ ] T064 [US6] Update leaderboard display to show rank with proper handling of shared ranks
-- [ ] T065 [US6] Ensure tie-breakers are applied in configured order from scoring system
+- [X] T059 [US6] Implement applyTieBreakers function in src/lib/utils/apply-tie-breakers.ts (takes players with equal points, tie-breaker order, returns ranked list)
+- [X] T060 [US6] Implement tie-breaker metric calculation functions (Opponent Match Win %, Game Win %, Opponent Game Win %)
+- [X] T061 [US6] Integrate applyTieBreakers into leaderboard generation (rank by points first, then apply tie-breakers for each tied group)
+- [X] T062 [US6] Implement shared rank logic (FR-016b: players tied on all metrics get same rank, subsequent ranks skip positions)
+- [X] T063 [US6] Handle missing tie-breaker data (FR-016a: treat as zero)
+- [X] T064 [US6] Update leaderboard display to show rank with proper handling of shared ranks
+- [X] T065 [US6] Ensure tie-breakers are applied in configured order from scoring system
 
 **Checkpoint**: All user stories complete - full scoring system functionality operational
 

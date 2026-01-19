@@ -13,7 +13,7 @@
  * 6. Player name alphabetically (A-Z)
  */
 
-import { Match, Player, Event, ScoringSystem, ScoreFormula } from '@prisma/client';
+import { Match, Player, Event, ScoringSystem, ScoreFormula, TieBreaker } from '@prisma/client';
 import { LeaderboardEntry } from '@/types/leaderboard';
 import {
   calculateMatchPoints,
@@ -25,6 +25,7 @@ import {
   calculateEventRanking,
 } from './playerStats';
 import { calculateLeaguePoints, type PlayerPerformanceData } from './utils/calculate-points';
+import { applyTieBreakers, type PlayerWithMetrics } from './utils/apply-tie-breakers';
 
 /**
  * Calculates the complete leaderboard for a league with proper tie-breaking.
@@ -63,7 +64,7 @@ export function calculateLeagueLeaderboard(
   events: Event[],
   matches: Match[],
   players: Player[],
-  scoringSystem: (ScoringSystem & { formulas: ScoreFormula[] }) | null
+  scoringSystem: (ScoringSystem & { formulas: ScoreFormula[]; tieBreakers: TieBreaker[] }) | null
 ): LeaderboardEntry[] {
   // Filter events for this league
   const leagueEvents = events.filter((e) => e.leagueId === leagueId);
@@ -149,26 +150,28 @@ export function calculateLeagueLeaderboard(
       return false;
     }).length;
 
+    const gamesWon = playerMatches.reduce((sum, m) => {
+      if(m.draw) return sum;
+      if (m.player1Id === player.id) {
+        return sum + m.player1Score;
+      } else if (m.player2Id === player.id) {
+        return sum + m.player2Score;
+      }
+      return sum;
+    }, 0);
+
     const matchesPlayed = playerMatches.length;
 
+    const matchPoints = calculateMatchPoints(player.id, playerMatches);
+
     // Calculate match win rate (0 if no matches)
-    const matchWinRate = matchesPlayed > 0 ? matchesWon / matchesPlayed : 0;
+    const matchWinRate = calculateMatchWinPercentage(player.id, playerMatches)
 
     // Calculate game points and possible points
-    let gamePoints = 0;
-    let gamePossiblePoints = 0;
-
-    for (const match of playerMatches) {
-      if (match.player1Id === player.id) {
-        gamePoints += match.player1Score;
-      } else if (match.player2Id === player.id) {
-        gamePoints += match.player2Score;
-      }
-      gamePossiblePoints += match.player1Score + match.player2Score;
-    }
+    const gamePoints =  calculateGamePoints(player.id, playerMatches);
 
     // Calculate game win rate (0 if no games)
-    const gameWinRate = gamePossiblePoints > 0 ? gamePoints / gamePossiblePoints : 0;
+    const gameWinRate = calculateGameWinPercentage(player.id, playerMatches)
 
     // Calculate opponent stats using existing functions
     // Convert percentages (0-100) to rates (0-1) for consistency
@@ -183,20 +186,49 @@ export function calculateLeagueLeaderboard(
       leaguePoints: leaguePoints[player.id] || 0,
       matchesWon,
       matchesPlayed,
-      matchWinRate,
+      matchPoints,
+      matchWinPercentage: matchWinRate,
+      gamesWon,
       gamePoints,
-      gamePossiblePoints,
-      gameWinRate,
-      opponentsMatchWinRate,
-      opponentsGameWinRate,
+      gameWinPercentage: gameWinRate,
+      opponentsMatchWinPercentage: opponentsMatchWinRate,
+      opponentsGameWinPercentage: opponentsGameWinRate,
     };
   });
 
-  // Sort using the 5-level tie-breaking comparator
-  const sortedEntries = [...leaderboardEntries].sort(compareLeaderboardEntries);
+  // Apply tie-breakers from scoring system or use legacy tie-breaking
+  if (scoringSystem && scoringSystem.tieBreakers && scoringSystem.tieBreakers.length > 0) {
+    // Use configured tie-breakers from scoring system
+    const playersWithMetrics: PlayerWithMetrics[] = leaderboardEntries.map(entry => ({
+      playerId: entry.playerId,
+      playerName: entry.playerName,
+      leaguePoints: entry.leaguePoints,
+      matchesWon: entry.matchesWon,
+      matchPoints: entry.matchPoints,
+      matchWinPercentage: entry.matchWinPercentage,
+      gamesWon: entry.gamesWon,
+      gamePoints: entry.gamePoints,
+      gameWinPercentage: entry.gameWinPercentage,
+      oppMatchWinPercentage: entry.opponentsMatchWinPercentage,
+      oppGameWinPercentage: entry.opponentsGameWinPercentage,
+      eventAttendance: extractPlayerPerformance(entry.playerId, eventRankings, leagueMatches).eventAttendance,
+    }));
 
-  // Assign ranks (with support for shared ranks)
-  return assignRanks(sortedEntries);
+    const rankedPlayers = applyTieBreakers(playersWithMetrics, scoringSystem.tieBreakers);
+    
+    // Convert back to LeaderboardEntry format
+    return rankedPlayers.map(rankedPlayer => {
+      const originalEntry = leaderboardEntries.find(e => e.playerId === rankedPlayer.playerId)!;
+      return {
+        ...originalEntry,
+        rank: rankedPlayer.rank,
+      };
+    });
+  } else {
+    // Fallback: use legacy 5-level tie-breaking
+    const sortedEntries = [...leaderboardEntries].sort(compareLeaderboardEntries);
+    return assignRanks(sortedEntries);
+  }
 }
 
 /**
@@ -224,27 +256,27 @@ function compareLeaderboardEntries(
   }
 
   // 2. Match win rate (higher is better)
-  if (a.matchWinRate !== b.matchWinRate) {
-    return b.matchWinRate - a.matchWinRate;
+  if (a.matchWinPercentage !== b.matchWinPercentage) {
+    return b.matchWinPercentage - a.matchWinPercentage;
   }
 
   // 3. Opponents' match win rate (higher is better)
-  if (a.opponentsMatchWinRate !== b.opponentsMatchWinRate) {
-    return b.opponentsMatchWinRate - a.opponentsMatchWinRate;
+  if (a.opponentsMatchWinPercentage !== b.opponentsMatchWinPercentage) {
+    return b.opponentsMatchWinPercentage - a.opponentsMatchWinPercentage;
   }
 
   // 4. Game win rate (higher is better)
-  if (a.gameWinRate !== b.gameWinRate) {
-    return b.gameWinRate - a.gameWinRate;
+  if (a.gameWinPercentage !== b.gameWinPercentage) {
+    return b.gameWinPercentage - a.gameWinPercentage;
   }
 
   // 5. Opponents' game win rate (higher is better)
-  if (a.opponentsGameWinRate !== b.opponentsGameWinRate) {
-    return b.opponentsGameWinRate - a.opponentsGameWinRate;
+  if (a.opponentsGameWinPercentage !== b.opponentsGameWinPercentage) {
+    return b.opponentsGameWinPercentage - a.opponentsGameWinPercentage;
   }
 
-  // 6. Alphabetical by player name (A-Z)
-  return a.playerName.localeCompare(b.playerName);
+  // 6. All tie-breakers exhausted and still tied
+  return 0;
 }
 
 /**

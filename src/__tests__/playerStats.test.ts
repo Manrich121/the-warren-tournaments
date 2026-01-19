@@ -82,7 +82,7 @@ describe('Player Stats Calculations', () => {
   describe('calculateMatchWinPercentage', () => {
     it('should calculate player1 match win percentage', () => {
       const percentage = calculateMatchWinPercentage(playerId, matches);
-      expect(percentage).toBe((4 / (3 * 3)) * 100);
+      expect(percentage).toBe(4 / (3 * 3));
     });
 
     it('should calculate player1 match win percentage 5-2-1', () => {
@@ -186,7 +186,7 @@ describe('Player Stats Calculations', () => {
       ];
 
       const percentage = calculateMatchWinPercentage(playerId, matches);
-      expect(percentage).toBe((16 / (8 * 3)) * 100);
+      expect(percentage).toBe(16 / (8 * 3));
     });
 
     it('should calculate player1 match win percentage 1-3-0', () => {
@@ -243,28 +243,29 @@ describe('Player Stats Calculations', () => {
 
       const percentage = calculateMatchWinPercentage(playerId, matches);
       // would be 25%, but minimum is 33%
-      expect(percentage).toBeCloseTo(33);
+      expect(percentage).toBeCloseTo(0.33);
     });
 
     it('should calculate player2 match win percentage correctly', () => {
       const playerId = 'player2';
       const percentage = calculateMatchWinPercentage(playerId, matches);
       // Would be 16.67%, but minimum is 33%
-      expect(percentage).toBe(0.33 * 100);
+      expect(percentage).toBe(0.33);
     });
   });
 
   describe('calculateGameWinPercentage', () => {
     it('should calculate player1 game win percentage correctly', () => {
       const percentage = calculateGameWinPercentage(playerId, matches);
-      expect(percentage).toBe((10 / (3 * 6)) * 100);
+      expect(percentage).toBe(10 / (3 * 6));
     });
 
     it('should calculate player2 game win percentage correctly', () => {
       const playerId = 'player2';
       const percentage = calculateGameWinPercentage(playerId, matches);
-      expect(percentage).toBe((4 / (3 * 3)) * 100);
+      expect(percentage).toBe(4 / (3 * 3));
     });
+
     it('should calculate player1 game win percentage 21 GPs / 10 games', () => {
       const matches: Match[] = [
         {
@@ -318,7 +319,7 @@ describe('Player Stats Calculations', () => {
       ];
 
       const percentage = calculateGameWinPercentage(playerId, matches);
-      expect(percentage).toBe((21 / (3 * 10)) * 100);
+      expect(percentage).toBe(21 / (3 * 10));
     });
     it('should calculate player1 game win percentage 9 GPs / 11 games', () => {
       const matches: Match[] = [
@@ -373,8 +374,8 @@ describe('Player Stats Calculations', () => {
       ];
 
       const percentage = calculateGameWinPercentage(playerId, matches);
-      // Would be (9 / (3 * 11)) * 100
-      expect(percentage).toBe(0.33 * 100);
+      // Would be (9 / (3 * 11))
+      expect(percentage).toBe(0.33);
     });
   });
 
@@ -431,7 +432,7 @@ describe('Player Stats Calculations', () => {
         }
       ];
       const percentage = calculateOpponentMatchWinPercentage(playerId, matches, allMatches);
-      expect(percentage).toBe(66.5);
+      expect(percentage).toBe(0.665);
     });
   });
 
@@ -488,7 +489,7 @@ describe('Player Stats Calculations', () => {
         }
       ];
       const percentage = calculateOpponentGameWinPercentage(playerId, matches, allMatches);
-      expect(percentage).toBeCloseTo(55.56, 2);
+      expect(percentage).toBeCloseTo(0.5555, 2);
     });
   });
 
