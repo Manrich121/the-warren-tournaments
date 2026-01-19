@@ -9,12 +9,15 @@ export type PlayerWithMetrics = {
   playerId: string;
   playerName: string;
   leaguePoints: number;
+  matchesWon: number;
   matchPoints: number;
+  matchWinPercentage: number;
+  gamesWon: number;
+  gamePoints: number;
   gameWinPercentage: number;
   oppMatchWinPercentage: number;
   oppGameWinPercentage: number;
   eventAttendance: number;
-  matchWins: number;
 };
 
 /**
@@ -192,7 +195,7 @@ function getTieBreakerValue(
     case "EVENT_ATTENDANCE_TIE":
       return player.eventAttendance ?? 0;
     case "MATCH_WINS_TIE":
-      return player.matchWins ?? 0;
+      return player.matchesWon ?? 0;
     default:
       // Unknown tie-breaker type - treat as zero
       return 0;

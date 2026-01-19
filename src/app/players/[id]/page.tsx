@@ -224,8 +224,8 @@ export default function PlayerStatsPage() {
               <CardTitle className="text-sm font-medium">Match Win %</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.matchWinPercentage.toFixed(1)}%</div>
-              <div className="text-xs text-muted-foreground">Min 33.3% floor</div>
+              <div className="text-2xl font-bold">{(stats.matchWinPercentage * 100).toFixed(1)}%</div>
+              <div className="text-xs text-muted-foreground">Min 33.3%</div>
             </CardContent>
           </Card>
           <Card>
@@ -233,8 +233,8 @@ export default function PlayerStatsPage() {
               <CardTitle className="text-sm font-medium">Opponent Match Win %</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.opponentMatchWinPercentage.toFixed(1)}%</div>
-              <div className="text-xs text-muted-foreground">Strength of schedule</div>
+              <div className="text-2xl font-bold">{(stats.opponentMatchWinPercentage * 100).toFixed(1)}%</div>
+              <div className="text-xs text-muted-foreground">Min 33.3%</div>
             </CardContent>
           </Card>
         </div>
