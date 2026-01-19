@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { FormulaCard } from "./FormulaCard";
-import type { PointMetricType } from "@prisma/client";
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import { FormulaCard } from './FormulaCard';
+import type { PointMetricType } from '@prisma/client';
 
 interface Formula {
   multiplier: number;
@@ -17,34 +17,30 @@ interface FormulaListProps {
   maxFormulas?: number;
 }
 
-export function FormulaList({
-  formulas,
-  onChange,
-  maxFormulas = 10,
-}: FormulaListProps) {
+export function FormulaList({ formulas, onChange, maxFormulas = 10 }: FormulaListProps) {
   const handleAdd = () => {
     if (formulas.length >= maxFormulas) return;
 
     // Get already used metrics to avoid duplicates
     const usedMetrics = new Set(formulas.map(f => f.pointMetric));
-    
+
     // Default metrics in order of priority
     const defaultMetrics: PointMetricType[] = [
-      "EVENT_ATTENDANCE",
-      "FIRST_PLACE",
-      "SECOND_PLACE",
-      "THIRD_PLACE",
-      "MATCH_WINS",
-      "GAME_WINS",
+      'EVENT_ATTENDANCE',
+      'FIRST_PLACE',
+      'SECOND_PLACE',
+      'THIRD_PLACE',
+      'MATCH_WINS',
+      'GAME_WINS'
     ];
-    
+
     // Find first unused metric
-    const nextMetric = defaultMetrics.find(m => !usedMetrics.has(m)) || "EVENT_ATTENDANCE";
+    const nextMetric = defaultMetrics.find(m => !usedMetrics.has(m)) || 'EVENT_ATTENDANCE';
 
     const newFormula: Formula = {
       multiplier: 1,
       pointMetric: nextMetric,
-      order: formulas.length + 1,
+      order: formulas.length + 1
     };
 
     onChange([...formulas, newFormula]);
@@ -55,7 +51,7 @@ export function FormulaList({
     // Reorder remaining formulas
     const reordered = updated.map((formula, i) => ({
       ...formula,
-      order: i + 1,
+      order: i + 1
     }));
     onChange(reordered);
   };
@@ -66,10 +62,7 @@ export function FormulaList({
     onChange(updated);
   };
 
-  const handlePointMetricChange = (
-    index: number,
-    value: PointMetricType
-  ) => {
+  const handlePointMetricChange = (index: number, value: PointMetricType) => {
     const updated = [...formulas];
     updated[index] = { ...updated[index]!, pointMetric: value };
     onChange(updated);
@@ -80,17 +73,9 @@ export function FormulaList({
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-sm font-medium">Formulas</h3>
-          <p className="text-xs text-muted-foreground">
-            Define how points are calculated ({formulas.length}/{maxFormulas})
-          </p>
+          <p className="text-xs text-muted-foreground">Define how points are calculated</p>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={handleAdd}
-          disabled={formulas.length >= maxFormulas}
-        >
+        <Button type="button" variant="outline" size="sm" onClick={handleAdd} disabled={formulas.length >= maxFormulas}>
           <Plus className="h-4 w-4 mr-1" />
           Add Formula
         </Button>
@@ -98,9 +83,7 @@ export function FormulaList({
 
       {formulas.length === 0 ? (
         <div className="rounded-lg border border-dashed p-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            No formulas yet. Click "Add Formula" to get started.
-          </p>
+          <p className="text-sm text-muted-foreground">No formulas yet. Click "Add Formula" to get started.</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -110,12 +93,8 @@ export function FormulaList({
               index={index}
               multiplier={formula.multiplier}
               pointMetric={formula.pointMetric}
-              onMultiplierChange={(value) =>
-                handleMultiplierChange(index, value)
-              }
-              onPointMetricChange={(value) =>
-                handlePointMetricChange(index, value)
-              }
+              onMultiplierChange={value => handleMultiplierChange(index, value)}
+              onPointMetricChange={value => handlePointMetricChange(index, value)}
               onRemove={() => handleRemove(index)}
             />
           ))}
