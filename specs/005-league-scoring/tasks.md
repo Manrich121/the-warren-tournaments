@@ -158,15 +158,13 @@ Project structure per plan.md:
 
 ### Implementation for User Story 5
 
-- [ ] T052 [US5] Implement calculateLeaguePoints function in src/lib/utils/calculate-points.ts (takes player performance data, formulas, returns total points)
-- [ ] T053 [US5] Create utility to fetch player performance data (events attended, matches won, games won, placements)
-- [ ] T054 [US5] Locate or create league leaderboard API route (src/app/api/leagues/[id]/leaderboard/route.ts)
-- [ ] T055 [US5] Integrate calculateLeaguePoints into leaderboard generation (fetch league's scoring system, apply formulas to each player)
-- [ ] T056 [US5] Handle edge cases (missing data treated as zero, negative/zero multipliers)
-- [ ] T057 [US5] Add caching strategy for calculated points using Next.js revalidation
-- [ ] T058 [US5] Optimize query performance for 100+ players (meet SC-002: <2 seconds)
-
-**Checkpoint**: Player points are automatically calculated using league's scoring system formulas
+- [X] T052 [US5] Implement calculateLeaguePoints function in src/lib/utils/calculate-points.ts (takes player performance data, formulas, returns total points)
+- [X] T053 [US5] Create utility to fetch player performance data (events attended, matches won, games won, placements)
+- [X] T054 [US5] Locate or create league leaderboard API route (src/app/api/leagues/[id]/leaderboard/route.ts)
+- [X] T055 [US5] Integrate calculateLeaguePoints into leaderboard generation (fetch league's scoring system, apply formulas to each player)
+- [X] T056 [US5] Handle edge cases (missing data treated as zero, negative/zero multipliers)
+- [X] T057 [US5] Add caching strategy for calculated points using Next.js revalidation
+- [X] T058 [US5] Optimize query performance for 100+ players (meet SC-002: <2 seconds)
 
 ---
 

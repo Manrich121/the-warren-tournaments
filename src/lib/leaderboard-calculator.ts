@@ -13,7 +13,7 @@
  * 6. Player name alphabetically (A-Z)
  */
 
-import { Match, Player, Event } from '@prisma/client';
+import { Match, Player, Event, ScoringSystem, ScoreFormula } from '@prisma/client';
 import { LeaderboardEntry } from '@/types/leaderboard';
 import {
   calculateMatchPoints,
@@ -22,9 +22,9 @@ import {
   calculateGameWinPercentage,
   calculateOpponentMatchWinPercentage,
   calculateOpponentGameWinPercentage,
-  getEventPoints,
   calculateEventRanking,
 } from './playerStats';
+import { calculateLeaguePoints, type PlayerPerformanceData } from './utils/calculate-points';
 
 /**
  * Calculates the complete leaderboard for a league with proper tie-breaking.
@@ -41,6 +41,7 @@ import {
  * @param events - All events (will be filtered to league events)
  * @param matches - All matches (will be filtered to league matches)
  * @param players - All players (will be filtered to league participants)
+ * @param scoringSystem - The scoring system with formulas to use for point calculation
  * @returns Sorted array of leaderboard entries with ranks
  *
  * @example
@@ -61,7 +62,8 @@ export function calculateLeagueLeaderboard(
   leagueId: string,
   events: Event[],
   matches: Match[],
-  players: Player[]
+  players: Player[],
+  scoringSystem: (ScoringSystem & { formulas: ScoreFormula[] }) | null
 ): LeaderboardEntry[] {
   // Filter events for this league
   const leagueEvents = events.filter((e) => e.leagueId === leagueId);
@@ -100,16 +102,35 @@ export function calculateLeagueLeaderboard(
     return calculateEventRanking(leaguePlayers, eventMatches);
   });
 
-  // Calculate league points for each player (sum of event points)
+  // Calculate league points for each player using scoring system formulas
   const leaguePoints: { [playerId: string]: number } = {};
-  for (const player of leaguePlayers) {
-    leaguePoints[player.id] = 0;
-  }
-
-  for (const eventRanking of eventRankings) {
-    for (const rankedPlayer of eventRanking) {
-      if (leaguePoints[rankedPlayer.player.id] !== undefined) {
-        leaguePoints[rankedPlayer.player.id] += getEventPoints(rankedPlayer.rank);
+  
+  if (scoringSystem && scoringSystem.formulas && scoringSystem.formulas.length > 0) {
+    // Use scoring system formulas to calculate points
+    for (const player of leaguePlayers) {
+      // Collect player performance data
+      const performanceData: PlayerPerformanceData = extractPlayerPerformance(
+        player.id,
+        eventRankings,
+        leagueMatches
+      );
+      
+      // Calculate points using formulas
+      leaguePoints[player.id] = calculateLeaguePoints(performanceData, scoringSystem.formulas);
+    }
+  } else {
+    // Fallback: use legacy point calculation if no scoring system
+    for (const player of leaguePlayers) {
+      leaguePoints[player.id] = 0;
+    }
+    
+    for (const eventRanking of eventRankings) {
+      for (const rankedPlayer of eventRanking) {
+        if (leaguePoints[rankedPlayer.player.id] !== undefined) {
+          // Legacy: 1 point per event + bonus for placements
+          const eventPoints = rankedPlayer.rank === 1 ? 4 : rankedPlayer.rank === 2 ? 3 : rankedPlayer.rank === 3 ? 2 : 1;
+          leaguePoints[rankedPlayer.player.id] += eventPoints;
+        }
       }
     }
   }
@@ -268,6 +289,77 @@ function assignRanks(sortedEntries: Omit<LeaderboardEntry, 'rank'>[]): Leaderboa
   }
 
   return rankedEntries;
+}
+
+/**
+ * Extract player performance data for scoring system calculation
+ * 
+ * @param playerId - The player's ID
+ * @param eventRankings - Array of ranked players for each event
+ * @param leagueMatches - All matches in the league
+ * @returns Player performance data
+ */
+function extractPlayerPerformance(
+  playerId: string,
+  eventRankings: ReturnType<typeof calculateEventRanking>[],
+  leagueMatches: Match[]
+): PlayerPerformanceData {
+  let eventAttendance = 0;
+  let firstPlaceFinishes = 0;
+  let secondPlaceFinishes = 0;
+  let thirdPlaceFinishes = 0;
+
+  // Count placements across all events
+  for (const eventRanking of eventRankings) {
+    const playerResult = eventRanking.find(r => r.player.id === playerId);
+    
+    if (playerResult) {
+      eventAttendance++;
+      
+      if (playerResult.rank === 1) {
+        firstPlaceFinishes++;
+      } else if (playerResult.rank === 2) {
+        secondPlaceFinishes++;
+      } else if (playerResult.rank === 3) {
+        thirdPlaceFinishes++;
+      }
+    }
+  }
+
+  // Count match wins and game wins
+  const playerMatches = leagueMatches.filter(
+    (m) => m.player1Id === playerId || m.player2Id === playerId
+  );
+
+  let matchWins = 0;
+  let gameWins = 0;
+
+  for (const match of playerMatches) {
+    // Count match wins (exclude draws)
+    if (!match.draw) {
+      if (match.player1Id === playerId && match.player1Score > match.player2Score) {
+        matchWins++;
+      } else if (match.player2Id === playerId && match.player2Score > match.player1Score) {
+        matchWins++;
+      }
+    }
+
+    // Count game wins
+    if (match.player1Id === playerId) {
+      gameWins += match.player1Score;
+    } else if (match.player2Id === playerId) {
+      gameWins += match.player2Score;
+    }
+  }
+
+  return {
+    eventAttendance,
+    matchWins,
+    gameWins,
+    firstPlaceFinishes,
+    secondPlaceFinishes,
+    thirdPlaceFinishes,
+  };
 }
 
 /**
