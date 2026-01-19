@@ -137,14 +137,14 @@ Project structure per plan.md:
 
 ### Implementation for User Story 4
 
-- [ ] T044 [US4] Implement GET /api/scoring-systems/default route in src/app/api/scoring-systems/default/route.ts (fetch default system)
-- [ ] T045 [US4] Locate and update League creation form (likely in src/app/leagues or src/components/leagues)
-- [ ] T046 [US4] Add scoring system Select field to league form using shadcn/ui Select component
-- [ ] T047 [US4] Integrate useScoringSystems hook to populate dropdown with available systems
-- [ ] T048 [US4] Add "Default" indicator next to default system name in dropdown
-- [ ] T049 [US4] Update league creation API route to accept scoringSystemId and set to default if null
-- [ ] T050 [US4] Update league edit form with same scoring system selection field
-- [ ] T051 [US4] Display associated scoring system name in league detail views
+- [X] T044 [US4] Implement GET /api/scoring-systems/default route in src/app/api/scoring-systems/default/route.ts (fetch default system)
+- [X] T045 [US4] Locate and update League creation form (likely in src/app/leagues or src/components/leagues)
+- [X] T046 [US4] Add scoring system Select field to league form using shadcn/ui Select component
+- [X] T047 [US4] Integrate useScoringSystems hook to populate dropdown with available systems
+- [X] T048 [US4] Add "Default" indicator next to default system name in dropdown
+- [X] T049 [US4] Update league creation API route to accept scoringSystemId and set to default if null
+- [X] T050 [US4] Update league edit form with same scoring system selection field
+- [X] T051 [US4] Display associated scoring system name in league detail views
 
 **Checkpoint**: Leagues can now be associated with scoring systems during creation and editing
 

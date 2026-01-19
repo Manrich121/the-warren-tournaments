@@ -7,9 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/DataTable';
 import { TableRowActions } from '@/components/TableRowActions';
-import { useLeagues } from '@/hooks/useLeagues';
+import { useLeagues, LeagueWithScoringSystem } from '@/hooks/useLeagues';
 import { useDeleteLeague } from '@/hooks/useDeleteLeague';
-import { League } from '@prisma/client';
 import { AddLeagueDialog } from '@/components/AddLeagueDialog';
 import { ScoringSystemTable } from '@/components/scoring-system/ScoringSystemTable';
 import { Header } from '@/components/Header';
@@ -24,7 +23,7 @@ export default function LeaguesPage() {
   const { data: leagues, isLoading } = useLeagues();
   const deleteLeagueMutation = useDeleteLeague();
 
-  const [selectedLeague, setSelectedLeague] = useState<League | undefined>(undefined);
+  const [selectedLeague, setSelectedLeague] = useState<LeagueWithScoringSystem | undefined>(undefined);
   const [addLeagueOpen, setAddLeagueOpen] = useState(false);
 
   const handleDelete = (leagueId: string) => {
@@ -32,7 +31,7 @@ export default function LeaguesPage() {
   };
 
   // Define columns for DataTable
-  const columns: ColumnDef<League>[] = [
+  const columns: ColumnDef<LeagueWithScoringSystem>[] = [
     {
       id: 'name',
       accessorKey: 'name',

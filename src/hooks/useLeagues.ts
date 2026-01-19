@@ -1,8 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
-import { League } from '@prisma/client';
+import { League, ScoringSystem } from '@prisma/client';
 import { keys } from '@/hooks/keys';
 
-const fetchLeagues = async (): Promise<League[]> => {
+// Extended League type with scoringSystem relation
+export type LeagueWithScoringSystem = League & {
+  scoringSystem?: {
+    id: string;
+    name: string;
+    isDefault: boolean;
+  } | null;
+};
+
+const fetchLeagues = async (): Promise<LeagueWithScoringSystem[]> => {
   const res = await fetch('/api/leagues');
   if (!res.ok) {
     throw new Error('Failed to fetch leagues');
@@ -11,7 +20,7 @@ const fetchLeagues = async (): Promise<League[]> => {
 };
 
 export const useLeagues = () => {
-  return useQuery<League[], Error>({
+  return useQuery<LeagueWithScoringSystem[], Error>({
     queryKey: keys.leagues(),
     queryFn: fetchLeagues,
     initialData: () => []

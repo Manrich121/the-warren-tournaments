@@ -13,6 +13,7 @@ export const mockLeagues: League[] = [
     name: 'Summer League 2025',
     startDate: new Date('2025-06-01'),
     endDate: new Date('2025-08-31'),
+    scoringSystemId: null,
     createdAt: new Date('2025-01-01'),
     updatedAt: new Date('2025-01-01')
   },
@@ -21,6 +22,7 @@ export const mockLeagues: League[] = [
     name: 'Winter League 2025',
     startDate: new Date('2025-12-01'),
     endDate: new Date('2026-02-28'),
+    scoringSystemId: null,
     createdAt: new Date('2025-01-15'),
     updatedAt: new Date('2025-01-15')
   },
@@ -29,6 +31,7 @@ export const mockLeagues: League[] = [
     name: 'Spring Championship',
     startDate: new Date('2025-03-01'),
     endDate: new Date('2025-05-31'),
+    scoringSystemId: null,
     createdAt: new Date('2024-12-01'),
     updatedAt: new Date('2024-12-01')
   }
@@ -145,6 +148,7 @@ export function generateMockLeagues(count: number): League[] {
     name: `League ${i + 1}`,
     startDate: new Date(2025, i % 12, 1),
     endDate: new Date(2025, (i + 2) % 12, 28),
+    scoringSystemId: null,
     createdAt: new Date(2024, i % 12, 1),
     updatedAt: new Date(2024, i % 12, 1)
   }));
