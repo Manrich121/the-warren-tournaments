@@ -1,9 +1,5 @@
-import { Match, Player, Event } from '@prisma/client';
-import {
-  calculateLeagueLeaderboard,
-  areEntriesEqual
-} from '../lib/leaderboard-calculator';
-import { LeaderboardEntry } from '../types/leaderboard';
+import { Match, Player, Event, ScoringSystem, ScoreFormula, TieBreaker } from '@prisma/client';
+import { calculateLeagueLeaderboard } from '@/lib/leaderboard-calculator';
 
 describe('Leaderboard Calculator', () => {
   // Helper to create test data
@@ -45,13 +41,101 @@ describe('Leaderboard Calculator', () => {
     updatedAt: new Date()
   });
 
+  const defaultScoringSystem: ScoringSystem & { formulas: ScoreFormula[]; tieBreakers: TieBreaker[] } = {
+    id: 'test-scoring',
+    name: 'Standard Scoring',
+    isDefault: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    formulas: [
+      {
+        id: 'test-formula-1',
+        scoringSystemId: 'test-scoring',
+        multiplier: 1,
+        pointMetric: 'EVENT_ATTENDANCE',
+        order: 1,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 'test-formula-2',
+        scoringSystemId: 'test-scoring',
+        multiplier: 3,
+        pointMetric: 'FIRST_PLACE',
+        order: 2,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 'test-formula-3',
+        scoringSystemId: 'test-scoring',
+        multiplier: 2,
+        pointMetric: 'SECOND_PLACE',
+        order: 3,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 'test-formula-4',
+        scoringSystemId: 'test-scoring',
+        multiplier: 1,
+        pointMetric: 'THIRD_PLACE',
+        order: 4,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    ],
+    tieBreakers: [
+      {
+        id: 'test-tiebreaker-1',
+        scoringSystemId: 'test-scoring',
+        type: 'LEAGUE_POINTS',
+        order: 1,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 'test-tiebreaker-2',
+        scoringSystemId: 'test-scoring',
+        type: 'MATCH_POINTS',
+        order: 2,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 'test-tiebreaker-3',
+        scoringSystemId: 'test-scoring',
+        type: 'OPP_MATCH_WIN_PCT',
+        order: 3,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 'test-tiebreaker-4',
+        scoringSystemId: 'test-scoring',
+        type: 'GAME_WIN_PCT',
+        order: 4,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 'test-tiebreaker-5',
+        scoringSystemId: 'test-scoring',
+        type: 'OPP_GAME_WIN_PCT',
+        order: 5,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    ]
+  };
+
   describe('calculateLeagueLeaderboard', () => {
     it('should return empty array when no events exist', () => {
       const players = [createPlayer('p1', 'Alice')];
       const events: Event[] = [];
       const matches: Match[] = [];
 
-      const result = calculateLeagueLeaderboard('league1', events, matches, players);
+      const result = calculateLeagueLeaderboard('league1', events, matches, players, null);
       expect(result).toEqual([]);
     });
 
@@ -60,7 +144,7 @@ describe('Leaderboard Calculator', () => {
       const events = [createEvent('e1', 'league1', 'Event 1')];
       const matches: Match[] = [];
 
-      const result = calculateLeagueLeaderboard('league1', events, matches, players);
+      const result = calculateLeagueLeaderboard('league1', events, matches, players, null);
       expect(result).toEqual([]);
     });
 
@@ -69,21 +153,14 @@ describe('Leaderboard Calculator', () => {
       const events = [createEvent('e1', 'league1', 'Event 1')];
       const matches = [createMatch('m1', 'e1', 'p1', 'p2', 2, 1)];
 
-      const result = calculateLeagueLeaderboard('league1', events, matches, players);
+      const result = calculateLeagueLeaderboard('league1', events, matches, players, null);
       expect(result).toEqual([]);
     });
 
     it('should rank players by league points (primary criterion)', () => {
-      const players = [
-        createPlayer('p1', 'Alice'),
-        createPlayer('p2', 'Bob'),
-        createPlayer('p3', 'Charlie')
-      ];
+      const players = [createPlayer('p1', 'Alice'), createPlayer('p2', 'Bob'), createPlayer('p3', 'Charlie')];
 
-      const events = [
-        createEvent('e1', 'league1', 'Event 1'),
-        createEvent('e2', 'league1', 'Event 2')
-      ];
+      const events = [createEvent('e1', 'league1', 'Event 1'), createEvent('e2', 'league1', 'Event 2')];
 
       // Event 1: Alice wins all
       const matches = [
@@ -93,10 +170,10 @@ describe('Leaderboard Calculator', () => {
         // Event 2: Bob wins all
         createMatch('m4', 'e2', 'p2', 'p1', 2, 0), // Bob beats Alice
         createMatch('m5', 'e2', 'p2', 'p3', 2, 1), // Bob beats Charlie
-        createMatch('m6', 'e2', 'p1', 'p3', 1, 2)  // Charlie beats Alice
+        createMatch('m6', 'e2', 'p1', 'p3', 0, 2) // Charlie beats Alice
       ];
 
-      const result = calculateLeagueLeaderboard('league1', events, matches, players);
+      const result = calculateLeagueLeaderboard('league1', events, matches, players, null);
 
       // Both Alice and Bob get 1st in one event and varying places in other
       // Exact league points depend on getEventPoints function
@@ -111,10 +188,7 @@ describe('Leaderboard Calculator', () => {
     });
 
     it('should use match win rate as tie-breaker when league points are equal', () => {
-      const players = [
-        createPlayer('p1', 'Alice'),
-        createPlayer('p2', 'Bob')
-      ];
+      const players = [createPlayer('p1', 'Alice'), createPlayer('p2', 'Bob')];
 
       const events = [createEvent('e1', 'league1', 'Event 1')];
 
@@ -124,24 +198,21 @@ describe('Leaderboard Calculator', () => {
         createMatch('m1', 'e1', 'p1', 'p2', 2, 1), // Alice wins
         createMatch('m2', 'e1', 'p1', 'p3', 2, 0), // Alice wins (p3 not in players, but counts for stats)
         createMatch('m3', 'e1', 'p2', 'p1', 0, 2), // Alice wins
-        createMatch('m4', 'e1', 'p2', 'p3', 2, 0)  // Bob wins
+        createMatch('m4', 'e1', 'p2', 'p3', 2, 0) // Bob wins
       ];
 
       // Add p3 temporarily for match calculations
       const allPlayers = [...players, createPlayer('p3', 'Charlie')];
 
-      const result = calculateLeagueLeaderboard('league1', events, matches, allPlayers);
+      const result = calculateLeagueLeaderboard('league1', events, matches, allPlayers, null);
 
       // Alice should rank higher due to better match win rate
       expect(result[0].playerName).toBe('Alice');
-      expect(result[0].matchWinRate).toBeGreaterThan(result[1].matchWinRate);
+      expect(result[0].matchWinPercentage).toBeGreaterThan(result[1].matchWinPercentage);
     });
 
     it('should handle draw matches correctly (not counted as wins)', () => {
-      const players = [
-        createPlayer('p1', 'Alice'),
-        createPlayer('p2', 'Bob')
-      ];
+      const players = [createPlayer('p1', 'Alice'), createPlayer('p2', 'Bob')];
 
       const events = [createEvent('e1', 'league1', 'Event 1')];
 
@@ -150,19 +221,17 @@ describe('Leaderboard Calculator', () => {
         createMatch('m2', 'e1', 'p1', 'p2', 2, 1, false) // Alice wins
       ];
 
-      const result = calculateLeagueLeaderboard('league1', events, matches, players);
+      const result = calculateLeagueLeaderboard('league1', events, matches, players, null);
 
       // Alice should have 1 win out of 2 matches
       const alice = result.find(e => e.playerName === 'Alice');
       expect(alice?.matchesWon).toBe(1);
-      expect(alice?.matchesPlayed).toBe(2);
-      expect(alice?.matchWinRate).toBe(0.5);
+      expect(alice?.matchWinPercentage).toBeCloseTo(0.666);
 
-      // Bob should have 0 wins out of 2 matches
+      // Bob should have 0 wins out of 2 matches, 0.33 min win rate
       const bob = result.find(e => e.playerName === 'Bob');
       expect(bob?.matchesWon).toBe(0);
-      expect(bob?.matchesPlayed).toBe(2);
-      expect(bob?.matchWinRate).toBe(0);
+      expect(bob?.matchWinPercentage).toBe(0.33);
     });
 
     it('should calculate game win rates correctly', () => {
@@ -170,26 +239,21 @@ describe('Leaderboard Calculator', () => {
       const events = [createEvent('e1', 'league1', 'Event 1')];
 
       const matches = [
-        createMatch('m1', 'e1', 'p1', 'p2', 2, 1), // Alice: 2/3 games
-        createMatch('m2', 'e1', 'p1', 'p3', 1, 2)  // Alice: 1/3 games
+        createMatch('m1', 'e1', 'p1', 'p2', 2, 1), // Alice: 2-1
+        createMatch('m2', 'e1', 'p1', 'p3', 1, 2) // Alice: 1-2
       ];
 
       const allPlayers = [...players, createPlayer('p2', 'Bob'), createPlayer('p3', 'Charlie')];
 
-      const result = calculateLeagueLeaderboard('league1', events, matches, allPlayers);
+      const result = calculateLeagueLeaderboard('league1', events, matches, allPlayers, null);
 
       const alice = result.find(e => e.playerName === 'Alice');
-      expect(alice?.gamePoints).toBe(3); // 2 + 1 individual scores
-      expect(alice?.gamePossiblePoints).toBe(6); // (2+1) + (1+2)
-      expect(alice?.gameWinRate).toBe(0.5); // 3/6
+      expect(alice?.gamePoints).toBe(9);
+      expect(alice?.gameWinPercentage).toBe(0.5);
     });
 
-    it('should handle alphabetical ordering when all numeric criteria are identical', () => {
-      const players = [
-        createPlayer('p1', 'Alice'),
-        createPlayer('p2', 'Bob'),
-        createPlayer('p3', 'Charlie')
-      ];
+    it('should handle ordering when all numeric criteria are identical', () => {
+      const players = [createPlayer('p1', 'Alice'), createPlayer('p2', 'Bob'), createPlayer('p3', 'Charlie')];
 
       const events = [createEvent('e1', 'league1', 'Event 1')];
 
@@ -200,7 +264,7 @@ describe('Leaderboard Calculator', () => {
         createMatch('m3', 'e1', 'p3', 'p1', 1, 1, true)
       ];
 
-      const result = calculateLeagueLeaderboard('league1', events, matches, players);
+      let result = calculateLeagueLeaderboard('league1', events, matches, players, null);
 
       // All have same stats, so alphabetical order determines final rank order
       // Since names differ, each gets a unique rank (alphabetical is the final tie-breaker)
@@ -208,36 +272,24 @@ describe('Leaderboard Calculator', () => {
       expect(result[0].playerName).toBe('Alice');
       expect(result[1].playerName).toBe('Bob');
       expect(result[2].playerName).toBe('Charlie');
-      
-      // Each should have a different rank since alphabetical order breaks the tie
+
+      // Each should have a same rank
       expect(result[0].rank).toBe(1);
-      expect(result[1].rank).toBe(2);
-      expect(result[2].rank).toBe(3);
-    });
+      expect(result[1].rank).toBe(1);
+      expect(result[2].rank).toBe(1);
 
-    it('should apply alphabetical tie-breaking when all other criteria equal', () => {
-      const players = [
-        createPlayer('p1', 'Zara'),
-        createPlayer('p2', 'Alice'),
-        createPlayer('p3', 'Bob')
-      ];
+      result = calculateLeagueLeaderboard('league1', events, matches, players, defaultScoringSystem);
 
-      const events = [createEvent('e1', 'league1', 'Event 1')];
-
-      // Create identical stats for all players
-      const matches = [
-        createMatch('m1', 'e1', 'p1', 'p2', 1, 1, true),
-        createMatch('m2', 'e1', 'p2', 'p3', 1, 1, true),
-        createMatch('m3', 'e1', 'p3', 'p1', 1, 1, true)
-      ];
-
-      const result = calculateLeagueLeaderboard('league1', events, matches, players);
-
-      // Alphabetical order: Alice, Bob, Zara
-      // If all stats truly identical, they might share rank 1, but let's verify order
+      // All have same stats, so alphabetical order determines final rank order
+      // Since names differ, each gets a unique rank (alphabetical is the final tie-breaker)
       expect(result[0].playerName).toBe('Alice');
       expect(result[1].playerName).toBe('Bob');
-      expect(result[2].playerName).toBe('Zara');
+      expect(result[2].playerName).toBe('Charlie');
+
+      // Each should have a same rank
+      expect(result[0].rank).toBe(1);
+      expect(result[1].rank).toBe(1);
+      expect(result[2].rank).toBe(1);
     });
 
     it('should filter events and matches by league ID', () => {
@@ -250,15 +302,21 @@ describe('Leaderboard Calculator', () => {
 
       const matches = [
         createMatch('m1', 'e1', 'p1', 'p2', 2, 1), // league1
-        createMatch('m2', 'e2', 'p1', 'p2', 0, 2)  // league2 (should be ignored)
+        createMatch('m2', 'e2', 'p1', 'p2', 0, 2) // league2 (should be ignored)
       ];
 
-      const result = calculateLeagueLeaderboard('league1', events, matches, players);
+      let result = calculateLeagueLeaderboard('league1', events, matches, players, null);
 
       // Only match from e1 should count
       expect(result.length).toBe(2);
-      const alice = result.find(e => e.playerName === 'Alice');
-      expect(alice?.matchesPlayed).toBe(1);
+      let alice = result.find(e => e.playerName === 'Alice');
+      expect(alice?.matchesWon).toBe(1);
+
+      result = calculateLeagueLeaderboard('league1', events, matches, players, defaultScoringSystem);
+
+      // Only match from e1 should count
+      expect(result.length).toBe(2);
+      alice = result.find(e => e.playerName === 'Alice');
       expect(alice?.matchesWon).toBe(1);
     });
 
@@ -271,38 +329,39 @@ describe('Leaderboard Calculator', () => {
 
       const events = [createEvent('e1', 'league1', 'Event 1')];
 
-      const matches = [
-        createMatch('m1', 'e1', 'p1', 'p2', 2, 1)
-      ];
+      const matches = [createMatch('m1', 'e1', 'p1', 'p2', 2, 1)];
 
-      const result = calculateLeagueLeaderboard('league1', events, matches, players);
+      const result = calculateLeagueLeaderboard('league1', events, matches, players, null);
 
       const charlie = result.find(e => e.playerName === 'Charlie');
       expect(charlie).toBeUndefined(); // Charlie filtered out since no matches
     });
 
     it('should calculate opponent statistics correctly', () => {
-      const players = [
-        createPlayer('p1', 'Alice'),
-        createPlayer('p2', 'Bob'),
-        createPlayer('p3', 'Charlie')
-      ];
+      const players = [createPlayer('p1', 'Alice'), createPlayer('p2', 'Bob'), createPlayer('p3', 'Charlie')];
 
       const events = [createEvent('e1', 'league1', 'Event 1')];
 
       const matches = [
         createMatch('m1', 'e1', 'p1', 'p2', 2, 1), // Alice beats Bob
         createMatch('m2', 'e1', 'p1', 'p3', 2, 0), // Alice beats Charlie
-        createMatch('m3', 'e1', 'p2', 'p3', 2, 1)  // Bob beats Charlie
+        createMatch('m3', 'e1', 'p2', 'p3', 2, 1) // Bob beats Charlie
       ];
 
-      const result = calculateLeagueLeaderboard('league1', events, matches, players);
+      const result = calculateLeagueLeaderboard('league1', events, matches, players, null);
 
       const alice = result.find(e => e.playerName === 'Alice');
+      const bob = result.find(e => e.playerName === 'Bob');
+      const charlie = result.find(e => e.playerName === 'Charlie');
+
       // Alice faced Bob and Charlie
       // Opponent win rates should be average of Bob and Charlie's win rates
-      expect(alice?.opponentsMatchWinRate).toBeGreaterThan(0);
-      expect(alice?.opponentsMatchWinRate).toBeLessThanOrEqual(1);
+      expect(alice!.opponentsMatchWinPercentage).toBeGreaterThan(0);
+      expect(alice!.opponentsMatchWinPercentage).toBeLessThanOrEqual(1);
+      expect(alice!.opponentsGameWinPercentage).toBeCloseTo(
+        (bob!.matchWinPercentage + charlie!.matchWinPercentage) / 2,
+        2
+      );
     });
 
     it('should assign ranks with gaps for shared ranks', () => {
@@ -322,115 +381,79 @@ describe('Leaderboard Calculator', () => {
         createMatch('m3', 'e1', 'p1', 'p4', 2, 0), // Alice beats David
         createMatch('m4', 'e1', 'p2', 'p3', 1, 1, true), // Bob and Charlie draw
         createMatch('m5', 'e1', 'p2', 'p4', 2, 0), // Bob beats David
-        createMatch('m6', 'e1', 'p3', 'p4', 2, 0)  // Charlie beats David
+        createMatch('m6', 'e1', 'p3', 'p4', 2, 0) // Charlie beats David
       ];
 
-      const result = calculateLeagueLeaderboard('league1', events, matches, players);
+      const result = calculateLeagueLeaderboard('league1', events, matches, players, null);
 
-      expect(result[0].playerName).toBe('Alice');
-      expect(result[0].rank).toBe(1);
+      const alice = result.find(e => e.playerName === 'Alice');
+      expect(alice!.rank).toBe(1);
 
-      // Bob and Charlie might share rank 2 if their stats are identical
-      // David should be last (rank 4 if Bob/Charlie share rank 2)
+      // Bob and Charlie share rank 2 because their stats are identical
+      const bob = result.find(e => e.playerName === 'Bob');
+      const charlie = result.find(e => e.playerName === 'Charlie');
+      expect(bob!.rank).toEqual(2);
+      expect(charlie!.rank).toEqual(2);
+      // David should be last (rank 4)
       const david = result.find(e => e.playerName === 'David');
-      expect(david?.rank).toBeGreaterThanOrEqual(3);
-    });
-  });
-
-  describe('areEntriesEqual', () => {
-    it('should return true for entries with identical stats', () => {
-      const entry1: Omit<LeaderboardEntry, 'rank'> = {
-        playerId: 'p1',
-        playerName: 'Alice',
-        leaguePoints: 10,
-        matchesWon: 5,
-        matchesPlayed: 10,
-        matchWinRate: 0.5,
-        gamePoints: 20,
-        gamePossiblePoints: 40,
-        gameWinRate: 0.5,
-        opponentsMatchWinRate: 0.45,
-        opponentsGameWinRate: 0.48
-      };
-
-      const entry2: Omit<LeaderboardEntry, 'rank'> = {
-        playerId: 'p2',
-        playerName: 'Bob',
-        leaguePoints: 10,
-        matchesWon: 5,
-        matchesPlayed: 10,
-        matchWinRate: 0.5,
-        gamePoints: 20,
-        gamePossiblePoints: 40,
-        gameWinRate: 0.5,
-        opponentsMatchWinRate: 0.45,
-        opponentsGameWinRate: 0.48
-      };
-
-      expect(areEntriesEqual(entry1, entry2)).toBe(false); // Different names: Alice vs Bob
+      expect(david?.rank).toEqual(4);
     });
 
-    it('should return false for entries with different league points', () => {
-      const entry1: Omit<LeaderboardEntry, 'rank'> = {
-        playerId: 'p1',
-        playerName: 'Alice',
-        leaguePoints: 10,
-        matchesWon: 5,
-        matchesPlayed: 10,
-        matchWinRate: 0.5,
-        gamePoints: 20,
-        gamePossiblePoints: 40,
-        gameWinRate: 0.5,
-        opponentsMatchWinRate: 0.45,
-        opponentsGameWinRate: 0.48
+    it('should calculate 4 player ranking correctly', () => {
+      const test = (
+        scoringSystem: (ScoringSystem & { formulas: ScoreFormula[]; tieBreakers: TieBreaker[] }) | null
+      ) => {
+        const players = [
+          createPlayer('p1', 'Alice'),
+          createPlayer('p2', 'Bob'),
+          createPlayer('p3', 'Charlie'),
+          createPlayer('p4', 'David')
+        ];
+
+        const events = [createEvent('e1', 'league1', 'Event 1')];
+
+        // Alice wins all, Bob and Charlie tie, David loses all
+        const matches = [
+          createMatch('m1', 'e1', 'p1', 'p2', 2, 1), // Alice beats Bob
+          createMatch('m2', 'e1', 'p4', 'p3', 2, 0), // David beats Charlie
+
+          createMatch('m3', 'e1', 'p1', 'p4', 2, 0), // Alice beats David
+          createMatch('m4', 'e1', 'p2', 'p3', 2, 1), // Bob beats Charlie
+
+          createMatch('m5', 'e1', 'p2', 'p4', 2, 1), // Bob beats David
+          createMatch('m6', 'e1', 'p1', 'p3', 1, 2) //  Charlie beats Alice
+        ];
+
+        const result = calculateLeagueLeaderboard('league1', events, matches, players, scoringSystem);
+
+        const alice = result.find(e => e.playerName === 'Alice');
+        expect(alice!.rank).toBe(1);
+
+        const bob = result.find(e => e.playerName === 'Bob');
+        expect(bob!.rank).toBe(2);
+
+        const david = result.find(e => e.playerName === 'David');
+        expect(david!.rank).toBe(3);
+
+        const charlie = result.find(e => e.playerName === 'Charlie');
+        expect(charlie!.rank).toBe(4);
       };
 
-      const entry2: Omit<LeaderboardEntry, 'rank'> = {
-        ...entry1,
-        leaguePoints: 12
-      };
-
-      expect(areEntriesEqual(entry1, entry2)).toBe(false);
-    });
-
-    it('should return false for entries with different match win rates', () => {
-      const entry1: Omit<LeaderboardEntry, 'rank'> = {
-        playerId: 'p1',
-        playerName: 'Alice',
-        leaguePoints: 10,
-        matchesWon: 5,
-        matchesPlayed: 10,
-        matchWinRate: 0.5,
-        gamePoints: 20,
-        gamePossiblePoints: 40,
-        gameWinRate: 0.5,
-        opponentsMatchWinRate: 0.45,
-        opponentsGameWinRate: 0.48
-      };
-
-      const entry2: Omit<LeaderboardEntry, 'rank'> = {
-        ...entry1,
-        matchWinRate: 0.6
-      };
-
-      expect(areEntriesEqual(entry1, entry2)).toBe(false);
+      test(null);
+      test(defaultScoringSystem);
     });
   });
 
   describe('Edge Cases', () => {
     it('should handle very high league points correctly', () => {
       const players = [createPlayer('p1', 'Alice')];
-      const events = Array.from({ length: 50 }, (_, i) =>
-        createEvent(`e${i}`, 'league1', `Event ${i}`)
-      );
+      const events = Array.from({ length: 50 }, (_, i) => createEvent(`e${i}`, 'league1', `Event ${i}`));
 
-      const matches = events.flatMap(event =>
-        [createMatch(`m${event.id}`, event.id, 'p1', 'p2', 2, 0)]
-      );
+      const matches = events.flatMap(event => [createMatch(`m${event.id}`, event.id, 'p1', 'p2', 2, 0)]);
 
       const allPlayers = [...players, createPlayer('p2', 'Bob')];
 
-      const result = calculateLeagueLeaderboard('league1', events, matches, allPlayers);
+      const result = calculateLeagueLeaderboard('league1', events, matches, allPlayers, null);
 
       const alice = result.find(e => e.playerName === 'Alice');
       expect(alice?.leaguePoints).toBeGreaterThan(0);
@@ -443,7 +466,7 @@ describe('Leaderboard Calculator', () => {
       // No matches means division by zero should be handled
       const matches: Match[] = [];
 
-      const result = calculateLeagueLeaderboard('league1', events, matches, players);
+      const result = calculateLeagueLeaderboard('league1', events, matches, players, null);
       expect(result).toEqual([]); // No matches = empty leaderboard
     });
 
@@ -455,11 +478,9 @@ describe('Leaderboard Calculator', () => {
 
       const events = [createEvent('e1', 'league1', 'Event 1')];
 
-      const matches = [
-        createMatch('m1', 'e1', 'p1', 'p2', 2, 1)
-      ];
+      const matches = [createMatch('m1', 'e1', 'p1', 'p2', 2, 1)];
 
-      const result = calculateLeagueLeaderboard('league1', events, matches, players);
+      const result = calculateLeagueLeaderboard('league1', events, matches, players, null);
 
       // Both Alices should appear with distinct player IDs
       expect(result.length).toBe(2);

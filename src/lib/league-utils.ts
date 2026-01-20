@@ -7,6 +7,7 @@
  */
 
 import { LeagueStatus } from '@/types/leaderboard';
+import { formatDateRange } from '@/lib/utils/format';
 
 export interface League {
   id: string;
@@ -99,52 +100,6 @@ export function getLeagueStatus(
   return "Past";
 }
 
-/**
- * Formats a date range for display in a compact, human-readable format.
- *
- * Format: "MMM D - MMM D" or "MMM D - MMM D, YYYY" if spanning years
- *
- * @param startDate - Start date of the range
- * @param endDate - End date of the range
- * @returns Formatted date range string
- *
- * @example
- * ```typescript
- * const range = formatDateRange(
- *   new Date('2024-06-01'),
- *   new Date('2024-08-31')
- * );
- * // Returns "Jun 1 - Aug 31"
- *
- * const crossYearRange = formatDateRange(
- *   new Date('2024-12-01'),
- *   new Date('2025-02-28')
- * );
- * // Returns "Dec 1, 2024 - Feb 28, 2025"
- * ```
- */
-export function formatDateRange(startDate: Date | string, endDate: Date | string): string {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-
-  const startYear = start.getFullYear();
-  const endYear = end.getFullYear();
-
-  const formatOptions: Intl.DateTimeFormatOptions = {
-    month: 'short',
-    day: 'numeric'
-  };
-
-  const startFormatted = start.toLocaleDateString('en-US', formatOptions);
-  const endFormatted = end.toLocaleDateString('en-US', formatOptions);
-
-  // If dates span different years, include year in the format
-  if (startYear !== endYear) {
-    return `${startFormatted}, ${startYear} - ${endFormatted}, ${endYear}`;
-  }
-
-  return `${startFormatted} - ${endFormatted}`;
-}
 
 /**
  * Formats a league option for display in a selector.

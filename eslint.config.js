@@ -21,13 +21,13 @@ module.exports = [
     },
     rules: {
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^', varsIgnorePattern: '^_|error' }],
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^', varsIgnorePattern: '^_|error' }]
     }
   },
   {
     files: ['tailwind.config.ts'],
     rules: {
-      '@typescript-eslint/no-require-imports': 'off',
+      '@typescript-eslint/no-require-imports': 'off'
     }
   },
   {
@@ -47,7 +47,7 @@ module.exports = [
       'next.config.js',
       'postcss.config.js',
       'prettier.config.js',
-      'eslint.config.js',
+      'eslint.config.js'
     ]
   }
 ];

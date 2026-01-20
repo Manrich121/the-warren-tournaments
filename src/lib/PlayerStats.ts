@@ -1,5 +1,16 @@
 
+import { EventRankedPlayer, PlayerStats } from '@/types/PlayerStats';
 import { Match, Player } from '@prisma/client';
+
+export const calculateEventAttendance = (playerId: string, allMatches: Match[])=> {
+  const attendedEvents = new Set<string>();
+  for (const match of allMatches) {
+    if (match.player1Id === playerId || match.player2Id === playerId) {
+      attendedEvents.add(match.eventId);
+    }
+  }
+  return attendedEvents.size;
+}
 
 export const calculateMatchPoints = (playerId: string, matches: Match[]): number => {
   let points = 0;
@@ -45,7 +56,7 @@ export const calculateMatchWinPercentage = (playerId: string, matches: Match[]):
 
   const matchPoints = calculateMatchPoints(playerId, matches);
 
-  return Math.max(0.33, (matchPoints / (numRounds * 3))) * 100;
+  return Math.max(0.33, matchPoints / (numRounds * 3));
 };
 
 
@@ -63,7 +74,7 @@ export const calculateGameWinPercentage = (playerId: string,  matches: Match[]):
   }
 
   const gamePoints = calculateGamePoints(playerId, matches);
-  return Math.max(0.33, gamePoints / (totalGames * 3)) * 100;
+  return Math.max(0.33, gamePoints / (totalGames * 3));
 };
 
 export const calculateOpponentMatchWinPercentage = (playerId: string, playerMatches: Match[], allMatches: Match[]): number => {
@@ -83,7 +94,6 @@ export const calculateOpponentMatchWinPercentage = (playerId: string, playerMatc
   let totalOpponentWinPercentage = 0;
   for (const opponentId of Array.from(opponents)) {
     const opponentMatches = allMatches.filter(m => m.player1Id === opponentId || m.player2Id === opponentId);
-    const opponentMatchPoints = calculateMatchPoints(opponentId, opponentMatches);
     totalOpponentWinPercentage += calculateMatchWinPercentage(opponentId, opponentMatches);
   }
 
@@ -113,55 +123,73 @@ export const calculateOpponentGameWinPercentage = (playerId: string, playerMatch
   return totalOpponentWinPercentage / opponents.size;
 };
 
-export interface PlayerStats {
-  player: Player;
-  matchPoints: number;
-  gamePoints: number;
-  matchWinPercentage: number;
-  gameWinPercentage: number;
-  opponentsMatchWinPercentage: number;
-  opponentsGameWinPercentage: number;
+export const calculateMatchesWonCount = (playerId: string, matches: Match[]): number => {
+  return matches.filter((m) => {
+    if (m.draw) return false;
+    if (m.player1Id === playerId && m.player1Score > m.player2Score) return true;
+    if (m.player2Id === playerId && m.player2Score > m.player1Score) return true;
+    return false;
+  }).length;
 }
 
-export interface RankedPlayer extends PlayerStats {
-  rank: number;
+export const calculateGamesWonCount = (playerId: string, matches: Match[]): number => {
+  return matches.reduce((sum, m) => {
+    if(m.draw) return sum;
+    if (m.player1Id === playerId) {
+      return sum + m.player1Score;
+    } else if (m.player2Id === playerId) {
+      return sum + m.player2Score;
+    }
+    return sum;
+  }, 0);
 }
 
-export const calculateEventRanking = (players: Player[], allMatches: Match[]): RankedPlayer[] => {
+export const calculateEventRanking = (players: Player[], allMatches: Match[]): EventRankedPlayer[] => {
   const playerStats: PlayerStats[] = players.map(player => {
     const playerMatches = allMatches.filter(m => m.player1Id === player.id || m.player2Id === player.id);
+
     return  {
-      player,
+      playerId: player.id,
+      playerName: player.name,
+      matchesWon: calculateMatchesWonCount(player.id, playerMatches),
       matchPoints: calculateMatchPoints(player.id, playerMatches),
-      gamePoints: calculateGamePoints(player.id, playerMatches),
       matchWinPercentage: calculateMatchWinPercentage(player.id, playerMatches),
+      gamesWon: calculateGamesWonCount(player.id, playerMatches),
+      gamePoints: calculateGamePoints(player.id, playerMatches),
       gameWinPercentage: calculateGameWinPercentage(player.id,  playerMatches),
-      opponentsMatchWinPercentage: calculateOpponentMatchWinPercentage(player.id, playerMatches, allMatches),
-      opponentsGameWinPercentage: calculateOpponentGameWinPercentage(player.id, playerMatches, allMatches),
+      oppMatchWinPercentage: calculateOpponentMatchWinPercentage(player.id, playerMatches, allMatches),
+      oppGameWinPercentage: calculateOpponentGameWinPercentage(player.id, playerMatches, allMatches),
     };
   });
 
+  /**
+   * The following tiebreakers are used to determine how a player ranks in an event
+   * 1. Match points
+   * 2. Opponents’ match-win percentage
+   * 3. Game-win percentage
+   * 4. Opponents’ game-win percentage
+   */
   playerStats.sort((a, b) => {
     if (b.matchPoints !== a.matchPoints) {
       return b.matchPoints - a.matchPoints;
     }
-    if (b.opponentsMatchWinPercentage !== a.opponentsMatchWinPercentage) {
-      return b.opponentsMatchWinPercentage - a.opponentsMatchWinPercentage;
+    if (b.oppMatchWinPercentage !== a.oppMatchWinPercentage) {
+      return b.oppMatchWinPercentage - a.oppMatchWinPercentage;
     }
     if (b.gameWinPercentage !== a.gameWinPercentage) {
       return b.gameWinPercentage - a.gameWinPercentage;
     }
-    return b.opponentsGameWinPercentage - a.opponentsGameWinPercentage;
+    return b.oppGameWinPercentage - a.oppGameWinPercentage;
   });
 
   let rank = 1;
-  const rankedPlayers: RankedPlayer[] = [];
+  const rankedPlayers: EventRankedPlayer[] = [];
   for (let i = 0; i < playerStats.length; i++) {
     if (i > 0 && (
       playerStats[i].matchPoints < playerStats[i-1].matchPoints ||
-      playerStats[i].opponentsMatchWinPercentage < playerStats[i-1].opponentsMatchWinPercentage ||
+      playerStats[i].oppMatchWinPercentage < playerStats[i-1].oppMatchWinPercentage ||
       playerStats[i].gameWinPercentage < playerStats[i-1].gameWinPercentage ||
-      playerStats[i].opponentsGameWinPercentage < playerStats[i-1].opponentsGameWinPercentage
+      playerStats[i].oppGameWinPercentage < playerStats[i-1].oppGameWinPercentage
     )) {
       rank = i + 1;
     }
@@ -171,49 +199,3 @@ export const calculateEventRanking = (players: Player[], allMatches: Match[]): R
   return rankedPlayers;
 };
 
-export interface LeagueRankedPlayer {
-  player: Player;
-  totalEventPoints: number;
-  rank: number;
-}
-
-export const getEventPoints = (rank: number): number => {
-  if (rank === 1) return 1+3;
-  if (rank === 2) return 1+2;
-  if (rank === 3) return 1+1;
-  return 1;
-};
-
-export const calculateLeagueRanking = (players: Player[], eventRankings: RankedPlayer[][]): LeagueRankedPlayer[] => {
-  const leaguePlayerPoints: { [playerId: string]: number } = {};
-
-  for (const player of players) {
-    leaguePlayerPoints[player.id] = 0;
-  }
-
-  for (const eventRanking of eventRankings) {
-    for (const rankedPlayer of eventRanking) {
-      if (leaguePlayerPoints[rankedPlayer.player.id] !== undefined) {
-        leaguePlayerPoints[rankedPlayer.player.id] += getEventPoints(rankedPlayer.rank);
-      }
-    }
-  }
-
-  const rankedPlayers = players.map(player => ({
-    player,
-    totalEventPoints: leaguePlayerPoints[player.id],
-  }));
-
-  rankedPlayers.sort((a, b) => b.totalEventPoints - a.totalEventPoints);
-
-  let rank = 1;
-  const leagueRankedPlayers: LeagueRankedPlayer[] = [];
-  for (let i = 0; i < rankedPlayers.length; i++) {
-    if (i > 0 && rankedPlayers[i].totalEventPoints < rankedPlayers[i-1].totalEventPoints) {
-      rank = i + 1;
-    }
-    leagueRankedPlayers.push({ ...rankedPlayers[i], rank });
-  }
-
-  return leagueRankedPlayers;
-};

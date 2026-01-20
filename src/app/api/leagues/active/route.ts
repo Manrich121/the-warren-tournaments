@@ -18,15 +18,12 @@ export async function GET() {
     const activeLeague = await prisma.league.findFirst({
       where: {
         startDate: { lte: now },
-        endDate: { gte: now },
-      },
+        endDate: { gte: now }
+      }
     });
 
     if (!activeLeague) {
-      return NextResponse.json(
-        { error: 'Not Found', message: 'No active league found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Not Found', message: 'No active league found' }, { status: 404 });
     }
 
     return NextResponse.json(activeLeague);

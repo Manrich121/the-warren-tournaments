@@ -14,11 +14,13 @@ import {
   DialogClose,
   DialogDescription
 } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2Icon } from 'lucide-react';
 import { useAddLeague } from '@/hooks/useAddLeague';
 import { useUpdateLeague } from '@/hooks/useUpdateLeague';
 import { usePrizePools } from '@/hooks/usePrizePools';
 import { useUpdatePrizePool } from '@/hooks/useUpdatePrizePool';
+import { useScoringSystems } from '@/hooks/scoring-systems/useScoringSystems';
 import { League } from '@prisma/client';
 
 interface AddLeagueDialogProps {
@@ -36,12 +38,26 @@ export function AddLeagueDialog({ league, open, onOpenChange }: AddLeagueDialogP
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [prizePoolAmount, setPrizePoolAmount] = useState<string>('');
+  const [scoringSystemId, setScoringSystemId] = useState<string | undefined>(undefined);
 
   // Fetch existing prize pool when editing a league
   const { data: prizePools } = usePrizePools({ leagueId: league?.id });
   const existingPrizePool = prizePools?.[0];
 
+  // Fetch scoring systems for the dropdown
+  const { data: scoringSystems, isLoading: isLoadingScoringSystems } = useScoringSystems();
+
   const isEditMode = !!league;
+
+  // Pre-select default scoring system when creating a new league
+  useEffect(() => {
+    if (!isEditMode && scoringSystems && open) {
+      const defaultSystem = scoringSystems.find(system => system.isDefault);
+      if (defaultSystem && !scoringSystemId) {
+        setScoringSystemId(defaultSystem.id);
+      }
+    }
+  }, [scoringSystems, isEditMode, open, scoringSystemId]);
 
   useEffect(() => {
     if (isEditMode) {
@@ -49,11 +65,13 @@ export function AddLeagueDialog({ league, open, onOpenChange }: AddLeagueDialogP
       setStartDate(new Date(league.startDate).toISOString().split('T')[0]);
       setEndDate(new Date(league.endDate).toISOString().split('T')[0]);
       setPrizePoolAmount(existingPrizePool?.amount?.toString() || '');
+      setScoringSystemId(league.scoringSystemId || undefined);
     } else {
       setName('');
       setStartDate('');
       setEndDate('');
       setPrizePoolAmount('');
+      // Don't reset scoringSystemId here - let it keep the default
     }
   }, [league, isEditMode, open, existingPrizePool]);
 
@@ -79,7 +97,8 @@ export function AddLeagueDialog({ league, open, onOpenChange }: AddLeagueDialogP
           id: league.id,
           name,
           startDate: new Date(startDate),
-          endDate: new Date(endDate)
+          endDate: new Date(endDate),
+          scoringSystemId: scoringSystemId || null
         },
         {
           onSuccess: async () => {
@@ -90,7 +109,7 @@ export function AddLeagueDialog({ league, open, onOpenChange }: AddLeagueDialogP
       );
     } else {
       addLeagueMutation.mutate(
-        { name, startDate: new Date(startDate), endDate: new Date(endDate) },
+        { name, startDate: new Date(startDate), endDate: new Date(endDate), scoringSystemId: scoringSystemId || null },
         {
           onSuccess: async newLeague => {
             await handlePrizePoolUpdate(newLeague.id);
@@ -98,6 +117,9 @@ export function AddLeagueDialog({ league, open, onOpenChange }: AddLeagueDialogP
             setStartDate('');
             setEndDate('');
             setPrizePoolAmount('');
+            // Reset to default scoring system for next create
+            const defaultSystem = scoringSystems?.find(system => system.isDefault);
+            setScoringSystemId(defaultSystem?.id);
             onOpenChange(false);
           }
         }
@@ -152,6 +174,21 @@ export function AddLeagueDialog({ league, open, onOpenChange }: AddLeagueDialogP
                 className="pl-8"
               />
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="scoringSystem">Scoring System</Label>
+            <Select value={scoringSystemId} onValueChange={setScoringSystemId} disabled={isLoadingScoringSystems}>
+              <SelectTrigger id="scoringSystem">
+                <SelectValue placeholder={isLoadingScoringSystems ? 'Loading...' : 'Select a Scoring System'} />
+              </SelectTrigger>
+              <SelectContent>
+                {scoringSystems?.map(system => (
+                  <SelectItem key={system.id} value={system.id}>
+                    {system.name} {system.isDefault && '(Default)'}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <DialogFooter>
             <DialogClose asChild>

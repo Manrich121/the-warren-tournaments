@@ -37,7 +37,7 @@ export function PrizePoolDialog({ leagueId, currentPrizePool, children }: PrizeP
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const numericAmount = parseFloat(amount);
     if (isNaN(numericAmount) || numericAmount < 0) {
       return;
@@ -60,24 +60,20 @@ export function PrizePoolDialog({ leagueId, currentPrizePool, children }: PrizeP
         <form onSubmit={handleSubmit} className="space-y-4">
           <DialogHeader>
             <DialogTitle>Update Prize Pool</DialogTitle>
-            <DialogDescription>
-              Set the prize pool amount for this league.
-            </DialogDescription>
+            <DialogDescription>Set the prize pool amount for this league.</DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
             <Label htmlFor="prizePoolAmount">Prize Pool Amount</Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-500">
-                R
-              </span>
-              <Input 
-                id="prizePoolAmount" 
-                type="number" 
-                min="0" 
-                step="0.01" 
-                value={amount} 
-                onChange={e => setAmount(e.target.value)} 
-                placeholder="Enter prize pool amount" 
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-500">R</span>
+              <Input
+                id="prizePoolAmount"
+                type="number"
+                min="0"
+                step="0.01"
+                value={amount}
+                onChange={e => setAmount(e.target.value)}
+                placeholder="Enter prize pool amount"
                 className="pl-8"
                 autoFocus
               />
@@ -90,9 +86,7 @@ export function PrizePoolDialog({ leagueId, currentPrizePool, children }: PrizeP
               </Button>
             </DialogClose>
             <Button type="submit" disabled={updatePrizePoolMutation.isPending}>
-              {updatePrizePoolMutation.isPending && (
-                <Loader2Icon className="animate-spin mr-2 h-4 w-4" />
-              )}
+              {updatePrizePoolMutation.isPending && <Loader2Icon className="animate-spin mr-2 h-4 w-4" />}
               Update Prize Pool
             </Button>
           </DialogFooter>

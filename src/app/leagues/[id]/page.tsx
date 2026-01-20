@@ -7,20 +7,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Trophy, Users, Calendar, Target, ArrowLeft, Plus, PencilIcon } from 'lucide-react';
-import { useLeagues } from '@/hooks/useLeagues';
+import { Trophy, Users, Calendar, Target, ArrowLeft } from 'lucide-react';
+import { useLeagues, LeagueWithScoringSystem } from '@/hooks/useLeagues';
 import { useEvents } from '@/hooks/useEvents';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useMatches } from '@/hooks/useMatches';
 import { usePrizePools } from '@/hooks/usePrizePools';
-import type { League, Event, Player } from '@prisma/client';
-import { AddEventDialog } from '@/components/AddEventDialog';
-import { AddLeagueDialog } from '@/components/AddLeagueDialog';
+import type { Event, Player } from '@prisma/client';
+import { AddEventDialog } from '@/components/events/AddEventDialog';
+import { AddLeagueDialog } from '@/components/leagues/AddLeagueDialog';
 import { PrizePoolDialog } from '@/components/PrizePoolDialog';
 import { Header } from '@/components/Header';
 import { Nav } from '@/components/Nav';
-import Leaderboard from '@/components/Leaderboard';
+import { Leaderboard } from '@/components/leagues/Leaderboard';
 import { useLeagueLeaderboard } from '@/hooks/useLeagueLeaderboard';
+import { formatDate, formatDateRange } from '@/lib/utils/format';
+import { useScoringSystem } from '@/hooks/scoring-systems/useScoringSystem';
+import { useScoringSystems } from '@/hooks/scoring-systems/useScoringSystems';
 
 interface LeaguePageProps {
   params: Promise<{
@@ -39,6 +42,7 @@ export default function LeaguePage({ params }: LeaguePageProps) {
   const { data: matchesData, isLoading: matchesLoading, error: matchesError } = useMatches();
   const { data: prizePoolsData, isLoading: prizePoolsLoading, error: prizePoolsError } = usePrizePools();
   const { data: leaderboard, isLoading: leaderboardLoading, error: leaderboardError } = useLeagueLeaderboard(leagueId);
+  const { data: allScoringSystems } = useScoringSystems();
 
   const leagues = useMemo(() => leaguesData || [], [leaguesData]);
   const allEvents = useMemo(() => eventsData || [], [eventsData]);
@@ -62,6 +66,22 @@ export default function LeaguePage({ params }: LeaguePageProps) {
     return leagues.find(l => l.id === leagueId);
   }, [leagues, leagueId]);
 
+  // Fetch the scoring system for the league, or get default scoring system
+  const scoringSystemId = league?.scoringSystemId;
+  const {
+    data: fetchedScoringSystem,
+    isLoading: scoringSystemLoading
+  } = useScoringSystem(scoringSystemId || '');
+
+  // Use the fetched scoring system, or fallback to default from all scoring systems
+  const displayScoringSystem = useMemo(() => {
+    if (scoringSystemId && fetchedScoringSystem) {
+      return fetchedScoringSystem;
+    }
+    // Find default scoring system
+    return allScoringSystems?.find(s => s.isDefault);
+  }, [scoringSystemId, fetchedScoringSystem, allScoringSystems]);
+
   const leagueMatches = useMemo(() => {
     return matches.filter(m => leagueEvents.some(e => e.id === m.eventId));
   }, [matches, leagueEvents]);
@@ -82,7 +102,7 @@ export default function LeaguePage({ params }: LeaguePageProps) {
   const [editLeagueOpen, setEditLeagueOpen] = useState<boolean>(false);
   const [addEventOpen, setAddEventOpen] = useState<boolean>(false);
 
-  const getLeagueStatus = (league: League) => {
+  const getLeagueStatus = (league: LeagueWithScoringSystem) => {
     const now = new Date();
     const startDate = new Date(league.startDate);
     const endDate = new Date(league.endDate);
@@ -97,14 +117,6 @@ export default function LeaguePage({ params }: LeaguePageProps) {
     if (eventDate > now) return 'Upcoming';
     if (eventDate.toDateString() === now.toDateString()) return 'Today';
     return 'Completed';
-  };
-
-  const formatDate = (date: Date | string) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
   };
 
   const isLoading =
@@ -181,9 +193,13 @@ export default function LeaguePage({ params }: LeaguePageProps) {
                     {getLeagueStatus(league)}
                   </Badge>
                 </div>
-                <p className="text-muted-foreground">
-                  {formatDate(league.startDate)} - {formatDate(league.endDate)}
-                </p>
+                <p className="text-muted-foreground">{formatDateRange(league.startDate, league.endDate)}</p>
+                {league.scoringSystem && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Scoring: <span className="font-medium">{league.scoringSystem.name}</span>
+                    {league.scoringSystem.isDefault && ' (Default)'}
+                  </p>
+                )}
               </div>
             </div>
             {isAdmin && (
@@ -198,7 +214,6 @@ export default function LeaguePage({ params }: LeaguePageProps) {
                   }}
                 />
                 <Button variant="outline" onClick={() => setEditLeagueOpen(true)}>
-                  <PencilIcon className="mr-2 h-4 w-4" />
                   Edit League
                 </Button>
 
@@ -212,10 +227,7 @@ export default function LeaguePage({ params }: LeaguePageProps) {
                   }}
                 />
 
-                <Button onClick={() => setAddEventOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Event
-                </Button>
+                <Button onClick={() => setAddEventOpen(true)}>Add Event</Button>
               </div>
             )}
           </div>
@@ -340,10 +352,7 @@ export default function LeaguePage({ params }: LeaguePageProps) {
                           }
                         }}
                       />
-                      <Button onClick={() => setAddEventOpen(true)}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Create First Event
-                      </Button>
+                      <Button onClick={() => setAddEventOpen(true)}>Create First Event</Button>
                     </>
                   )}
                 </div>
@@ -352,7 +361,14 @@ export default function LeaguePage({ params }: LeaguePageProps) {
           </Card>
 
           {/* Leaderboard */}
-          {leaderboard && <Leaderboard title="League Leaderboard" entries={leaderboard} />}
+          {leaderboard && (
+            <Leaderboard
+              title="League Leaderboard"
+              entries={leaderboard}
+              scoringSystem={displayScoringSystem}
+              isLoading={leaderboardLoading || scoringSystemLoading}
+            />
+          )}
         </div>
       </div>
     </>

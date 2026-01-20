@@ -5,25 +5,27 @@ import Link from 'next/link';
 import { useMemo, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Trophy, Users, Calendar, Target, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useEvents } from '@/hooks/useEvents';
 import { usePrizePools } from '@/hooks/usePrizePools';
 import { useMatches } from '@/hooks/useMatches';
-import type { League, Player } from '@prisma/client';
-import { AddLeagueDialog } from '@/components/AddLeagueDialog';
-import { AddEventDialog } from '@/components/AddEventDialog';
+import type { Player } from '@prisma/client';
+import { AddLeagueDialog } from '@/components/leagues/AddLeagueDialog';
+import { AddEventDialog } from '@/components/events/AddEventDialog';
 import { Header } from '@/components/Header';
 import { Nav } from '@/components/Nav';
-import Leaderboard from '@/components/Leaderboard';
-import { useActiveLeague } from '@/hooks/useActiveLeague';
+import { Leaderboard } from '@/components/leagues/Leaderboard';
 import { useMostRecentLeague } from '@/hooks/useMostRecentLeague';
 import { useLeagueLeaderboard } from '@/hooks/useLeagueLeaderboard';
 import { useLeagues } from '@/hooks/useLeagues';
-import { QuickStats, LeagueStats } from '@/components/QuickStats';
-import { LeagueSelector } from '@/components/LeagueSelector';
+import { QuickStats } from '@/components/QuickStats';
+import { LeagueSelector } from '@/components/leagues/LeagueSelector';
 import { genericSort } from '@/lib/utils';
+import { formatLeagueOption } from '@/lib/league-utils';
+import { LeagueStats } from '@/types/LeagueStats';
+import { useScoringSystem } from '@/hooks/scoring-systems/useScoringSystem';
+import { useScoringSystems } from '@/hooks/scoring-systems/useScoringSystems';
 
 export default function DashboardPage() {
   const { status } = useSession();
@@ -31,11 +33,10 @@ export default function DashboardPage() {
 
   const { data: players, isLoading: playersLoading, error: playersError } = usePlayers();
   const { data: events, isLoading: eventsLoading, error: eventsError } = useEvents();
-  const { data: prizePools, isLoading: prizePoolsLoading, error: prizePoolsError } = usePrizePools();
   const { data: matchesData, isLoading: matchesLoading, error: matchesError } = useMatches();
-  const { data: activeLeague } = useActiveLeague();
   const { data: mostRecentLeague, isLoading: mostRecentLeagueLoading } = useMostRecentLeague();
   const { data: allLeagues } = useLeagues();
+  const { data: allScoringSystems } = useScoringSystems();
 
   // State for user-selected league (US3 - League switching)
   const [selectedLeagueId, setSelectedLeagueId] = useState<string | null>(null);
@@ -62,6 +63,19 @@ export default function DashboardPage() {
     error: leaderboardError
   } = useLeagueLeaderboard(displayLeague?.id);
 
+  // Fetch the scoring system for the display league, or get default scoring system
+  const scoringSystemId = displayLeague?.scoringSystemId;
+  const { data: fetchedScoringSystem, isLoading: scoringSystemLoading } = useScoringSystem(scoringSystemId || '');
+
+  // Use the fetched scoring system, or fallback to default from all scoring systems
+  const displayScoringSystem = useMemo(() => {
+    if (scoringSystemId && fetchedScoringSystem) {
+      return fetchedScoringSystem;
+    }
+    // Find default scoring system
+    return allScoringSystems?.find(s => s.isDefault);
+  }, [scoringSystemId, fetchedScoringSystem, allScoringSystems]);
+
   const matches = useMemo(() => {
     if (!matchesData || !players) {
       return [];
@@ -73,23 +87,9 @@ export default function DashboardPage() {
     }));
   }, [matchesData, players]);
 
-  const isLoading =
-    playersLoading ||
-    eventsLoading ||
-    prizePoolsLoading ||
-    matchesLoading ||
-    mostRecentLeagueLoading ||
-    status === 'loading';
-  const error = playersError || eventsError || prizePoolsError || matchesError || leaderboardError;
-
-  const getLeagueStatus = (league: League) => {
-    const now = new Date();
-    const startDate = new Date(league.startDate);
-    const endDate = new Date(league.endDate);
-    if (startDate > now) return 'Upcoming';
-    if (startDate <= now && endDate >= now) return 'Active';
-    return 'Past';
-  };
+  const isLoading = mostRecentLeagueLoading || status === 'loading';
+  const isStatsLoading = playersLoading || eventsLoading || matchesLoading;
+  const error = playersError || eventsError || matchesError || leaderboardError;
 
   // Calculate league stats for QuickStats component (FR-002, FR-003)
   const leagueStats = useMemo((): LeagueStats | null => {
@@ -97,13 +97,9 @@ export default function DashboardPage() {
       return null;
     }
 
-    // Filter events and matches for the displayed (most recent) league
-    const leagueEvents = events.filter(e => e.leagueId === displayLeague.id);
-    const leagueMatches = matches.filter(m => leagueEvents.some(e => e.id === m.eventId));
-
-    // Get unique players who participated in the league
+    // Get unique players
     const uniquePlayerIds = new Set<string>();
-    leagueMatches.forEach(match => {
+    matches.forEach(match => {
       uniquePlayerIds.add(match.player1Id);
       uniquePlayerIds.add(match.player2Id);
     });
@@ -119,36 +115,13 @@ export default function DashboardPage() {
     return {
       totalLeagues: allLeagues.length, // Global count (all leagues)
       activeLeagues: activeLeaguesCount,
-      eventsCount: leagueEvents.length, // League-specific
-      playersCount: uniquePlayerIds.size, // League-specific
-      matchesCount: leagueMatches.length // League-specific
+      eventsCount: events.length,
+      playersCount: uniquePlayerIds.size,
+      matchesCount: matches.length
     };
   }, [displayLeague, events, matches, allLeagues]);
 
-  // Keep legacy stats for "Current League Summary" card
-  const currentLeagueStats = useMemo(() => {
-    const currentLeagueEvents = activeLeague ? events.filter(e => e.leagueId === activeLeague.id) : [];
-    const currentLeagueMatches = activeLeague
-      ? matches.filter(m => currentLeagueEvents.some(e => e.id === m.eventId))
-      : [];
-    const currentLeaguePlayers = currentLeagueMatches.reduce((acc, match) => {
-      if (match.player1 && !acc.find(p => p?.id === match.player1?.id)) {
-        acc.push(match.player1);
-      }
-      if (match.player2 && !acc.find(p => p?.id === match.player2?.id)) {
-        acc.push(match.player2);
-      }
-      return acc;
-    }, [] as Player[]);
-
-    return {
-      currentLeagueEvents: currentLeagueEvents.length,
-      currentLeaguePlayers: currentLeaguePlayers.length,
-      currentLeagueMatches: currentLeagueMatches.length
-    };
-  }, [events, matches, activeLeague]);
-
-  const sortedEvents = useMemo(() => genericSort(events, 'date', 'desc'), [events]);
+  const sortedEvents = useMemo(() => genericSort(events, 'date', 'desc').slice(0, 3), [events]);
 
   if (isLoading) {
     return (
@@ -172,9 +145,9 @@ export default function DashboardPage() {
       <div className="container mx-auto space-y-6">
         <Nav />
         <div className="py-8 space-y-6">
-          {isAdmin && (
-            <div className="flex justify-between items-center">
-              <h1 className="text-3xl font-bold">Admin</h1>
+          <div className="flex justify-between items-center">
+            <h1 className="text-3xl font-bold">The Warren Tournaments</h1>
+            {isAdmin && (
               <div className="flex gap-2">
                 <AddLeagueDialog
                   open={addLeagueOpen}
@@ -188,7 +161,7 @@ export default function DashboardPage() {
                   New League
                 </Button>
                 <AddEventDialog
-                  open={addLeagueOpen}
+                  open={addEventOpen}
                   onOpenChange={open => {
                     if (!open) {
                       setAddEventOpen(false);
@@ -199,135 +172,86 @@ export default function DashboardPage() {
                   New Event
                 </Button>
               </div>
-            </div>
-          )}
-
-          {/* League Selector (US3 - FR-007) */}
-          {allLeagues && allLeagues.length > 0 && (
-            <LeagueSelector
-              leagues={allLeagues}
-              selectedLeagueId={selectedLeagueId}
-              onSelectLeague={setSelectedLeagueId}
-              className="mb-4"
-            />
-          )}
+            )}
+          </div>
 
           {/* Quick Stats Grid - League-Specific Stats (FR-002, FR-003) */}
-          <QuickStats stats={leagueStats} isLoading={isLoading} />
-
-          {/* Current League Summary */}
-          {activeLeague && (
-            <div>
-              <Link href={`/leagues/${activeLeague.id}`}>
-                <Card className="cursor-pointer hover:shadow-md transition-shadow  hover:bg-accent">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="flex items-center gap-2">
-                        <Trophy className="h-5 w-5" />
-                        Current League: {activeLeague.name}
-                      </CardTitle>
-                      <div className="flex items-center gap-2">
-                        <Badge variant={getLeagueStatus(activeLeague) === 'Active' ? 'default' : 'secondary'}>
-                          {getLeagueStatus(activeLeague)}
-                        </Badge>
-                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold">{currentLeagueStats.currentLeagueEvents}</div>
-                        <div className="text-sm text-muted-foreground">Events</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold">{currentLeagueStats.currentLeaguePlayers}</div>
-                        <div className="text-sm text-muted-foreground">Players</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold">{currentLeagueStats.currentLeagueMatches}</div>
-                        <div className="text-sm text-muted-foreground">Matches</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold">
-                          R{prizePools?.find(p => p.leagueId === activeLeague.id)?.amount || 0}
-                        </div>
-                        <div className="text-sm text-muted-foreground">Prize Pool</div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            </div>
-          )}
+          <QuickStats stats={leagueStats} isLoading={isStatsLoading} />
 
           {/* Leaderboard and Recent Events */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Most Recent League Leaderboard */}
-            <div>
+          {/* Most Recent League Leaderboard */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>League Leaderboard</CardTitle>
+                {allLeagues && allLeagues.length > 0 && (
+                  <LeagueSelector
+                    leagues={allLeagues}
+                    selectedLeagueId={selectedLeagueId}
+                    onSelectLeague={setSelectedLeagueId}
+                    className="mb-4"
+                  />
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
               {displayLeague ? (
                 <Leaderboard
-                  title={`${displayLeague.name} Leaderboard`}
+                  title={formatLeagueOption(displayLeague)}
                   entries={leaderboard || []}
-                  isLoading={leaderboardLoading}
+                  isLoading={leaderboardLoading || scoringSystemLoading}
+                  scoringSystem={displayScoringSystem}
                 />
               ) : (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>League Leaderboard</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center text-muted-foreground py-8">No leagues available</div>
-                  </CardContent>
-                </Card>
+                <div className="text-center text-muted-foreground py-8">No leagues available</div>
               )}
-            </div>
+            </CardContent>
+          </Card>
 
-            {/* Recent Events */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Recent Events</CardTitle>
-                  <Link href="/events">
-                    <Button variant="outline" size="sm">
-                      View All
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {sortedEvents.map(event => {
-                    const eventMatches = matches.filter(m => m.eventId === event.id);
-                    const eventPlayers = eventMatches.reduce((acc, match) => {
-                      if (match.player1 && !acc.find(p => p?.id === match.player1?.id)) {
-                        acc.push(match.player1);
-                      }
-                      if (match.player2 && !acc.find(p => p?.id === match.player2?.id)) {
-                        acc.push(match.player2);
-                      }
-                      return acc;
-                    }, [] as Player[]);
+          {/* Recent Events and Scoring System */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Recent Events</CardTitle>
+                <Link href="/events">
+                  <Button variant="outline" size="sm">
+                    View All
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {sortedEvents.map(event => {
+                  const eventMatches = matches.filter(m => m.eventId === event.id);
+                  const eventPlayers = eventMatches.reduce((acc, match) => {
+                    if (match.player1 && !acc.find(p => p?.id === match.player1?.id)) {
+                      acc.push(match.player1);
+                    }
+                    if (match.player2 && !acc.find(p => p?.id === match.player2?.id)) {
+                      acc.push(match.player2);
+                    }
+                    return acc;
+                  }, [] as Player[]);
 
-                    return (
-                      <Link key={event.id} href={`/events/${event.id}`}>
-                        <div className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
-                          <div>
-                            <h4 className="font-semibold">{event.name}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              {eventPlayers.length} players • {eventMatches.length} matches
-                            </p>
-                          </div>
-                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  return (
+                    <Link key={event.id} href={`/events/${event.id}`}>
+                      <div className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                        <div>
+                          <h4 className="font-semibold">{event.name}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {eventPlayers.length} players • {eventMatches.length} matches
+                          </p>
                         </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </>

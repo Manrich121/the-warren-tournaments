@@ -4,19 +4,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Trophy, Users, Calendar, Target } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-
-export interface LeagueStats {
-  /** Total number of leagues across the entire application (global) */
-  totalLeagues: number;
-  /** Number of active leagues (global) */
-  activeLeagues: number;
-  /** Number of events in the selected league */
-  eventsCount: number;
-  /** Number of unique players in the selected league */
-  playersCount: number;
-  /** Number of matches in the selected league */
-  matchesCount: number;
-}
+import { LeagueStats } from '@/types/LeagueStats';
 
 interface QuickStatsProps {
   stats: LeagueStats | null;
@@ -50,55 +38,47 @@ export function QuickStats({ stats, isLoading = false }: QuickStatsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <Link href="/leagues">
-        <Card className="cursor-pointer hover:shadow-md transition-shadow hover:bg-accent">
+        <Card className="hover:shadow-md transition-shadow hover:bg-accent">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Leagues</CardTitle>
             <Trophy className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalLeagues}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.activeLeagues} active
-            </p>
-          </CardContent>
+          <CardContent className={'text-2xl font-bold'}>{stats.totalLeagues}</CardContent>
         </Card>
       </Link>
 
       <Link href="/events">
-        <Card className="cursor-pointer hover:shadow-md transition-shadow hover:bg-accent">
+        <Card className="hover:shadow-md transition-shadow hover:bg-accent">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Events</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.eventsCount}</div>
-            <p className="text-xs text-muted-foreground">In selected league</p>
           </CardContent>
         </Card>
       </Link>
 
       <Link href="/players">
-        <Card className="cursor-pointer hover:shadow-md transition-shadow hover:bg-accent">
+        <Card className="hover:shadow-md transition-shadow hover:bg-accent">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Players</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.playersCount}</div>
-            <p className="text-xs text-muted-foreground">In selected league</p>
           </CardContent>
         </Card>
       </Link>
 
       <Link href="/matches">
-        <Card className="cursor-pointer hover:shadow-md transition-shadow hover:bg-accent">
+        <Card className="hover:shadow-md transition-shadow hover:bg-accent">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Matches</CardTitle>
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.matchesCount}</div>
-            <p className="text-xs text-muted-foreground">In selected league</p>
           </CardContent>
         </Card>
       </Link>

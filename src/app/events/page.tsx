@@ -11,7 +11,7 @@ import { useEvents } from '@/hooks/useEvents';
 import { useLeagues } from '@/hooks/useLeagues';
 import { useDeleteEvent } from '@/hooks/useDeleteEvent';
 import { Event } from '@prisma/client';
-import { AddEventDialog } from '@/components/AddEventDialog';
+import { AddEventDialog } from '@/components/events/AddEventDialog';
 import { Header } from '@/components/Header';
 import { Nav } from '@/components/Nav';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';

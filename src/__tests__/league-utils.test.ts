@@ -1,11 +1,5 @@
-import {
-  getMostRecentLeague,
-  getLeagueStatus,
-  formatDateRange,
-  formatLeagueOption,
-  League
-} from '../lib/league-utils';
-import { LeagueStatus } from '../types/leaderboard';
+import { getMostRecentLeague, getLeagueStatus, formatLeagueOption, League } from '@/lib/league-utils';
+import { formatDateRange } from '@/lib/utils/format';
 
 describe('League Utilities', () => {
   describe('getMostRecentLeague', () => {
@@ -234,7 +228,7 @@ describe('League Utilities', () => {
       const end = new Date('2024-08-31');
 
       const formatted = formatDateRange(start, end);
-      expect(formatted).toBe('Jun 1 - Aug 31');
+      expect(formatted).toBe('1 Jun 2024 - 31 Aug 2024');
     });
 
     it('should format date range spanning different years', () => {
@@ -242,14 +236,14 @@ describe('League Utilities', () => {
       const end = new Date('2025-02-28');
 
       const formatted = formatDateRange(start, end);
-      expect(formatted).toBe('Dec 1, 2024 - Feb 28, 2025');
+      expect(formatted).toBe('1 Dec 2024 - 28 Feb 2025');
     });
 
     it('should handle same start and end date', () => {
       const date = new Date('2024-07-15');
 
       const formatted = formatDateRange(date, date);
-      expect(formatted).toBe('Jul 15 - Jul 15');
+      expect(formatted).toBe('15 Jul 2024 - 15 Jul 2024');
     });
 
     it('should handle date strings', () => {
@@ -257,7 +251,7 @@ describe('League Utilities', () => {
       const end = '2024-08-31T00:00:00Z';
 
       const formatted = formatDateRange(start, end);
-      expect(formatted).toBe('Jun 1 - Aug 31');
+      expect(formatted).toBe('1 Jun 2024 - 31 Aug 2024');
     });
 
     it('should format single-digit days correctly', () => {
@@ -265,7 +259,7 @@ describe('League Utilities', () => {
       const end = new Date('2024-06-09');
 
       const formatted = formatDateRange(start, end);
-      expect(formatted).toBe('Jun 1 - Jun 9');
+      expect(formatted).toBe('1 Jun 2024 - 9 Jun 2024');
     });
 
     it('should format double-digit days correctly', () => {
@@ -273,7 +267,7 @@ describe('League Utilities', () => {
       const end = new Date('2024-06-25');
 
       const formatted = formatDateRange(start, end);
-      expect(formatted).toBe('Jun 15 - Jun 25');
+      expect(formatted).toBe('15 Jun 2024 - 25 Jun 2024');
     });
   });
 
@@ -286,7 +280,7 @@ describe('League Utilities', () => {
       };
 
       const formatted = formatLeagueOption(league);
-      expect(formatted).toBe('Summer League 2024 (Jun 1 - Aug 31)');
+      expect(formatted).toBe('Summer League 2024 (1 Jun 2024 - 31 Aug 2024)');
     });
 
     it('should format league option with cross-year range', () => {
@@ -297,7 +291,7 @@ describe('League Utilities', () => {
       };
 
       const formatted = formatLeagueOption(league);
-      expect(formatted).toBe('Winter League (Dec 1, 2024 - Feb 28, 2025)');
+      expect(formatted).toBe('Winter League (1 Dec 2024 - 28 Feb 2025)');
     });
 
     it('should handle league with empty name', () => {
@@ -308,7 +302,7 @@ describe('League Utilities', () => {
       };
 
       const formatted = formatLeagueOption(league);
-      expect(formatted).toBe(' (Jun 1 - Aug 31)');
+      expect(formatted).toBe(' (1 Jun 2024 - 31 Aug 2024)');
     });
 
     it('should handle date strings', () => {
@@ -319,7 +313,7 @@ describe('League Utilities', () => {
       };
 
       const formatted = formatLeagueOption(league);
-      expect(formatted).toBe('Spring League (Mar 1 - May 31)');
+      expect(formatted).toBe('Spring League (1 Mar 2024 - 31 May 2024)');
     });
   });
 });

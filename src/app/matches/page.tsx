@@ -11,7 +11,7 @@ import { usePlayers } from '@/hooks/usePlayers';
 import { useEvents } from '@/hooks/useEvents';
 import { useDeleteMatch } from '@/hooks/useDeleteMatch';
 import { Match } from '@prisma/client';
-import { AddMatchDialog } from '@/components/AddMatchDialog';
+import { AddMatchDialog } from '@/components/matches/AddMatchDialog';
 import { Header } from '@/components/Header';
 import { Nav } from '@/components/Nav';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';

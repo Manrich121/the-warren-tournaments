@@ -6,14 +6,24 @@ import { auth } from '@/auth';
 const leagueSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   startDate: z.string().datetime('Start date must be a valid date'),
-  endDate: z.string().datetime('End date must be a valid date')
+  endDate: z.string().datetime('End date must be a valid date'),
+  scoringSystemId: z.string().nullable().optional()
 });
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const league = await prisma.league.findUnique({
-      where: { id }
+      where: { id },
+      include: {
+        scoringSystem: {
+          select: {
+            id: true,
+            name: true,
+            isDefault: true
+          }
+        }
+      }
     });
 
     if (!league) {

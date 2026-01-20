@@ -22,9 +22,12 @@ import {
   calculateGameWinPercentage,
   calculateOpponentMatchWinPercentage,
   calculateOpponentGameWinPercentage,
-  getEventPoints,
-  calculateEventRanking,
-} from './playerStats';
+  calculateEventRanking, calculateEventAttendance, calculateMatchesWonCount, calculateGamesWonCount,
+} from './PlayerStats';
+import { calculateLeaguePoints } from '@/lib/scoring-system/calculate-points';
+import { applyTieBreakers } from '@/lib/scoring-system/apply-tie-breakers';
+import { PlayerPerformanceData, ScoringSystemFormData } from '@/types/scoring-system';
+import { LeaguePlayerStats } from '@/types/PlayerStats';
 
 /**
  * Calculates the complete leaderboard for a league with proper tie-breaking.
@@ -41,6 +44,7 @@ import {
  * @param events - All events (will be filtered to league events)
  * @param matches - All matches (will be filtered to league matches)
  * @param players - All players (will be filtered to league participants)
+ * @param scoringSystem - The scoring system with formulas to use for point calculation
  * @returns Sorted array of leaderboard entries with ranks
  *
  * @example
@@ -61,7 +65,8 @@ export function calculateLeagueLeaderboard(
   leagueId: string,
   events: Event[],
   matches: Match[],
-  players: Player[]
+  players: Player[],
+  scoringSystem: ScoringSystemFormData | null
 ): LeaderboardEntry[] {
   // Filter events for this league
   const leagueEvents = events.filter((e) => e.leagueId === leagueId);
@@ -100,16 +105,35 @@ export function calculateLeagueLeaderboard(
     return calculateEventRanking(leaguePlayers, eventMatches);
   });
 
-  // Calculate league points for each player (sum of event points)
+  // Calculate league points for each player using scoring system formulas
   const leaguePoints: { [playerId: string]: number } = {};
-  for (const player of leaguePlayers) {
-    leaguePoints[player.id] = 0;
-  }
-
-  for (const eventRanking of eventRankings) {
-    for (const rankedPlayer of eventRanking) {
-      if (leaguePoints[rankedPlayer.player.id] !== undefined) {
-        leaguePoints[rankedPlayer.player.id] += getEventPoints(rankedPlayer.rank);
+  
+  if (scoringSystem && scoringSystem.formulas && scoringSystem.formulas.length > 0) {
+    // Use scoring system formulas to calculate points
+    for (const player of leaguePlayers) {
+      // Collect player performance data
+      const performanceData: PlayerPerformanceData = extractPlayerPerformance(
+        player.id,
+        eventRankings,
+        leagueMatches
+      );
+      
+      // Calculate points using formulas
+      leaguePoints[player.id] = calculateLeaguePoints(performanceData, scoringSystem.formulas);
+    }
+  } else {
+    // Fallback: use legacy point calculation if no scoring system
+    for (const player of leaguePlayers) {
+      leaguePoints[player.id] = 0;
+    }
+    
+    for (const eventRanking of eventRankings) {
+      for (const rankedPlayer of eventRanking) {
+        if (leaguePoints[rankedPlayer.playerId] !== undefined) {
+          // Legacy: 1 point per event + bonus for placements
+          const eventPoints = rankedPlayer.rank === 1 ? 4 : rankedPlayer.rank === 2 ? 3 : rankedPlayer.rank === 3 ? 2 : 1;
+          leaguePoints[rankedPlayer.playerId] += eventPoints;
+        }
       }
     }
   }
@@ -121,40 +145,22 @@ export function calculateLeagueLeaderboard(
     );
 
     // Count matches won (exclude draws)
-    const matchesWon = playerMatches.filter((m) => {
-      if (m.draw) return false;
-      if (m.player1Id === player.id && m.player1Score > m.player2Score) return true;
-      if (m.player2Id === player.id && m.player2Score > m.player1Score) return true;
-      return false;
-    }).length;
+    const matchesWon = calculateMatchesWonCount(player.id, playerMatches);
+
+    const gamesWon = calculateGamesWonCount(player.id, playerMatches);
 
     const matchesPlayed = playerMatches.length;
 
+    const matchPoints = calculateMatchPoints(player.id, playerMatches);
+
     // Calculate match win rate (0 if no matches)
-    const matchWinRate = matchesPlayed > 0 ? matchesWon / matchesPlayed : 0;
+    const matchWinRate = calculateMatchWinPercentage(player.id, playerMatches)
 
     // Calculate game points and possible points
-    let gamePoints = 0;
-    let gamePossiblePoints = 0;
-
-    for (const match of playerMatches) {
-      if (match.player1Id === player.id) {
-        gamePoints += match.player1Score;
-      } else if (match.player2Id === player.id) {
-        gamePoints += match.player2Score;
-      }
-      gamePossiblePoints += match.player1Score + match.player2Score;
-    }
+    const gamePoints =  calculateGamePoints(player.id, playerMatches);
 
     // Calculate game win rate (0 if no games)
-    const gameWinRate = gamePossiblePoints > 0 ? gamePoints / gamePossiblePoints : 0;
-
-    // Calculate opponent stats using existing functions
-    // Convert percentages (0-100) to rates (0-1) for consistency
-    const opponentsMatchWinRate =
-      calculateOpponentMatchWinPercentage(player.id, playerMatches, leagueMatches) / 100;
-    const opponentsGameWinRate =
-      calculateOpponentGameWinPercentage(player.id, playerMatches, leagueMatches) / 100;
+    const gameWinRate = calculateGameWinPercentage(player.id, playerMatches)
 
     return {
       playerId: player.id,
@@ -162,20 +168,50 @@ export function calculateLeagueLeaderboard(
       leaguePoints: leaguePoints[player.id] || 0,
       matchesWon,
       matchesPlayed,
-      matchWinRate,
+      matchPoints,
+      matchWinPercentage: matchWinRate,
+      gamesWon,
       gamePoints,
-      gamePossiblePoints,
-      gameWinRate,
-      opponentsMatchWinRate,
-      opponentsGameWinRate,
+      gameWinPercentage: gameWinRate,
+      opponentsMatchWinPercentage: calculateOpponentMatchWinPercentage(player.id, playerMatches, leagueMatches),
+      opponentsGameWinPercentage: calculateOpponentGameWinPercentage(player.id, playerMatches, leagueMatches),
+      eventAttendance: calculateEventAttendance(player.id, leagueMatches),
     };
   });
 
-  // Sort using the 5-level tie-breaking comparator
-  const sortedEntries = [...leaderboardEntries].sort(compareLeaderboardEntries);
+  // Apply tie-breakers from scoring system or use legacy tie-breaking
+  if (scoringSystem && scoringSystem.tieBreakers && scoringSystem.tieBreakers.length > 0) {
+    // Use configured tie-breakers from scoring system
+    const playersWithMetrics: LeaguePlayerStats[] = leaderboardEntries.map(entry => ({
+      playerId: entry.playerId,
+      playerName: entry.playerName,
+      leaguePoints: entry.leaguePoints,
+      matchesWon: entry.matchesWon,
+      matchPoints: entry.matchPoints,
+      matchWinPercentage: entry.matchWinPercentage,
+      gamesWon: entry.gamesWon,
+      gamePoints: entry.gamePoints,
+      gameWinPercentage: entry.gameWinPercentage,
+      oppMatchWinPercentage: entry.opponentsMatchWinPercentage,
+      oppGameWinPercentage: entry.opponentsGameWinPercentage,
+      eventAttendance: calculateEventAttendance(entry.playerId, leagueMatches),
+    }));
 
-  // Assign ranks (with support for shared ranks)
-  return assignRanks(sortedEntries);
+    const rankedPlayers = applyTieBreakers(playersWithMetrics, scoringSystem.tieBreakers);
+    
+    // Convert back to LeaderboardEntry format
+    return rankedPlayers.map(rankedPlayer => {
+      const originalEntry = leaderboardEntries.find(e => e.playerId === rankedPlayer.playerId)!;
+      return {
+        ...originalEntry,
+        rank: rankedPlayer.rank,
+      };
+    });
+  } else {
+    // Fallback: use legacy 5-level tie-breaking
+    const sortedEntries = [...leaderboardEntries].sort(compareLeaderboardEntries);
+    return assignRanks(sortedEntries);
+  }
 }
 
 /**
@@ -203,27 +239,27 @@ function compareLeaderboardEntries(
   }
 
   // 2. Match win rate (higher is better)
-  if (a.matchWinRate !== b.matchWinRate) {
-    return b.matchWinRate - a.matchWinRate;
+  if (a.matchWinPercentage !== b.matchWinPercentage) {
+    return b.matchWinPercentage - a.matchWinPercentage;
   }
 
   // 3. Opponents' match win rate (higher is better)
-  if (a.opponentsMatchWinRate !== b.opponentsMatchWinRate) {
-    return b.opponentsMatchWinRate - a.opponentsMatchWinRate;
+  if (a.opponentsMatchWinPercentage !== b.opponentsMatchWinPercentage) {
+    return b.opponentsMatchWinPercentage - a.opponentsMatchWinPercentage;
   }
 
   // 4. Game win rate (higher is better)
-  if (a.gameWinRate !== b.gameWinRate) {
-    return b.gameWinRate - a.gameWinRate;
+  if (a.gameWinPercentage !== b.gameWinPercentage) {
+    return b.gameWinPercentage - a.gameWinPercentage;
   }
 
   // 5. Opponents' game win rate (higher is better)
-  if (a.opponentsGameWinRate !== b.opponentsGameWinRate) {
-    return b.opponentsGameWinRate - a.opponentsGameWinRate;
+  if (a.opponentsGameWinPercentage !== b.opponentsGameWinPercentage) {
+    return b.opponentsGameWinPercentage - a.opponentsGameWinPercentage;
   }
 
-  // 6. Alphabetical by player name (A-Z)
-  return a.playerName.localeCompare(b.playerName);
+  // 6. All tie-breakers exhausted and still tied
+  return 0;
 }
 
 /**
@@ -271,17 +307,72 @@ function assignRanks(sortedEntries: Omit<LeaderboardEntry, 'rank'>[]): Leaderboa
 }
 
 /**
- * Helper function to check if two leaderboard entries are equal across all criteria.
- *
- * This is useful for testing and validation purposes.
- *
- * @param a - First entry
- * @param b - Second entry
- * @returns True if entries are identical, false otherwise
+ * Extract player performance data for scoring system calculation
+ * 
+ * @param playerId - The player's ID
+ * @param eventRankings - Array of ranked players for each event
+ * @param leagueMatches - All matches in the league
+ * @returns Player performance data
  */
-export function areEntriesEqual(
-  a: Omit<LeaderboardEntry, 'rank'>,
-  b: Omit<LeaderboardEntry, 'rank'>
-): boolean {
-  return compareLeaderboardEntries(a, b) === 0;
+function extractPlayerPerformance(
+  playerId: string,
+  eventRankings: ReturnType<typeof calculateEventRanking>[],
+  leagueMatches: Match[]
+): PlayerPerformanceData {
+  let eventAttendance = 0;
+  let firstPlaceFinishes = 0;
+  let secondPlaceFinishes = 0;
+  let thirdPlaceFinishes = 0;
+
+  // Count placements across all events
+  for (const eventRanking of eventRankings) {
+    const playerResult = eventRanking.find(r => r.playerId === playerId);
+    
+    if (playerResult) {
+      eventAttendance++;
+      
+      if (playerResult.rank === 1) {
+        firstPlaceFinishes++;
+      } else if (playerResult.rank === 2) {
+        secondPlaceFinishes++;
+      } else if (playerResult.rank === 3) {
+        thirdPlaceFinishes++;
+      }
+    }
+  }
+
+  // Count match wins and game wins
+  const playerMatches = leagueMatches.filter(
+    (m) => m.player1Id === playerId || m.player2Id === playerId
+  );
+
+  let matchWins = 0;
+  let gameWins = 0;
+
+  for (const match of playerMatches) {
+    // Count match wins (exclude draws)
+    if (!match.draw) {
+      if (match.player1Id === playerId && match.player1Score > match.player2Score) {
+        matchWins++;
+      } else if (match.player2Id === playerId && match.player2Score > match.player1Score) {
+        matchWins++;
+      }
+    }
+
+    // Count game wins
+    if (match.player1Id === playerId) {
+      gameWins += match.player1Score;
+    } else if (match.player2Id === playerId) {
+      gameWins += match.player2Score;
+    }
+  }
+
+  return {
+    eventAttendance,
+    matchWins,
+    gameWins,
+    firstPlaceFinishes,
+    secondPlaceFinishes,
+    thirdPlaceFinishes,
+  };
 }

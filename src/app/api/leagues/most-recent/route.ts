@@ -12,10 +12,7 @@ import { prisma } from '@/prisma';
 export async function GET() {
   try {
     const mostRecentLeague = await prisma.league.findFirst({
-      orderBy: [
-        { endDate: 'desc' },
-        { createdAt: 'desc' }
-      ]
+      orderBy: [{ endDate: 'desc' }, { createdAt: 'desc' }]
     });
 
     return NextResponse.json(mostRecentLeague);

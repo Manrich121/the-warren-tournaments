@@ -14,7 +14,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
+  DialogTitle
 } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -59,7 +59,7 @@ export function TableRowActions({
   showEdit = true,
   showDelete = true,
   disabled = false,
-  isDeleting = false,
+  isDeleting = false
 }: TableRowActionsProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
@@ -80,7 +80,7 @@ export function TableRowActions({
                   variant="outline"
                   size="sm"
                   className="p-2"
-                  onClick={(e) => {
+                  onClick={e => {
                     e.stopPropagation();
                     onEdit();
                   }}
@@ -106,7 +106,7 @@ export function TableRowActions({
                   variant="outline"
                   size="sm"
                   className="p-2"
-                  onClick={(e) => {
+                  onClick={e => {
                     e.stopPropagation();
                     setDeleteDialogOpen(true);
                   }}

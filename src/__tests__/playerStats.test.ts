@@ -6,10 +6,8 @@ import {
   calculateGameWinPercentage,
   calculateOpponentMatchWinPercentage,
   calculateOpponentGameWinPercentage,
-  calculateEventRanking,
-  calculateLeagueRanking,
-  RankedPlayer
-} from '../lib/playerStats';
+  calculateEventRanking
+} from '@/lib/PlayerStats';
 
 describe('Player Stats Calculations', () => {
   const playerId = 'player1';
@@ -82,7 +80,7 @@ describe('Player Stats Calculations', () => {
   describe('calculateMatchWinPercentage', () => {
     it('should calculate player1 match win percentage', () => {
       const percentage = calculateMatchWinPercentage(playerId, matches);
-      expect(percentage).toBe((4 / (3 * 3)) * 100);
+      expect(percentage).toBe(4 / (3 * 3));
     });
 
     it('should calculate player1 match win percentage 5-2-1', () => {
@@ -186,7 +184,7 @@ describe('Player Stats Calculations', () => {
       ];
 
       const percentage = calculateMatchWinPercentage(playerId, matches);
-      expect(percentage).toBe((16 / (8 * 3)) * 100);
+      expect(percentage).toBe(16 / (8 * 3));
     });
 
     it('should calculate player1 match win percentage 1-3-0', () => {
@@ -243,28 +241,29 @@ describe('Player Stats Calculations', () => {
 
       const percentage = calculateMatchWinPercentage(playerId, matches);
       // would be 25%, but minimum is 33%
-      expect(percentage).toBeCloseTo(33);
+      expect(percentage).toBeCloseTo(0.33);
     });
 
     it('should calculate player2 match win percentage correctly', () => {
       const playerId = 'player2';
       const percentage = calculateMatchWinPercentage(playerId, matches);
       // Would be 16.67%, but minimum is 33%
-      expect(percentage).toBe(0.33 * 100);
+      expect(percentage).toBe(0.33);
     });
   });
 
   describe('calculateGameWinPercentage', () => {
     it('should calculate player1 game win percentage correctly', () => {
       const percentage = calculateGameWinPercentage(playerId, matches);
-      expect(percentage).toBe((10 / (3 * 6)) * 100);
+      expect(percentage).toBe(10 / (3 * 6));
     });
 
     it('should calculate player2 game win percentage correctly', () => {
       const playerId = 'player2';
       const percentage = calculateGameWinPercentage(playerId, matches);
-      expect(percentage).toBe((4 / (3 * 3)) * 100);
+      expect(percentage).toBe(4 / (3 * 3));
     });
+
     it('should calculate player1 game win percentage 21 GPs / 10 games', () => {
       const matches: Match[] = [
         {
@@ -318,7 +317,7 @@ describe('Player Stats Calculations', () => {
       ];
 
       const percentage = calculateGameWinPercentage(playerId, matches);
-      expect(percentage).toBe((21 / (3 * 10)) * 100);
+      expect(percentage).toBe(21 / (3 * 10));
     });
     it('should calculate player1 game win percentage 9 GPs / 11 games', () => {
       const matches: Match[] = [
@@ -373,8 +372,8 @@ describe('Player Stats Calculations', () => {
       ];
 
       const percentage = calculateGameWinPercentage(playerId, matches);
-      // Would be (9 / (3 * 11)) * 100
-      expect(percentage).toBe(0.33 * 100);
+      // Would be (9 / (3 * 11))
+      expect(percentage).toBe(0.33);
     });
   });
 
@@ -431,7 +430,7 @@ describe('Player Stats Calculations', () => {
         }
       ];
       const percentage = calculateOpponentMatchWinPercentage(playerId, matches, allMatches);
-      expect(percentage).toBe(66.5);
+      expect(percentage).toBe(0.665);
     });
   });
 
@@ -488,7 +487,7 @@ describe('Player Stats Calculations', () => {
         }
       ];
       const percentage = calculateOpponentGameWinPercentage(playerId, matches, allMatches);
-      expect(percentage).toBeCloseTo(55.56, 2);
+      expect(percentage).toBeCloseTo(0.5555, 2);
     });
   });
 
@@ -497,8 +496,8 @@ describe('Player Stats Calculations', () => {
       const players: Player[] = [
         { id: 'player1', name: 'Player 1', createdAt: new Date(), updatedAt: new Date() },
         { id: 'player2', name: 'Player 2', createdAt: new Date(), updatedAt: new Date() },
-        { id: 'player3', name: 'Player 3', createdAt: new Date(), updatedAt: new Date() },
-        { id: 'player4', name: 'Player 4', createdAt: new Date(), updatedAt: new Date() }
+        { id: 'player4', name: 'Player 4', createdAt: new Date(), updatedAt: new Date() },
+        { id: 'player3', name: 'Player 3', createdAt: new Date(), updatedAt: new Date() }
       ];
 
       const allMatches: Match[] = [
@@ -554,118 +553,10 @@ describe('Player Stats Calculations', () => {
 
       const rankedPlayers = calculateEventRanking(players, allMatches);
 
-      expect(rankedPlayers[0].player.id).toBe('player1');
-      expect(rankedPlayers[1].player.id).toBe('player3');
-      expect(rankedPlayers[2].player.id).toBe('player2');
-      expect(rankedPlayers[3].player.id).toBe('player4');
-    });
-  });
-
-  describe('calculateLeagueRanking', () => {
-    it('should rank players correctly', () => {
-      const players: Player[] = [
-        { id: 'player1', name: 'Player 1', createdAt: new Date(), updatedAt: new Date() },
-        { id: 'player2', name: 'Player 2', createdAt: new Date(), updatedAt: new Date() },
-        { id: 'player3', name: 'Player 3', createdAt: new Date(), updatedAt: new Date() },
-        { id: 'player4', name: 'Player 3', createdAt: new Date(), updatedAt: new Date() }
-      ];
-
-      const event1Rankings: RankedPlayer[] = [
-        {
-          rank: 1,
-          player: players[0],
-          matchPoints: 0,
-          gamePoints: 0,
-          matchWinPercentage: 0,
-          gameWinPercentage: 0,
-          opponentsMatchWinPercentage: 0,
-          opponentsGameWinPercentage: 0
-        },
-        {
-          rank: 2,
-          player: players[1],
-          matchPoints: 0,
-          gamePoints: 0,
-          matchWinPercentage: 0,
-          gameWinPercentage: 0,
-          opponentsMatchWinPercentage: 0,
-          opponentsGameWinPercentage: 0
-        },
-        {
-          rank: 3,
-          player: players[2],
-          matchPoints: 0,
-          gamePoints: 0,
-          matchWinPercentage: 0,
-          gameWinPercentage: 0,
-          opponentsMatchWinPercentage: 0,
-          opponentsGameWinPercentage: 0
-        },
-        {
-          rank: 4,
-          player: players[3],
-          matchPoints: 0,
-          gamePoints: 0,
-          matchWinPercentage: 0,
-          gameWinPercentage: 0,
-          opponentsMatchWinPercentage: 0,
-          opponentsGameWinPercentage: 0
-        }
-      ];
-
-      const event2Rankings: RankedPlayer[] = [
-        {
-          rank: 3,
-          player: players[0],
-          matchPoints: 0,
-          gamePoints: 0,
-          matchWinPercentage: 0,
-          gameWinPercentage: 0,
-          opponentsMatchWinPercentage: 0,
-          opponentsGameWinPercentage: 0
-        },
-        {
-          rank: 1,
-          player: players[1],
-          matchPoints: 0,
-          gamePoints: 0,
-          matchWinPercentage: 0,
-          gameWinPercentage: 0,
-          opponentsMatchWinPercentage: 0,
-          opponentsGameWinPercentage: 0
-        },
-        {
-          rank: 2,
-          player: players[2],
-          matchPoints: 0,
-          gamePoints: 0,
-          matchWinPercentage: 0,
-          gameWinPercentage: 0,
-          opponentsMatchWinPercentage: 0,
-          opponentsGameWinPercentage: 0
-        },
-        {
-          rank: 4,
-          player: players[3],
-          matchPoints: 0,
-          gamePoints: 0,
-          matchWinPercentage: 0,
-          gameWinPercentage: 0,
-          opponentsMatchWinPercentage: 0,
-          opponentsGameWinPercentage: 0
-        }
-      ];
-
-      const rankedPlayers = calculateLeagueRanking(players, [event1Rankings, event2Rankings]);
-
-      expect(rankedPlayers[0].player.id).toBe('player2');
-      expect(rankedPlayers[0].totalEventPoints).toBe(7);
-      expect(rankedPlayers[1].player.id).toBe('player1');
-      expect(rankedPlayers[1].totalEventPoints).toBe(6);
-      expect(rankedPlayers[2].player.id).toBe('player3');
-      expect(rankedPlayers[2].totalEventPoints).toBe(5);
-      expect(rankedPlayers[3].player.id).toBe('player4');
-      expect(rankedPlayers[3].totalEventPoints).toBe(2);
+      expect(rankedPlayers[0].playerId).toBe('player1');
+      expect(rankedPlayers[1].playerId).toBe('player3');
+      expect(rankedPlayers[2].playerId).toBe('player2');
+      expect(rankedPlayers[3].playerId).toBe('player4');
     });
   });
 });
