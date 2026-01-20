@@ -3,10 +3,10 @@ export interface LeagueStats {
   totalLeagues: number;
   /** Number of active leagues (global) */
   activeLeagues: number;
-  /** Number of events in the selected league */
+  /** Number of events (global) */
   eventsCount: number;
-  /** Number of unique players in the selected league */
+  /** Number of unique players (global) */
   playersCount: number;
-  /** Number of matches in the selected league */
+  /** Number of matches (global) */
   matchesCount: number;
 }
