@@ -5,13 +5,11 @@ import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
   getSortedRowModel,
   getPaginationRowModel,
   useReactTable,
   VisibilityState,
-  SortingState,
-  ColumnFiltersState
+  SortingState
 } from '@tanstack/react-table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LeaderboardEntry } from '@/types/leaderboard';
@@ -24,7 +22,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUpIcon, ChevronDownIcon, ChevronsUpDown } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface LeaderboardProps {
@@ -45,7 +42,6 @@ interface LeaderboardProps {
  */
 export const Leaderboard = ({ title = 'Leaderboard', entries, isLoading = false }: LeaderboardProps) => {
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     // Hide some columns by default to avoid overwhelming display
     gamesWon: false,
@@ -76,7 +72,7 @@ export const Leaderboard = ({ title = 'Leaderboard', entries, isLoading = false 
       },
       {
         accessorKey: 'eventAttendance',
-        header: '# Events',
+        header: 'Events',
         cell: ({ row }) => row.getValue('eventAttendance')
       },
       {
@@ -144,11 +140,9 @@ export const Leaderboard = ({ title = 'Leaderboard', entries, isLoading = false 
     data: entries,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     filterFns: {
       fuzzy: filterRowsByGlobalSearch
@@ -160,7 +154,6 @@ export const Leaderboard = ({ title = 'Leaderboard', entries, isLoading = false 
     },
     state: {
       sorting,
-      columnFilters,
       columnVisibility
     }
   });
@@ -182,46 +175,37 @@ export const Leaderboard = ({ title = 'Leaderboard', entries, isLoading = false 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
+        <div className={'flex items-center justify-between'}>
+          <CardTitle>{title}</CardTitle>
+          {/* Column visibility controls */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                Columns <ChevronDown />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {table
+                .getAllColumns()
+                .filter(column => column.getCanHide())
+                .map(column => {
+                  const headerValue = typeof column.columnDef.header === 'string' ? column.columnDef.header : column.id;
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      checked={column.getIsVisible()}
+                      onCheckedChange={value => column.toggleVisibility(value)}
+                    >
+                      {headerValue}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {/* Search and column visibility controls */}
-          <div className="flex items-center justify-between gap-4">
-            <Input
-              placeholder="Search players..."
-              value={(table.getColumn('playerName')?.getFilterValue() as string) ?? ''}
-              onChange={event => table.getColumn('playerName')?.setFilterValue(event.target.value)}
-              className="max-w-sm"
-            />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="ml-auto">
-                  Columns <ChevronDown />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {table
-                  .getAllColumns()
-                  .filter(column => column.getCanHide())
-                  .map(column => {
-                    const headerValue = typeof column.columnDef.header === 'string' 
-                      ? column.columnDef.header 
-                      : column.id;
-                    return (
-                      <DropdownMenuCheckboxItem
-                        key={column.id}
-                        checked={column.getIsVisible()}
-                        onCheckedChange={value => column.toggleVisibility(!!value)}
-                      >
-                        {headerValue}
-                      </DropdownMenuCheckboxItem>
-                    );
-                  })}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-
           {/* Table */}
           <div className="overflow-hidden rounded-md border">
             <Table>
