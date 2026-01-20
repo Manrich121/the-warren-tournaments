@@ -179,7 +179,7 @@ export function AddLeagueDialog({ league, open, onOpenChange }: AddLeagueDialogP
             <Label htmlFor="scoringSystem">Scoring System</Label>
             <Select value={scoringSystemId} onValueChange={setScoringSystemId} disabled={isLoadingScoringSystems}>
               <SelectTrigger id="scoringSystem">
-                <SelectValue placeholder="Loading..." />
+                <SelectValue placeholder={isLoadingScoringSystems ? 'Loading...' : 'Select a Scoring System'} />
               </SelectTrigger>
               <SelectContent>
                 {scoringSystems?.map(system => (
