@@ -22,6 +22,8 @@ import { Nav } from '@/components/Nav';
 import { Leaderboard } from '@/components/leagues/Leaderboard';
 import { useLeagueLeaderboard } from '@/hooks/useLeagueLeaderboard';
 import { formatDate, formatDateRange } from '@/lib/utils/format';
+import { useScoringSystem } from '@/hooks/scoring-systems/useScoringSystem';
+import { useScoringSystems } from '@/hooks/scoring-systems/useScoringSystems';
 
 interface LeaguePageProps {
   params: Promise<{
@@ -40,6 +42,7 @@ export default function LeaguePage({ params }: LeaguePageProps) {
   const { data: matchesData, isLoading: matchesLoading, error: matchesError } = useMatches();
   const { data: prizePoolsData, isLoading: prizePoolsLoading, error: prizePoolsError } = usePrizePools();
   const { data: leaderboard, isLoading: leaderboardLoading, error: leaderboardError } = useLeagueLeaderboard(leagueId);
+  const { data: allScoringSystems } = useScoringSystems();
 
   const leagues = useMemo(() => leaguesData || [], [leaguesData]);
   const allEvents = useMemo(() => eventsData || [], [eventsData]);
@@ -62,6 +65,22 @@ export default function LeaguePage({ params }: LeaguePageProps) {
   const league = useMemo(() => {
     return leagues.find(l => l.id === leagueId);
   }, [leagues, leagueId]);
+
+  // Fetch the scoring system for the league, or get default scoring system
+  const scoringSystemId = league?.scoringSystemId;
+  const {
+    data: fetchedScoringSystem,
+    isLoading: scoringSystemLoading
+  } = useScoringSystem(scoringSystemId || '');
+
+  // Use the fetched scoring system, or fallback to default from all scoring systems
+  const displayScoringSystem = useMemo(() => {
+    if (scoringSystemId && fetchedScoringSystem) {
+      return fetchedScoringSystem;
+    }
+    // Find default scoring system
+    return allScoringSystems?.find(s => s.isDefault);
+  }, [scoringSystemId, fetchedScoringSystem, allScoringSystems]);
 
   const leagueMatches = useMemo(() => {
     return matches.filter(m => leagueEvents.some(e => e.id === m.eventId));
@@ -342,7 +361,14 @@ export default function LeaguePage({ params }: LeaguePageProps) {
           </Card>
 
           {/* Leaderboard */}
-          {leaderboard && <Leaderboard title="League Leaderboard" entries={leaderboard} />}
+          {leaderboard && (
+            <Leaderboard
+              title="League Leaderboard"
+              entries={leaderboard}
+              scoringSystem={displayScoringSystem}
+              isLoading={leaderboardLoading || scoringSystemLoading}
+            />
+          )}
         </div>
       </div>
     </>
