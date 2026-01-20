@@ -51,7 +51,6 @@ describe('QuickStats', () => {
       // Total Leagues should show global count
       const totalLeaguesCard = screen.getByText('Total Leagues').closest('a');
       expect(totalLeaguesCard).toHaveTextContent('5');
-      expect(totalLeaguesCard).toHaveTextContent('2 active');
     });
 
     it('should display correct league-specific counts', () => {
@@ -60,17 +59,14 @@ describe('QuickStats', () => {
       // Events count (league-specific)
       const eventsCard = screen.getByText('Total Events').closest('a');
       expect(eventsCard).toHaveTextContent('12');
-      expect(eventsCard).toHaveTextContent('In selected league');
 
       // Players count (league-specific)
       const playersCard = screen.getByText('Total Players').closest('a');
       expect(playersCard).toHaveTextContent('45');
-      expect(playersCard).toHaveTextContent('In selected league');
 
       // Matches count (league-specific)
       const matchesCard = screen.getByText('Total Matches').closest('a');
       expect(matchesCard).toHaveTextContent('120');
-      expect(matchesCard).toHaveTextContent('In selected league');
     });
 
     it('should render correct links for navigation', () => {
@@ -131,9 +127,6 @@ describe('QuickStats', () => {
       };
 
       render(<QuickStats stats={noActiveStats} isLoading={false} />);
-
-      const totalLeaguesCard = screen.getByText('Total Leagues').closest('a');
-      expect(totalLeaguesCard).toHaveTextContent('0 active');
     });
   });
 

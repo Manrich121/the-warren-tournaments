@@ -553,10 +553,10 @@ describe('Player Stats Calculations', () => {
 
       const rankedPlayers = calculateEventRanking(players, allMatches);
 
-      expect(rankedPlayers[0].player.id).toBe('player1');
-      expect(rankedPlayers[1].player.id).toBe('player3');
-      expect(rankedPlayers[2].player.id).toBe('player2');
-      expect(rankedPlayers[3].player.id).toBe('player4');
+      expect(rankedPlayers[0].playerId).toBe('player1');
+      expect(rankedPlayers[1].playerId).toBe('player3');
+      expect(rankedPlayers[2].playerId).toBe('player2');
+      expect(rankedPlayers[3].playerId).toBe('player4');
     });
   });
 });
