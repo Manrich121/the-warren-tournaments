@@ -259,74 +259,74 @@ export default function DashboardPage() {
           )}
 
           {/* Leaderboard and Recent Events */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Most Recent League Leaderboard */}
-            <div>
-              {displayLeague ? (
-                <Leaderboard
-                  title={formatLeagueOption(displayLeague)}
-                  entries={leaderboard || []}
-                  isLoading={leaderboardLoading}
-                />
-              ) : (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>League Leaderboard</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center text-muted-foreground py-8">No leagues available</div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-
-            {/* Recent Events */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Recent Events</CardTitle>
-                  <Link href="/events">
-                    <Button variant="outline" size="sm">
-                      View All
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {sortedEvents.map(event => {
-                    const eventMatches = matches.filter(m => m.eventId === event.id);
-                    const eventPlayers = eventMatches.reduce((acc, match) => {
-                      if (match.player1 && !acc.find(p => p?.id === match.player1?.id)) {
-                        acc.push(match.player1);
-                      }
-                      if (match.player2 && !acc.find(p => p?.id === match.player2?.id)) {
-                        acc.push(match.player2);
-                      }
-                      return acc;
-                    }, [] as Player[]);
-
-                    return (
-                      <Link key={event.id} href={`/events/${event.id}`}>
-                        <div className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
-                          <div>
-                            <h4 className="font-semibold">{event.name}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              {eventPlayers.length} players • {eventMatches.length} matches
-                            </p>
-                          </div>
-                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
+          {/*<div className="grid grid-cols-1 lg:grid-cols-2 gap-4">*/}
+          {/* Most Recent League Leaderboard */}
+          <div>
+            {displayLeague ? (
+              <Leaderboard
+                title={formatLeagueOption(displayLeague)}
+                entries={leaderboard || []}
+                isLoading={leaderboardLoading}
+              />
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>League Leaderboard</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center text-muted-foreground py-8">No leagues available</div>
+                </CardContent>
+              </Card>
+            )}
           </div>
+
+          {/* Recent Events */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Recent Events</CardTitle>
+                <Link href="/events">
+                  <Button variant="outline" size="sm">
+                    View All
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {sortedEvents.map(event => {
+                  const eventMatches = matches.filter(m => m.eventId === event.id);
+                  const eventPlayers = eventMatches.reduce((acc, match) => {
+                    if (match.player1 && !acc.find(p => p?.id === match.player1?.id)) {
+                      acc.push(match.player1);
+                    }
+                    if (match.player2 && !acc.find(p => p?.id === match.player2?.id)) {
+                      acc.push(match.player2);
+                    }
+                    return acc;
+                  }, [] as Player[]);
+
+                  return (
+                    <Link key={event.id} href={`/events/${event.id}`}>
+                      <div className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                        <div>
+                          <h4 className="font-semibold">{event.name}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {eventPlayers.length} players • {eventMatches.length} matches
+                          </p>
+                        </div>
+                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
+      {/*</div>*/}
     </>
   );
 }
