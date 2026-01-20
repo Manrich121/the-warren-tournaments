@@ -145,9 +145,9 @@ export default function DashboardPage() {
       <div className="container mx-auto space-y-6">
         <Nav />
         <div className="py-8 space-y-6">
-          {isAdmin ? (
-            <div className="flex justify-between items-center">
-              <h1 className="text-3xl font-bold">Admin</h1>
+          <div className="flex justify-between items-center">
+            <h1 className="text-3xl font-bold">The Warren Tournaments</h1>
+            {isAdmin && (
               <div className="flex gap-2">
                 <AddLeagueDialog
                   open={addLeagueOpen}
@@ -172,10 +172,8 @@ export default function DashboardPage() {
                   New Event
                 </Button>
               </div>
-            </div>
-          ) : (
-            <h1 className="text-3xl font-bold">The Warren Tournaments</h1>
-          )}
+            )}
+          </div>
 
           {/* Quick Stats Grid - League-Specific Stats (FR-002, FR-003) */}
           <QuickStats stats={leagueStats} isLoading={isStatsLoading} />
