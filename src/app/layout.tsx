@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Providers } from '@/components/providers';
-import { Header } from '@/components/Header';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -18,7 +18,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={inter.className}>
         <Providers>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-            <div className="min-h-screen bg-background">{children}</div>
+            <TooltipProvider>
+              <div className="min-h-screen bg-background">{children}</div>
+            </TooltipProvider>
           </ThemeProvider>
         </Providers>
       </body>
