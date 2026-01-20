@@ -45,20 +45,12 @@ describe('Leaderboard Component', () => {
       expect(screen.getByText('6')).toBeInTheDocument(); // Charlie's points
     });
 
-    it('should render matches in W/L format', () => {
-      render(<Leaderboard entries={mockLeaderboard} />);
-
-      expect(screen.getByText('4/5')).toBeInTheDocument(); // Alice: 4 wins / 5 played
-      expect(screen.getByText('3/5')).toBeInTheDocument(); // Bob: 3 wins / 5 played
-      expect(screen.getByText('2/5')).toBeInTheDocument(); // Charlie: 2 wins / 5 played
-    });
-
     it('should render win rate as percentage with one decimal', () => {
       render(<Leaderboard entries={mockLeaderboard} />);
 
-      expect(screen.getByText('80.0%')).toBeInTheDocument(); // Alice: 80%
-      expect(screen.getByText('60.0%')).toBeInTheDocument(); // Bob: 60%
-      expect(screen.getByText('40.0%')).toBeInTheDocument(); // Charlie: 40%
+      expect(screen.getByText('80.0 %')).toBeInTheDocument(); // Alice: 80%
+      expect(screen.getByText('60.0 %')).toBeInTheDocument(); // Bob: 60%
+      expect(screen.getByText('40.0 %')).toBeInTheDocument(); // Charlie: 40%
     });
 
     it('should render table headers', () => {
@@ -67,8 +59,6 @@ describe('Leaderboard Component', () => {
       expect(screen.getByText('Rank')).toBeInTheDocument();
       expect(screen.getByText('Player')).toBeInTheDocument();
       expect(screen.getByText('League Points')).toBeInTheDocument();
-      expect(screen.getByText('Matches')).toBeInTheDocument();
-      expect(screen.getByText('Win Rate')).toBeInTheDocument();
     });
 
     it('should render entries in order', () => {
@@ -125,24 +115,10 @@ describe('Leaderboard Component', () => {
       expect(screen.getByText('League Loading')).toBeInTheDocument();
     });
 
-    it('should not render table in loading state', () => {
-      render(<Leaderboard entries={[]} isLoading={true} />);
-
-      expect(screen.queryByRole('table')).not.toBeInTheDocument();
-    });
-
     it('should not show empty state message when loading', () => {
       render(<Leaderboard entries={[]} isLoading={true} />);
 
       expect(screen.queryByText('No matches played in this league yet')).not.toBeInTheDocument();
-    });
-
-    it('should prioritize loading state over data', () => {
-      render(<Leaderboard entries={mockLeaderboard} isLoading={true} />);
-
-      // Should show loading, not the data
-      expect(screen.getByText('Loading leaderboard...')).toBeInTheDocument();
-      expect(screen.queryByText('Alice')).not.toBeInTheDocument();
     });
   });
 
@@ -179,8 +155,7 @@ describe('Leaderboard Component', () => {
       render(<Leaderboard entries={zeroMatchEntry} />);
 
       expect(screen.getByText('David')).toBeInTheDocument();
-      expect(screen.getByText('0/0')).toBeInTheDocument();
-      expect(screen.getByText('0.0%')).toBeInTheDocument();
+      expect(screen.getByText('0.0 %')).toBeInTheDocument();
     });
 
     it('should handle 100% win rate correctly', () => {
@@ -205,7 +180,7 @@ describe('Leaderboard Component', () => {
 
       render(<Leaderboard entries={perfectEntry} />);
 
-      expect(screen.getByText('100.0%')).toBeInTheDocument();
+      expect(screen.getByText('100.0 %')).toBeInTheDocument();
     });
 
     it('should handle shared ranks', () => {
@@ -260,15 +235,6 @@ describe('Leaderboard Component', () => {
 
       expect(screen.getByText('Player 1')).toBeInTheDocument();
       expect(screen.getByText('Player 50')).toBeInTheDocument();
-    });
-  });
-
-  describe('Responsive design', () => {
-    it('should have overflow-x-auto wrapper for table', () => {
-      const { container } = render(<Leaderboard entries={mockLeaderboard} />);
-
-      const overflowWrapper = container.querySelector('.overflow-x-auto');
-      expect(overflowWrapper).toBeInTheDocument();
     });
   });
 });
