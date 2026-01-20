@@ -171,7 +171,8 @@ describe('Leaderboard Component', () => {
           gamePoints: 0,
           gameWinPercentage: 0,
           opponentsMatchWinPercentage: 0,
-          opponentsGameWinPercentage: 0
+          opponentsGameWinPercentage: 0,
+          eventAttendance: 0
         }
       ];
 
@@ -197,7 +198,8 @@ describe('Leaderboard Component', () => {
           gamePoints: 15,
           gameWinPercentage: 1.0,
           opponentsMatchWinPercentage: 0.5,
-          opponentsGameWinPercentage: 0.5
+          opponentsGameWinPercentage: 0.5,
+          eventAttendance: 12
         }
       ];
 
@@ -250,7 +252,8 @@ describe('Leaderboard Component', () => {
         gamesWon: 100 - i,
         gameWinPercentage: (30 - i) / 30,
         opponentsMatchWinPercentage: 0.5,
-        opponentsGameWinPercentage: 0.5
+        opponentsGameWinPercentage: 0.5,
+        eventAttendance: 20 - i
       }));
 
       render(<Leaderboard entries={manyEntries} />);

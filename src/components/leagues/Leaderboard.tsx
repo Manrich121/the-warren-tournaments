@@ -23,10 +23,15 @@ import {
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUpIcon, ChevronDownIcon, ChevronsUpDown } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ScoringSystemFormData } from '@/types/scoring-system';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { FormulaDisplayList } from '@/components/scoring-system/FormulaDisplayList';
+import { TieBreakerDisplayList } from '@/components/scoring-system/TieBreakerDisplayList';
 
 interface LeaderboardProps {
   title?: string;
   entries: LeaderboardEntry[];
+  scoringSystem?: ScoringSystemFormData;
   isLoading?: boolean;
 }
 
@@ -40,7 +45,9 @@ interface LeaderboardProps {
  * - Empty state when no matches played
  * - Loading skeleton support
  */
-export const Leaderboard = ({ title = 'Leaderboard', entries, isLoading = false }: LeaderboardProps) => {
+export const Leaderboard = ({ title = 'Leaderboard', entries, scoringSystem, isLoading = false }: LeaderboardProps) => {
+  const [pointFormulaOpen, setPointFormulaOpen] = useState(false);
+  const [tiebreakersOpen, setTiebreakersOpen] = useState(false);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     // Hide some columns by default to avoid overwhelming display
@@ -176,7 +183,33 @@ export const Leaderboard = ({ title = 'Leaderboard', entries, isLoading = false 
     <Card>
       <CardHeader>
         <div className={'flex items-center justify-between'}>
-          <CardTitle>{title}</CardTitle>
+          <div className={'flex gap-2 items-center'}>
+            <CardTitle>{title}</CardTitle>
+            {scoringSystem && (
+              <>
+                <Tooltip open={pointFormulaOpen} onOpenChange={setPointFormulaOpen}>
+                  <TooltipTrigger asChild>
+                    <Button variant={'outline'} onClick={() => setPointFormulaOpen(true)}>
+                      Point Formulas
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <FormulaDisplayList formulas={scoringSystem.formulas} />
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip open={tiebreakersOpen} onOpenChange={setTiebreakersOpen}>
+                  <TooltipTrigger asChild>
+                    <Button variant={'outline'} onClick={() => setTiebreakersOpen(true)}>
+                      Tie-Breakers
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <TieBreakerDisplayList tieBreakers={scoringSystem.tieBreakers} />
+                  </TooltipContent>
+                </Tooltip>
+              </>
+            )}
+          </div>
           {/* Column visibility controls */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

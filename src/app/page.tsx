@@ -24,6 +24,8 @@ import { LeagueSelector } from '@/components/leagues/LeagueSelector';
 import { genericSort } from '@/lib/utils';
 import { formatLeagueOption } from '@/lib/league-utils';
 import { LeagueStats } from '@/types/LeagueStats';
+import { useScoringSystem } from '@/hooks/scoring-systems/useScoringSystem';
+import { useScoringSystems } from '@/hooks/scoring-systems/useScoringSystems';
 
 export default function DashboardPage() {
   const { status } = useSession();
@@ -31,10 +33,10 @@ export default function DashboardPage() {
 
   const { data: players, isLoading: playersLoading, error: playersError } = usePlayers();
   const { data: events, isLoading: eventsLoading, error: eventsError } = useEvents();
-  const { data: prizePools, error: prizePoolsError } = usePrizePools();
   const { data: matchesData, isLoading: matchesLoading, error: matchesError } = useMatches();
   const { data: mostRecentLeague, isLoading: mostRecentLeagueLoading } = useMostRecentLeague();
   const { data: allLeagues } = useLeagues();
+  const { data: allScoringSystems } = useScoringSystems();
 
   // State for user-selected league (US3 - League switching)
   const [selectedLeagueId, setSelectedLeagueId] = useState<string | null>(null);
@@ -61,6 +63,19 @@ export default function DashboardPage() {
     error: leaderboardError
   } = useLeagueLeaderboard(displayLeague?.id);
 
+  // Fetch the scoring system for the display league, or get default scoring system
+  const scoringSystemId = displayLeague?.scoringSystemId;
+  const { data: fetchedScoringSystem, isLoading: scoringSystemLoading } = useScoringSystem(scoringSystemId || '');
+
+  // Use the fetched scoring system, or fallback to default from all scoring systems
+  const displayScoringSystem = useMemo(() => {
+    if (scoringSystemId && fetchedScoringSystem) {
+      return fetchedScoringSystem;
+    }
+    // Find default scoring system
+    return allScoringSystems?.find(s => s.isDefault);
+  }, [scoringSystemId, fetchedScoringSystem, allScoringSystems]);
+
   const matches = useMemo(() => {
     if (!matchesData || !players) {
       return [];
@@ -74,7 +89,7 @@ export default function DashboardPage() {
 
   const isLoading = mostRecentLeagueLoading || status === 'loading';
   const isStatsLoading = playersLoading || eventsLoading || matchesLoading;
-  const error = playersError || eventsError || prizePoolsError || matchesError || leaderboardError;
+  const error = playersError || eventsError || matchesError || leaderboardError;
 
   // Calculate league stats for QuickStats component (FR-002, FR-003)
   const leagueStats = useMemo((): LeagueStats | null => {
@@ -186,7 +201,8 @@ export default function DashboardPage() {
                 <Leaderboard
                   title={formatLeagueOption(displayLeague)}
                   entries={leaderboard || []}
-                  isLoading={leaderboardLoading}
+                  isLoading={leaderboardLoading || scoringSystemLoading}
+                  scoringSystem={displayScoringSystem}
                 />
               ) : (
                 <div className="text-center text-muted-foreground py-8">No leagues available</div>
@@ -194,7 +210,7 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Recent Events */}
+          {/* Recent Events and Scoring System */}
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
