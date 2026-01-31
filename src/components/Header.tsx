@@ -24,7 +24,7 @@ export function Header() {
 
   return (
     <header className="border-b">
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-2">
+      <div className="container mx-auto pb-4 flex items-center justify-between gap-2">
         <Link href="/">
           <div className="flex gap-2 items-center">
             <Image src={'/logo.svg'} alt="The Warren logo" className="w-8 h-8" width={32} height={32} />

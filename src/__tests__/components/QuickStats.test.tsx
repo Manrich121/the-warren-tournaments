@@ -39,17 +39,17 @@ describe('QuickStats', () => {
     it('should render all four stat cards with correct titles', () => {
       render(<QuickStats stats={mockLeagueStats} isLoading={false} />);
 
-      expect(screen.getByText('Total Leagues')).toBeInTheDocument();
-      expect(screen.getByText('Total Events')).toBeInTheDocument();
-      expect(screen.getByText('Total Players')).toBeInTheDocument();
-      expect(screen.getByText('Total Matches')).toBeInTheDocument();
+      expect(screen.getByText('Leagues')).toBeInTheDocument();
+      expect(screen.getByText('Events')).toBeInTheDocument();
+      expect(screen.getByText('Players')).toBeInTheDocument();
+      expect(screen.getByText('Matches')).toBeInTheDocument();
     });
 
     it('should display correct global league count', () => {
       render(<QuickStats stats={mockLeagueStats} isLoading={false} />);
 
       // Total Leagues should show global count
-      const totalLeaguesCard = screen.getByText('Total Leagues').closest('a');
+      const totalLeaguesCard = screen.getByText('Leagues').closest('a');
       expect(totalLeaguesCard).toHaveTextContent('5');
     });
 
@@ -57,31 +57,31 @@ describe('QuickStats', () => {
       render(<QuickStats stats={mockLeagueStats} isLoading={false} />);
 
       // Events count (league-specific)
-      const eventsCard = screen.getByText('Total Events').closest('a');
+      const eventsCard = screen.getByText('Events').closest('a');
       expect(eventsCard).toHaveTextContent('12');
 
       // Players count (league-specific)
-      const playersCard = screen.getByText('Total Players').closest('a');
+      const playersCard = screen.getByText('Players').closest('a');
       expect(playersCard).toHaveTextContent('45');
 
       // Matches count (league-specific)
-      const matchesCard = screen.getByText('Total Matches').closest('a');
+      const matchesCard = screen.getByText('Matches').closest('a');
       expect(matchesCard).toHaveTextContent('120');
     });
 
     it('should render correct links for navigation', () => {
       render(<QuickStats stats={mockLeagueStats} isLoading={false} />);
 
-      const leaguesLink = screen.getByText('Total Leagues').closest('a');
+      const leaguesLink = screen.getByText('Leagues').closest('a');
       expect(leaguesLink).toHaveAttribute('href', '/leagues');
 
-      const eventsLink = screen.getByText('Total Events').closest('a');
+      const eventsLink = screen.getByText('Events').closest('a');
       expect(eventsLink).toHaveAttribute('href', '/events');
 
-      const playersLink = screen.getByText('Total Players').closest('a');
+      const playersLink = screen.getByText('Players').closest('a');
       expect(playersLink).toHaveAttribute('href', '/players');
 
-      const matchesLink = screen.getByText('Total Matches').closest('a');
+      const matchesLink = screen.getByText('Matches').closest('a');
       expect(matchesLink).toHaveAttribute('href', '/matches');
     });
   });
@@ -147,10 +147,10 @@ describe('QuickStats', () => {
 
       // Card titles should be rendered properly
       const titles = [
-        screen.getByText('Total Leagues'),
-        screen.getByText('Total Events'),
-        screen.getByText('Total Players'),
-        screen.getByText('Total Matches')
+        screen.getByText('Leagues'),
+        screen.getByText('Events'),
+        screen.getByText('Players'),
+        screen.getByText('Matches')
       ];
 
       titles.forEach(title => {

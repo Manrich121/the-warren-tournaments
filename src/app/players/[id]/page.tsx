@@ -156,85 +156,81 @@ export default function PlayerStatsPage() {
           </Link>
         </div>
         {/* Basic Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4">
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Total Matches</CardTitle>
+            <CardHeader className="p-3 sm:p-6 pb-1 sm:pb-3">
+              <CardTitle className="text-xs sm:text-sm font-medium">Matches</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalMatches}</div>
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-xl sm:text-2xl font-bold">{stats.totalMatches}</div>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Wins</CardTitle>
+            <CardHeader className="p-3 sm:p-6 pb-1 sm:pb-3">
+              <CardTitle className="text-xs sm:text-sm font-medium">Wins</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.wins}</div>
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-xl sm:text-2xl font-bold">{stats.wins}</div>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Losses</CardTitle>
+            <CardHeader className="p-3 sm:p-6 pb-1 sm:pb-3">
+              <CardTitle className="text-xs sm:text-sm font-medium">Losses</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.losses}</div>
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-xl sm:text-2xl font-bold">{stats.losses}</div>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Draws</CardTitle>
+            <CardHeader className="p-3 sm:p-6 pb-1 sm:pb-3">
+              <CardTitle className="text-xs sm:text-sm font-medium">Draws</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.draws}</div>
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-xl sm:text-2xl font-bold">{stats.draws}</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Win Rate</CardTitle>
+          <Card className="col-span-2 sm:col-span-1">
+            <CardHeader className="p-3 sm:p-6 pb-1 sm:pb-3">
+              <CardTitle className="text-xs sm:text-sm font-medium">Win Rate</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-primary">{stats.winRate.toFixed(1)}%</div>
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-xl sm:text-2xl font-bold text-primary">{stats.winRate.toFixed(1)}%</div>
             </CardContent>
           </Card>
         </div>
 
         {/* Tournament Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Match Points</CardTitle>
+            <CardHeader className="p-3 sm:p-6 pb-1 sm:pb-3">
+              <CardTitle className="text-xs sm:text-sm font-medium">Match Pts</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.matchPoints}</div>
-              <div className="text-xs text-muted-foreground">Tournament scoring</div>
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-xl sm:text-2xl font-bold">{stats.matchPoints}</div>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Game Points</CardTitle>
+            <CardHeader className="p-3 sm:p-6 pb-1 sm:pb-3">
+              <CardTitle className="text-xs sm:text-sm font-medium">Game Pts</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.gamePoints}</div>
-              <div className="text-xs text-muted-foreground">Individual games won</div>
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-xl sm:text-2xl font-bold">{stats.gamePoints}</div>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Match Win %</CardTitle>
+            <CardHeader className="p-3 sm:p-6 pb-1 sm:pb-3">
+              <CardTitle className="text-xs sm:text-sm font-medium">Match Win %</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{(stats.matchWinPercentage * 100).toFixed(1)}%</div>
-              <div className="text-xs text-muted-foreground">Min 33.3%</div>
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-xl sm:text-2xl font-bold">{(stats.matchWinPercentage * 100).toFixed(1)}%</div>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Opponent Match Win %</CardTitle>
+            <CardHeader className="p-3 sm:p-6 pb-1 sm:pb-3">
+              <CardTitle className="text-xs sm:text-sm font-medium">Opp. Win %</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{(stats.opponentMatchWinPercentage * 100).toFixed(1)}%</div>
-              <div className="text-xs text-muted-foreground">Min 33.3%</div>
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-xl sm:text-2xl font-bold">{(stats.opponentMatchWinPercentage * 100).toFixed(1)}%</div>
             </CardContent>
           </Card>
         </div>
@@ -247,69 +243,75 @@ export default function PlayerStatsPage() {
             {playerMatches.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">No matches played yet.</div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Event</TableHead>
-                    <TableHead>Opponent</TableHead>
-                    <TableHead className="text-right">Score</TableHead>
-                    <TableHead className="text-right">Result</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {playerMatches
-                    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                    .map(match => {
-                      const isPlayer1 = match.player1Id === playerId;
-                      const opponentId = isPlayer1 ? match.player2Id : match.player1Id;
-                      // The opponent player data is not available in the match object from the API.
-                      // I need to fetch all players and find the opponent.
-                      // This is inefficient. The API should populate the opponent.
-                      // For now, I will just display the opponent ID.
-                      const opponentName = (players || []).find(p => p.id === opponentId)?.name || 'Unknown Opponent';
-                      const eventName =
-                        (events || []).find(e => e.id === match.eventId)?.name || `Event #${match.eventId}`;
+              <div className="overflow-x-auto">
+                <div className="min-w-[400px]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Event</TableHead>
+                        <TableHead>Opponent</TableHead>
+                        <TableHead className="text-right">Score</TableHead>
+                        <TableHead className="text-right">Result</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {playerMatches
+                        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                        .map(match => {
+                          const isPlayer1 = match.player1Id === playerId;
+                          const opponentId = isPlayer1 ? match.player2Id : match.player1Id;
+                          const opponentName = (players || []).find(p => p.id === opponentId)?.name || 'Unknown';
+                          const eventName =
+                            (events || []).find(e => e.id === match.eventId)?.name || `Event #${match.eventId}`;
 
-                      const playerScore = isPlayer1 ? match.player1Score : match.player2Score;
-                      const opponentScore = isPlayer1 ? match.player2Score : match.player1Score;
+                          const playerScore = isPlayer1 ? match.player1Score : match.player2Score;
+                          const opponentScore = isPlayer1 ? match.player2Score : match.player1Score;
 
-                      let result = 'Draw';
-                      let resultClass = 'text-yellow-600';
+                          let result = 'Draw';
+                          let resultClass = 'text-yellow-600';
 
-                      if (!match.draw) {
-                        if (playerScore > opponentScore) {
-                          result = 'Win';
-                          resultClass = 'text-green-600';
-                        } else {
-                          result = 'Loss';
-                          resultClass = 'text-red-600';
-                        }
-                      }
+                          if (!match.draw) {
+                            if (playerScore > opponentScore) {
+                              result = 'Win';
+                              resultClass = 'text-green-600';
+                            } else {
+                              result = 'Loss';
+                              resultClass = 'text-red-600';
+                            }
+                          }
 
-                      return (
-                        <TableRow key={match.id}>
-                          <TableCell>{new Date(match.createdAt).toLocaleDateString()}</TableCell>
+                          // Use short date format for mobile
+                          const date = new Date(match.createdAt);
+                          const shortDate = `${date.getMonth() + 1}/${date.getDate()}`;
 
-                          <TableCell>
-                            <Link href={`/events/${match.eventId}`} className="text-primary hover:underline">
-                              {eventName}
-                            </Link>
-                          </TableCell>
-                          <TableCell>
-                            <Link href={`/players/${opponentId}`} className="text-primary hover:underline">
-                              {opponentName}
-                            </Link>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {playerScore} - {opponentScore}
-                          </TableCell>
-                          <TableCell className={`text-right font-medium ${resultClass}`}>{result}</TableCell>
-                        </TableRow>
-                      );
-                    })}
-                </TableBody>
-              </Table>
+                          return (
+                            <TableRow key={match.id}>
+                              <TableCell className="whitespace-nowrap">
+                                <span className="sm:hidden">{shortDate}</span>
+                                <span className="hidden sm:inline">{date.toLocaleDateString()}</span>
+                              </TableCell>
+                              <TableCell>
+                                <Link href={`/events/${match.eventId}`} className="text-primary hover:underline">
+                                  {eventName}
+                                </Link>
+                              </TableCell>
+                              <TableCell>
+                                <Link href={`/players/${opponentId}`} className="text-primary hover:underline">
+                                  {opponentName}
+                                </Link>
+                              </TableCell>
+                              <TableCell className="text-right whitespace-nowrap">
+                                {playerScore} - {opponentScore}
+                              </TableCell>
+                              <TableCell className={`text-right font-medium ${resultClass}`}>{result}</TableCell>
+                            </TableRow>
+                          );
+                        })}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>

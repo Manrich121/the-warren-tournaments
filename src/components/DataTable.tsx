@@ -15,12 +15,13 @@ import {
   useReactTable,
   ColumnDef
 } from '@tanstack/react-table';
-import { ChevronUpIcon, ChevronDownIcon, ChevronsUpDown } from 'lucide-react';
+import { ChevronUpIcon, ChevronDownIcon, ChevronsUpDown, ArrowUpDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
+import { Toggle } from '@/components/ui/toggle';
 import { useTableState } from '@/hooks/useTableState';
 import { useDebounce } from '@/hooks/useDebounce';
 import { filterRowsByGlobalSearch, PAGE_SIZES } from '@/lib/table-utils';
@@ -147,6 +148,34 @@ export function DataTable<TData>({
     }
   });
 
+  // Get sortable columns for mobile sort dropdown
+  const sortableColumns = useMemo(() => {
+    return table
+      .getAllColumns()
+      .filter(column => column.getCanSort())
+      .map(column => ({
+        id: column.id,
+        label: typeof column.columnDef.header === 'string' ? column.columnDef.header : column.id
+      }));
+  }, [table]);
+
+  const currentSortColumn = tableState.sorting[0]?.id || '';
+  const currentSortDirection = tableState.sorting[0]?.desc ? 'desc' : 'asc';
+
+  const handleMobileSortChange = (columnId: string) => {
+    if (columnId) {
+      tableState.setSorting([{ id: columnId, desc: currentSortDirection === 'desc' }]);
+    } else {
+      tableState.setSorting([]);
+    }
+  };
+
+  const toggleSortDirection = () => {
+    if (currentSortColumn) {
+      tableState.setSorting([{ id: currentSortColumn, desc: currentSortDirection === 'asc' }]);
+    }
+  };
+
   // Loading state
   if (isLoading) {
     return <GenericSkeletonLoader />;
@@ -155,7 +184,7 @@ export function DataTable<TData>({
   return (
     <div className="space-y-4">
       {/* Search and controls */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         {enableGlobalFilter && (
           <div className="flex-1 max-w-sm">
             <Input
@@ -167,97 +196,129 @@ export function DataTable<TData>({
           </div>
         )}
 
-        {enableGlobalFilter && searchInput && (
-          <Button
-            variant="ghost"
-            onClick={() => {
-              setSearchInput('');
-              tableState.resetFilters();
-            }}
-          >
-            Clear filters
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {enableGlobalFilter && searchInput && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSearchInput('');
+                tableState.resetFilters();
+              }}
+            >
+              Clear filters
+            </Button>
+          )}
+        </div>
       </div>
+
+      {/* Mobile sorting controls */}
+      {enableSorting && sortableColumns.length > 0 && (
+        <div className="flex items-center gap-2 sm:hidden">
+          <Select value={currentSortColumn} onValueChange={handleMobileSortChange}>
+            <SelectTrigger className="flex-1">
+              <SelectValue placeholder="Sort by..." />
+            </SelectTrigger>
+            <SelectContent>
+              {sortableColumns.map(col => (
+                <SelectItem key={col.id} value={col.id}>
+                  {col.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Toggle
+            pressed={currentSortDirection === 'desc'}
+            onPressedChange={toggleSortDirection}
+            aria-label="Toggle sort direction"
+            disabled={!currentSortColumn}
+          >
+            <span className="ml-1 text-xs">{currentSortDirection === 'asc' ? 'Asc' : 'Desc'}</span>
+          </Toggle>
+        </div>
+      )}
 
       {/* Table */}
       <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map(headerGroup => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map(header => {
-                    const canSort = header.column.getCanSort();
+        <CardContent className="p-0 overflow-x-auto">
+          <div className="min-w-[500px]">
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map(headerGroup => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map(header => {
+                      const canSort = header.column.getCanSort();
 
-                    return (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder ? null : (
-                          <div
-                            className={
-                              canSort
-                                ? 'flex items-center space-x-1 cursor-pointer hover:text-foreground select-none'
-                                : ''
-                            }
-                            onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
-                          >
-                            <span className="font-medium">
-                              {flexRender(header.column.columnDef.header, header.getContext())}
-                            </span>
-                            {canSort && (
-                              <span className="ml-2">
-                                {header.column.getIsSorted() === 'asc' ? (
-                                  <ChevronUpIcon className="h-4 w-4" />
-                                ) : header.column.getIsSorted() === 'desc' ? (
-                                  <ChevronDownIcon className="h-4 w-4" />
-                                ) : (
-                                  <ChevronsUpDown className="h-4 w-4 opacity-50" />
-                                )}
+                      return (
+                        <TableHead key={header.id}>
+                          {header.isPlaceholder ? null : (
+                            <div
+                              className={
+                                canSort
+                                  ? 'flex items-center space-x-1 cursor-pointer hover:text-foreground select-none'
+                                  : ''
+                              }
+                              onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
+                            >
+                              <span className="font-medium">
+                                {flexRender(header.column.columnDef.header, header.getContext())}
                               </span>
-                            )}
-                          </div>
-                        )}
-                      </TableHead>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map(row => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && 'selected'}
-                    onClick={onRowClick ? () => onRowClick(row.original) : undefined}
-                    className={onRowClick ? 'cursor-pointer' : ''}
-                  >
-                    {row.getVisibleCells().map(cell => (
-                      <TableCell
-                        key={cell.id}
-                        onClick={cell.column.id === 'actions' ? e => e.stopPropagation() : undefined}
-                      >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
+                              {/* Hide sort icons on mobile - use mobile sort controls instead */}
+                              {canSort && (
+                                <span className="ml-2 hidden sm:inline">
+                                  {header.column.getIsSorted() === 'asc' ? (
+                                    <ChevronUpIcon className="h-4 w-4" />
+                                  ) : header.column.getIsSorted() === 'desc' ? (
+                                    <ChevronDownIcon className="h-4 w-4" />
+                                  ) : (
+                                    <ChevronsUpDown className="h-4 w-4 opacity-50" />
+                                  )}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </TableHead>
+                      );
+                    })}
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={columnsWithActions.length} className="h-24 text-center">
-                    {emptyMessage}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map(row => (
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() && 'selected'}
+                      onClick={onRowClick ? () => onRowClick(row.original) : undefined}
+                      className={onRowClick ? 'cursor-pointer' : ''}
+                    >
+                      {row.getVisibleCells().map(cell => (
+                        <TableCell
+                          key={cell.id}
+                          onClick={cell.column.id === 'actions' ? e => e.stopPropagation() : undefined}
+                        >
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={columnsWithActions.length} className="h-24 text-center">
+                      {emptyMessage}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
       {/* Pagination */}
       {enablePagination && data.length > 0 && (
-        <div className="flex items-center justify-between px-2">
-          <div className="flex-1 text-sm text-muted-foreground">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-2">
+          <div className="text-sm text-muted-foreground text-center sm:text-left">
             {table.getFilteredRowModel().rows.length === 0 ? (
               'No results'
             ) : (
@@ -267,13 +328,13 @@ export function DataTable<TData>({
                   (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
                   table.getFilteredRowModel().rows.length
                 )}{' '}
-                of {table.getFilteredRowModel().rows.length} results
+                of {table.getFilteredRowModel().rows.length}
               </>
             )}
           </div>
-          <div className="flex items-center space-x-6 lg:space-x-8">
-            <div className="flex items-center space-x-2">
-              <p className="text-sm font-medium">Rows per page</p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:space-x-6 lg:space-x-8">
+            <div className="flex items-center justify-center space-x-2">
+              <p className="text-sm font-medium whitespace-nowrap">Per page</p>
               <Select
                 value={`${table.getState().pagination.pageSize}`}
                 onValueChange={value => {
@@ -292,42 +353,44 @@ export function DataTable<TData>({
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-              Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                className="h-8 w-8 p-0"
-                onClick={() => table.setPageIndex(0)}
-                disabled={!table.getCanPreviousPage()}
-              >
-                <span className="sr-only">Go to first page</span>«
-              </Button>
-              <Button
-                variant="outline"
-                className="h-8 w-8 p-0"
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
-              >
-                <span className="sr-only">Go to previous page</span>‹
-              </Button>
-              <Button
-                variant="outline"
-                className="h-8 w-8 p-0"
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
-              >
-                <span className="sr-only">Go to next page</span>›
-              </Button>
-              <Button
-                variant="outline"
-                className="h-8 w-8 p-0"
-                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                disabled={!table.getCanNextPage()}
-              >
-                <span className="sr-only">Go to last page</span>»
-              </Button>
+            <div className="flex items-center justify-center gap-2">
+              <div className="text-sm font-medium whitespace-nowrap">
+                Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+              </div>
+              <div className="flex items-center space-x-1">
+                <Button
+                  variant="outline"
+                  className="h-8 w-8 p-0"
+                  onClick={() => table.setPageIndex(0)}
+                  disabled={!table.getCanPreviousPage()}
+                >
+                  <span className="sr-only">Go to first page</span>«
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-8 w-8 p-0"
+                  onClick={() => table.previousPage()}
+                  disabled={!table.getCanPreviousPage()}
+                >
+                  <span className="sr-only">Go to previous page</span>‹
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-8 w-8 p-0"
+                  onClick={() => table.nextPage()}
+                  disabled={!table.getCanNextPage()}
+                >
+                  <span className="sr-only">Go to next page</span>›
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-8 w-8 p-0"
+                  onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                  disabled={!table.getCanNextPage()}
+                >
+                  <span className="sr-only">Go to last page</span>»
+                </Button>
+              </div>
             </div>
           </div>
         </div>

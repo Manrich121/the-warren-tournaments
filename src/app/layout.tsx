@@ -19,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
             <TooltipProvider>
-              <div className="min-h-screen bg-background">{children}</div>
+              <div className="min-h-screen bg-background p-4">{children}</div>
             </TooltipProvider>
           </ThemeProvider>
         </Providers>
