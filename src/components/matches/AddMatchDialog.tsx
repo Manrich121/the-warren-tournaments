@@ -37,11 +37,13 @@ export function AddMatchDialog({ match, players, events, open, onOpenChange }: A
 
   const eventOptions = useMemo<TypeaheadOption[]>(() => {
     if (!events) return [];
-    return events.map(event => ({
-      label: event.name,
-      value: event.id,
-      data: event
-    }));
+    return events
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .map(event => ({
+        label: event.name,
+        value: event.id,
+        data: event
+      }));
   }, [events]);
 
   const player1Options = useMemo<TypeaheadOption[]>(() => {
