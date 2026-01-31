@@ -1,20 +1,46 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { prisma } from '@/prisma';
 import { auth } from '@/auth';
 
+const matchQuerySchema = z.object({
+  eventId: z.string().optional(),
+  leagueId: z.string().optional()
+});
+
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const eventId = searchParams.get('eventId');
-  const leagueId = searchParams.get('leagueId');
+  try {
+    const { searchParams } = new URL(request.url);
 
-  const matches = await prisma.match.findMany({
-    where: {
-      ...(eventId && { eventId }),
-      ...(leagueId && { event: { leagueId } })
+    const validationResult = matchQuerySchema.safeParse({
+      eventId: searchParams.get('eventId') ?? undefined,
+      leagueId: searchParams.get('leagueId') ?? undefined
+    });
+
+    if (!validationResult.success) {
+      return NextResponse.json(
+        { error: 'Invalid query parameters', details: validationResult.error.issues },
+        { status: 400 }
+      );
     }
-  });
 
-  return NextResponse.json(matches);
+    const { eventId, leagueId } = validationResult.data;
+
+    const matches = await prisma.match.findMany({
+      where: {
+        ...(eventId && { eventId }),
+        ...(leagueId && { event: { leagueId } })
+      }
+    });
+
+    return NextResponse.json(matches);
+  } catch (error) {
+    console.error('Error fetching matches:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch matches' },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(request: Request) {
