@@ -13,6 +13,10 @@ import { useUpdateMatch } from '@/hooks/useUpdateMatch';
 import { useMatches } from '@/hooks/useMatches';
 import { Player, Event, Match } from '@prisma/client';
 
+// Constants
+const FIRST_ROUND = 1;
+const DECIMAL_RADIX = 10;
+
 export interface AddMatchDialogProps {
   match?: Match;
   players?: Player[];
@@ -31,13 +35,15 @@ export function AddMatchDialog({ match, players, events, open, onOpenChange }: A
   const [newMatchP1Score, setNewMatchP1Score] = useState('');
   const [newMatchP2Score, setNewMatchP2Score] = useState('');
   const [newMatchDraw, setNewMatchDraw] = useState(false);
-  const [round, setRound] = useState('1');
+  const [round, setRound] = useState<number>(FIRST_ROUND);
   const [scoreSelection, setScoreSelection] = useState('');
 
   const isEditMode = !!match;
 
   // Fetch matches for the selected event to filter players by round 1 participation
-  const { data: eventMatches } = useMatches(selectedEventId ? { eventId: selectedEventId } : {});
+  const { data: eventMatches, isLoading: isLoadingMatches } = useMatches(
+    selectedEventId ? { eventId: selectedEventId } : {}
+  );
 
   const eventOptions = useMemo<TypeaheadOption[]>(() => {
     if (!events) return [];
@@ -54,7 +60,7 @@ export function AddMatchDialog({ match, players, events, open, onOpenChange }: A
   const round1PlayerIds = useMemo(() => {
     if (!eventMatches || !selectedEventId) return new Set<string>();
 
-    const round1Matches = eventMatches.filter(m => m.eventId === selectedEventId && m.round === 1);
+    const round1Matches = eventMatches.filter(m => m.round === FIRST_ROUND);
     const playerIds = new Set<string>();
 
     round1Matches.forEach(match => {
@@ -65,56 +71,49 @@ export function AddMatchDialog({ match, players, events, open, onOpenChange }: A
     return playerIds;
   }, [eventMatches, selectedEventId]);
 
-  const player1Options = useMemo<TypeaheadOption[]>(() => {
-    if (!players) return [];
+  /**
+   * Helper function to filter and format player options
+   * Excludes the specified player and filters by round 1 participation for rounds > 1
+   */
+  const getFilteredPlayerOptions = useCallback(
+    (excludePlayerId: string | null): TypeaheadOption[] => {
+      if (!players) return [];
 
-    let filteredPlayers = players;
+      let filteredPlayers = players;
 
-    // Filter out player 2 if selected
-    if (newMatchPlayer2) {
-      filteredPlayers = filteredPlayers.filter(player => player.id !== newMatchPlayer2);
-    }
+      // Filter out the other player if selected
+      if (excludePlayerId) {
+        filteredPlayers = filteredPlayers.filter(player => player.id !== excludePlayerId);
+      }
 
-    // For rounds > 1, only show players who participated in round 1
-    const currentRound = parseInt(round) || 1;
-    if (currentRound > 1 && round1PlayerIds.size > 0) {
-      filteredPlayers = filteredPlayers.filter(player => round1PlayerIds.has(player.id));
-    }
+      // For rounds > 1, only show players who participated in round 1
+      if (round > FIRST_ROUND && round1PlayerIds.size > 0) {
+        filteredPlayers = filteredPlayers.filter(player => round1PlayerIds.has(player.id));
+      }
 
-    return filteredPlayers.map(player => ({
-      label: player.name,
-      value: player.id,
-      data: player
-    }));
-  }, [players, newMatchPlayer2, round, round1PlayerIds]);
+      return filteredPlayers.map(player => ({
+        label: player.name,
+        value: player.id,
+        data: player
+      }));
+    },
+    [players, round, round1PlayerIds]
+  );
 
-  const player2Options = useMemo<TypeaheadOption[]>(() => {
-    if (!players) return [];
+  const player1Options = useMemo<TypeaheadOption[]>(
+    () => getFilteredPlayerOptions(newMatchPlayer2),
+    [getFilteredPlayerOptions, newMatchPlayer2]
+  );
 
-    let filteredPlayers = players;
-
-    // Filter out player 1 if selected
-    if (newMatchPlayer1) {
-      filteredPlayers = filteredPlayers.filter(player => player.id !== newMatchPlayer1);
-    }
-
-    // For rounds > 1, only show players who participated in round 1
-    const currentRound = parseInt(round) || 1;
-    if (currentRound > 1 && round1PlayerIds.size > 0) {
-      filteredPlayers = filteredPlayers.filter(player => round1PlayerIds.has(player.id));
-    }
-
-    return filteredPlayers.map(player => ({
-      label: player.name,
-      value: player.id,
-      data: player
-    }));
-  }, [players, newMatchPlayer1, round, round1PlayerIds]);
+  const player2Options = useMemo<TypeaheadOption[]>(
+    () => getFilteredPlayerOptions(newMatchPlayer1),
+    [getFilteredPlayerOptions, newMatchPlayer1]
+  );
 
   useEffect(() => {
     const scoreToParse = scoreSelection;
     if (scoreToParse) {
-      const [p1, p2] = scoreToParse.split('-').map(s => parseInt(s, 10));
+      const [p1, p2] = scoreToParse.split('-').map(s => parseInt(s, DECIMAL_RADIX));
       setNewMatchP1Score(String(p1));
       setNewMatchP2Score(String(p2));
       setNewMatchDraw(p1 === p2);
@@ -127,8 +126,7 @@ export function AddMatchDialog({ match, players, events, open, onOpenChange }: A
 
   // Clear player selections if they're no longer valid for the current round
   useEffect(() => {
-    const currentRound = parseInt(round) || 1;
-    if (currentRound > 1 && round1PlayerIds.size > 0) {
+    if (round > FIRST_ROUND && round1PlayerIds.size > 0) {
       if (newMatchPlayer1 && !round1PlayerIds.has(newMatchPlayer1)) {
         setNewMatchPlayer1(null);
       }
@@ -145,7 +143,7 @@ export function AddMatchDialog({ match, players, events, open, onOpenChange }: A
     setNewMatchP1Score('');
     setNewMatchP2Score('');
     setNewMatchDraw(false);
-    setRound('1');
+    setRound(FIRST_ROUND);
     setScoreSelection('');
   }, []);
 
@@ -158,7 +156,7 @@ export function AddMatchDialog({ match, players, events, open, onOpenChange }: A
         setNewMatchP1Score(String(match.player1Score));
         setNewMatchP2Score(String(match.player2Score));
         setNewMatchDraw(match.draw);
-        setRound(String(match.round));
+        setRound(match.round);
         setScoreSelection(`${match.player1Score}-${match.player2Score}`);
       } else {
         resetForm();
@@ -181,10 +179,10 @@ export function AddMatchDialog({ match, players, events, open, onOpenChange }: A
       eventId: selectedEventId,
       player1Id: newMatchPlayer1,
       player2Id: newMatchPlayer2,
-      player1Score: parseInt(newMatchP1Score) || 0,
-      player2Score: parseInt(newMatchP2Score) || 0,
+      player1Score: parseInt(newMatchP1Score, DECIMAL_RADIX) || 0,
+      player2Score: parseInt(newMatchP2Score, DECIMAL_RADIX) || 0,
       draw: newMatchDraw,
-      round: parseInt(round)
+      round
     };
 
     if (isEditMode && match) {
@@ -227,7 +225,13 @@ export function AddMatchDialog({ match, players, events, open, onOpenChange }: A
             </div>
             <div className="space-y-2">
               <Label>Round</Label>
-              <Input type="number" value={round} onChange={e => setRound(e.target.value)} placeholder="1" min="1" />
+              <Input
+                type="number"
+                value={round}
+                onChange={e => setRound(parseInt(e.target.value, DECIMAL_RADIX) || FIRST_ROUND)}
+                placeholder="1"
+                min="1"
+              />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -237,8 +241,9 @@ export function AddMatchDialog({ match, players, events, open, onOpenChange }: A
                 value={newMatchPlayer1}
                 onSelect={value => setNewMatchPlayer1(value as string)}
                 label="Player 1"
-                placeholder="Select Player 1"
+                placeholder={isLoadingMatches ? "Loading players..." : "Select Player 1"}
                 searchPlaceholder="Search players..."
+                disabled={isLoadingMatches}
                 required
               />
             </div>
@@ -248,8 +253,9 @@ export function AddMatchDialog({ match, players, events, open, onOpenChange }: A
                 value={newMatchPlayer2}
                 onSelect={value => setNewMatchPlayer2(value as string)}
                 label="Player 2"
-                placeholder="Select Player 2"
+                placeholder={isLoadingMatches ? "Loading players..." : "Select Player 2"}
                 searchPlaceholder="Search players..."
+                disabled={isLoadingMatches}
                 required
               />
             </div>
