@@ -239,35 +239,33 @@ export default function EventPage({ params }: EventPageProps) {
                   <div className="overflow-x-auto">
                     <div className="min-w-[400px]">
                       <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Round</TableHead>
-                        <TableHead>Player 1</TableHead>
-                        <TableHead>Player 2</TableHead>
-                        <TableHead>Score</TableHead>
-                        <TableHead>Result</TableHead>
-                        {isAdmin && <TableHead>Actions</TableHead>}
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {sortedEventMatches.map(match => (
-                        <TableRow key={match.id}>
-                          <TableCell>{match.round}</TableCell>
-                          <TableCell>
-                            <Link href={`/players/${match.player1Id}`} className="text-primary hover:underline">
-                              {match.player1Name}
-                            </Link>
-                          </TableCell>
-                          <TableCell>
-                            <Link href={`/players/${match.player2Id}`} className="text-primary hover:underline">
-                              {match.player2Name}
-                            </Link>
-                          </TableCell>
-                          <TableCellclassName="whitespace-nowrap">
-                            {match.player1Score} - {match.player2Score}
-                          </TableCell>
-                          <TableCell>{match.result}</TableCell>
-                          {isAdmin && (
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Round</TableHead>
+                            <TableHead>Player 1</TableHead>
+                            <TableHead>Player 2</TableHead>
+                            <TableHead>Score</TableHead>
+                            <TableHead>Result</TableHead>
+                          {isAdmin && <TableHead>Actions</TableHead>}</TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {sortedEventMatches.map(match => (
+                            <TableRow key={match.id}>
+                              <TableCell>{match.round}</TableCell>
+                              <TableCell>
+                                <Link href={`/players/${match.player1Id}`} className="text-primary hover:underline">
+                                  {match.player1Name}
+                                </Link>
+                              </TableCell>
+                              <TableCell>
+                                <Link href={`/players/${match.player2Id}`} className="text-primary hover:underline">
+                                  {match.player2Name}
+                                </Link>
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                {match.player1Score} - {match.player2Score}
+                              </TableCell>
+                              <TableCell>{match.result}</TableCell>{isAdmin && (
                             <TableCell>
                               <TableRowActions
                                 entityName="match"
