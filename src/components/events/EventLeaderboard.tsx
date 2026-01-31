@@ -34,10 +34,10 @@ const EventLeaderboard = ({ title, players }: EventLeaderboardProps) => {
               <TableRow key={player.playerId}>
                 <TableCell>{player.playerName}</TableCell>
                 <TableCell>{player.matchPoints}</TableCell>
-                <TableCell>{player.matchWinPercentage.toFixed(2)}%</TableCell>
-                <TableCell>{player.oppMatchWinPercentage.toFixed(2)}%</TableCell>
-                <TableCell>{player.gameWinPercentage.toFixed(2)}%</TableCell>
-                <TableCell>{player.oppGameWinPercentage.toFixed(2)}%</TableCell>
+                <TableCell>{(player.matchWinPercentage * 100).toFixed(1)}%</TableCell>
+                <TableCell>{(player.oppMatchWinPercentage * 100).toFixed(1)}%</TableCell>
+                <TableCell>{(player.gameWinPercentage * 100).toFixed(1)}%</TableCell>
+                <TableCell>{(player.oppGameWinPercentage * 100).toFixed(1)}%</TableCell>
               </TableRow>
             ))}
           </TableBody>
