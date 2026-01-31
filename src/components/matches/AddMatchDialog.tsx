@@ -10,6 +10,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { TypeaheadDropdown, TypeaheadOption } from '@/components/TypeaheadDropdown';
 import { useAddMatch } from '@/hooks/useAddMatch';
 import { useUpdateMatch } from '@/hooks/useUpdateMatch';
+import { useMatches } from '@/hooks/useMatches';
 import { Player, Event, Match } from '@prisma/client';
 
 export interface AddMatchDialogProps {
@@ -26,14 +27,17 @@ export function AddMatchDialog({ match, players, events, open, onOpenChange }: A
 
   const [newMatchPlayer1, setNewMatchPlayer1] = useState<string | null>(null);
   const [newMatchPlayer2, setNewMatchPlayer2] = useState<string | null>(null);
-  const [newMatchEvent, setNewMatchEvent] = useState('');
+  const [selectedEventId, setSelectedEventId] = useState('');
   const [newMatchP1Score, setNewMatchP1Score] = useState('');
   const [newMatchP2Score, setNewMatchP2Score] = useState('');
   const [newMatchDraw, setNewMatchDraw] = useState(false);
-  const [round, setRound] = useState('');
+  const [round, setRound] = useState('1');
   const [scoreSelection, setScoreSelection] = useState('');
 
   const isEditMode = !!match;
+
+  // Fetch matches for the selected event to filter players by round 1 participation
+  const { data: eventMatches } = useMatches(selectedEventId ? { eventId: selectedEventId } : {});
 
   const eventOptions = useMemo<TypeaheadOption[]>(() => {
     if (!events) return [];
@@ -46,25 +50,66 @@ export function AddMatchDialog({ match, players, events, open, onOpenChange }: A
       }));
   }, [events]);
 
+  // Get unique player IDs that participated in round 1 of the selected event
+  const round1PlayerIds = useMemo(() => {
+    if (!eventMatches || !selectedEventId) return new Set<string>();
+
+    const round1Matches = eventMatches.filter(m => m.eventId === selectedEventId && m.round === 1);
+    const playerIds = new Set<string>();
+
+    round1Matches.forEach(match => {
+      playerIds.add(match.player1Id);
+      playerIds.add(match.player2Id);
+    });
+
+    return playerIds;
+  }, [eventMatches, selectedEventId]);
+
   const player1Options = useMemo<TypeaheadOption[]>(() => {
     if (!players) return [];
-    const filteredPlayers = !newMatchPlayer2 ? players : players.filter(player => player.id !== newMatchPlayer2);
+
+    let filteredPlayers = players;
+
+    // Filter out player 2 if selected
+    if (newMatchPlayer2) {
+      filteredPlayers = filteredPlayers.filter(player => player.id !== newMatchPlayer2);
+    }
+
+    // For rounds > 1, only show players who participated in round 1
+    const currentRound = parseInt(round) || 1;
+    if (currentRound > 1 && round1PlayerIds.size > 0) {
+      filteredPlayers = filteredPlayers.filter(player => round1PlayerIds.has(player.id));
+    }
+
     return filteredPlayers.map(player => ({
       label: player.name,
       value: player.id,
       data: player
     }));
-  }, [players, newMatchPlayer2]);
+  }, [players, newMatchPlayer2, round, round1PlayerIds]);
 
   const player2Options = useMemo<TypeaheadOption[]>(() => {
     if (!players) return [];
-    const filteredPlayers = !newMatchPlayer1 ? players : players.filter(player => player.id !== newMatchPlayer1);
+
+    let filteredPlayers = players;
+
+    // Filter out player 1 if selected
+    if (newMatchPlayer1) {
+      filteredPlayers = filteredPlayers.filter(player => player.id !== newMatchPlayer1);
+    }
+
+    // For rounds > 1, only show players who participated in round 1
+    const currentRound = parseInt(round) || 1;
+    if (currentRound > 1 && round1PlayerIds.size > 0) {
+      filteredPlayers = filteredPlayers.filter(player => round1PlayerIds.has(player.id));
+    }
+
     return filteredPlayers.map(player => ({
       label: player.name,
       value: player.id,
       data: player
     }));
-  }, [players, newMatchPlayer1]);
+  }, [players, newMatchPlayer1, round, round1PlayerIds]);
 
   useEffect(() => {
     const scoreToParse = scoreSelection;
@@ -80,14 +125,27 @@ export function AddMatchDialog({ match, players, events, open, onOpenChange }: A
     }
   }, [scoreSelection]);
 
+  // Clear player selections if they're no longer valid for the current round
+  useEffect(() => {
+    const currentRound = parseInt(round) || 1;
+    if (currentRound > 1 && round1PlayerIds.size > 0) {
+      if (newMatchPlayer1 && !round1PlayerIds.has(newMatchPlayer1)) {
+        setNewMatchPlayer1(null);
+      }
+      if (newMatchPlayer2 && !round1PlayerIds.has(newMatchPlayer2)) {
+        setNewMatchPlayer2(null);
+      }
+    }
+  }, [round, round1PlayerIds, newMatchPlayer1, newMatchPlayer2]);
+
   const resetForm = useCallback(() => {
     setNewMatchPlayer1(null);
     setNewMatchPlayer2(null);
-    setNewMatchEvent('');
+    setSelectedEventId('');
     setNewMatchP1Score('');
     setNewMatchP2Score('');
     setNewMatchDraw(false);
-    setRound('');
+    setRound('1');
     setScoreSelection('');
   }, []);
 
@@ -96,7 +154,7 @@ export function AddMatchDialog({ match, players, events, open, onOpenChange }: A
       if (isEditMode && match) {
         setNewMatchPlayer1(match.player1Id);
         setNewMatchPlayer2(match.player2Id);
-        setNewMatchEvent(match.eventId);
+        setSelectedEventId(match.eventId);
         setNewMatchP1Score(String(match.player1Score));
         setNewMatchP2Score(String(match.player2Score));
         setNewMatchDraw(match.draw);
@@ -104,13 +162,13 @@ export function AddMatchDialog({ match, players, events, open, onOpenChange }: A
         setScoreSelection(`${match.player1Score}-${match.player2Score}`);
       } else {
         resetForm();
-        setNewMatchEvent(events?.[0]?.id || '');
+        setSelectedEventId(events?.[0]?.id || '');
       }
     }
   }, [open, isEditMode, match, events, resetForm]);
 
   const handleSave = () => {
-    if (!newMatchPlayer1 || !newMatchPlayer2 || !newMatchEvent || !round) return;
+    if (!newMatchPlayer1 || !newMatchPlayer2 || !selectedEventId || !round) return;
 
     const mutationOptions = {
       onSuccess: () => {
@@ -120,7 +178,7 @@ export function AddMatchDialog({ match, players, events, open, onOpenChange }: A
     };
 
     const matchData = {
-      eventId: newMatchEvent,
+      eventId: selectedEventId,
       player1Id: newMatchPlayer1,
       player2Id: newMatchPlayer2,
       player1Score: parseInt(newMatchP1Score) || 0,
@@ -155,12 +213,12 @@ export function AddMatchDialog({ match, players, events, open, onOpenChange }: A
           }}
           className="space-y-4 py-4"
         >
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-[1fr_auto] gap-4">
             <div className="space-y-2">
               <TypeaheadDropdown
                 options={eventOptions}
-                value={newMatchEvent}
-                onSelect={value => setNewMatchEvent(value as string)}
+                value={selectedEventId}
+                onSelect={value => setSelectedEventId(value as string)}
                 label="Event"
                 placeholder="Select Event"
                 searchPlaceholder="Search events..."

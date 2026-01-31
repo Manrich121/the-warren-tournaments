@@ -7,7 +7,8 @@ export const keys = {
   events: () => ['events'] as const,
   event: (id: string | undefined) => [...keys.events(), id] as const,
   eventLeaderboard: (id: string) => [...keys.event(id), 'leaderboard'] as const,
-  matches: () => ['matches'] as const,
+  matches: (options?: { eventId?: string; leagueId?: string }) =>
+    options ? ['matches', options] as const : ['matches'] as const,
   match: (id: string | undefined) => [...keys.matches(), id] as const,
   players: () => ['players'] as const,
   player: (id: string | undefined) => [...keys.players(), id] as const,

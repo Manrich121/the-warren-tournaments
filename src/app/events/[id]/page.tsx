@@ -36,17 +36,15 @@ export default function EventPage({ params }: EventPageProps) {
   const { status } = useSession();
   const isAdmin = status === 'authenticated';
 
-  const { data: eventsData, isLoading: eventsLoading, error: eventsError } = useEvents();
+  const { data: events, isLoading: eventsLoading, error: eventsError } = useEvents();
   const { data: leaguesData, isLoading: leaguesLoading, error: leaguesError } = useLeagues();
   const { data: playersData, isLoading: playersLoading, error: playersError } = usePlayers();
-  const { data: matchesData, isLoading: matchesLoading, error: matchesError } = useMatches();
+  const { data: eventMatches, isLoading: matchesLoading, error: matchesError } = useMatches({ eventId });
   const { data: leaderboard, isLoading: leaderboardLoading, error: leaderboardError } = useEventLeaderboard(eventId);
   const deleteMatchMutation = useDeleteMatch();
 
-  const events = useMemo(() => eventsData || [], [eventsData]);
   const leagues = useMemo(() => leaguesData || [], [leaguesData]);
   const players = useMemo(() => playersData || [], [playersData]);
-  const eventMatches = useMemo(() => (matchesData || []).filter(m => m.eventId === eventId), [matchesData, eventId]);
 
   const [addMatchOpen, setAddMatchOpen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<Match | undefined>(undefined);

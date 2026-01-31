@@ -2,8 +2,18 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/prisma';
 import { auth } from '@/auth';
 
-export async function GET() {
-  const matches = await prisma.match.findMany();
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const eventId = searchParams.get('eventId');
+  const leagueId = searchParams.get('leagueId');
+
+  const matches = await prisma.match.findMany({
+    where: {
+      ...(eventId && { eventId }),
+      ...(leagueId && { event: { leagueId } })
+    }
+  });
+
   return NextResponse.json(matches);
 }
 
