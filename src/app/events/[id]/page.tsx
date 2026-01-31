@@ -12,8 +12,10 @@ import { useLeagues } from '@/hooks/useLeagues';
 import { useEvents } from '@/hooks/useEvents';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useMatches } from '@/hooks/useMatches';
+import { useDeleteMatch } from '@/hooks/useDeleteMatch';
 import type { Event, Match } from '@prisma/client';
 import { AddMatchDialog } from '@/components/matches/AddMatchDialog';
+import { TableRowActions } from '@/components/TableRowActions';
 import { genericSort } from '@/lib/utils';
 import { Header } from '@/components/Header';
 import { Nav } from '@/components/Nav';
@@ -39,6 +41,7 @@ export default function EventPage({ params }: EventPageProps) {
   const { data: playersData, isLoading: playersLoading, error: playersError } = usePlayers();
   const { data: matchesData, isLoading: matchesLoading, error: matchesError } = useMatches();
   const { data: leaderboard, isLoading: leaderboardLoading, error: leaderboardError } = useEventLeaderboard(eventId);
+  const deleteMatchMutation = useDeleteMatch();
 
   const events = useMemo(() => eventsData || [], [eventsData]);
   const leagues = useMemo(() => leaguesData || [], [leaguesData]);
@@ -46,6 +49,7 @@ export default function EventPage({ params }: EventPageProps) {
   const eventMatches = useMemo(() => (matchesData || []).filter(m => m.eventId === eventId), [matchesData, eventId]);
 
   const [addMatchOpen, setAddMatchOpen] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState<Match | undefined>(undefined);
 
   // Sorting state
   const [matchesSortField, setMatchesSortField] = useState<keyof MatchWithPlayers>('round');
@@ -157,12 +161,14 @@ export default function EventPage({ params }: EventPageProps) {
             {isAdmin && (
               <>
                 <AddMatchDialog
+                  match={selectedMatch}
                   players={players}
                   events={[event]}
                   open={addMatchOpen}
                   onOpenChange={open => {
                     if (!open) {
                       setAddMatchOpen(false);
+                      setSelectedMatch(undefined);
                     }
                   }}
                 />
@@ -240,6 +246,7 @@ export default function EventPage({ params }: EventPageProps) {
                         <TableHead>Player 2</TableHead>
                         <TableHead>Score</TableHead>
                         <TableHead>Result</TableHead>
+                        {isAdmin && <TableHead>Actions</TableHead>}
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -260,6 +267,21 @@ export default function EventPage({ params }: EventPageProps) {
                             {match.player1Score} - {match.player2Score}
                           </TableCell>
                           <TableCell>{match.result}</TableCell>
+                          {isAdmin && (
+                            <TableCell>
+                              <TableRowActions
+                                entityName="match"
+                                showEdit={true}
+                                onEdit={() => {
+                                  setSelectedMatch(match);
+                                  setAddMatchOpen(true);
+                                }}
+                                onDelete={() => deleteMatchMutation.mutate(match.id)}
+                                deleteWarning="This will permanently delete the match."
+                                isDeleting={deleteMatchMutation.isPending}
+                              />
+                            </TableCell>
+                          )}
                         </TableRow>
                       ))}
                     </TableBody>
