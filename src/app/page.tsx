@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useEvents } from '@/hooks/useEvents';
-import { usePrizePools } from '@/hooks/usePrizePools';
 import { useMatches } from '@/hooks/useMatches';
 import type { Player } from '@prisma/client';
 import { AddLeagueDialog } from '@/components/leagues/AddLeagueDialog';
@@ -87,7 +86,7 @@ export default function DashboardPage() {
     }));
   }, [matchesData, players]);
 
-  const isLoading = mostRecentLeagueLoading || status === 'loading';
+  const isLoading = status === 'loading';
   const isStatsLoading = playersLoading || eventsLoading || matchesLoading;
   const error = playersError || eventsError || matchesError || leaderboardError;
 

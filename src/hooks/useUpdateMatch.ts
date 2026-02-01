@@ -39,8 +39,11 @@ export function useUpdateMatch() {
 
       return response.json();
     },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: keys.matches() });
+    onSuccess: async (_, variables) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: keys.matches() }),
+        queryClient.invalidateQueries({ queryKey: keys.matches({ eventId: variables.eventId }) })
+      ]);
     }
   });
 }
