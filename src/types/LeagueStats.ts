@@ -1,8 +1,6 @@
 export interface LeagueStats {
   /** Total number of leagues across the entire application (global) */
   totalLeagues: number;
-  /** Number of active leagues (global) */
-  activeLeagues: number;
   /** Number of events (global) */
   eventsCount: number;
   /** Number of unique players (global) */

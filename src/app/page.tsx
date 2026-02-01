@@ -9,7 +9,6 @@ import { ArrowRight } from 'lucide-react';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useEvents } from '@/hooks/useEvents';
 import { useMatches } from '@/hooks/useMatches';
-import type { Player } from '@prisma/client';
 import { AddLeagueDialog } from '@/components/leagues/AddLeagueDialog';
 import { AddEventDialog } from '@/components/events/AddEventDialog';
 import { Header } from '@/components/Header';
@@ -22,7 +21,6 @@ import { QuickStats } from '@/components/QuickStats';
 import { LeagueSelector } from '@/components/leagues/LeagueSelector';
 import { genericSort } from '@/lib/utils';
 import { formatLeagueOption } from '@/lib/league-utils';
-import { LeagueStats } from '@/types/LeagueStats';
 import { useScoringSystem } from '@/hooks/scoring-systems/useScoringSystem';
 import { useScoringSystems } from '@/hooks/scoring-systems/useScoringSystems';
 
@@ -32,8 +30,8 @@ export default function DashboardPage() {
 
   const { data: players, isLoading: playersLoading, error: playersError } = usePlayers();
   const { data: events, isLoading: eventsLoading, error: eventsError } = useEvents();
-  const { data: matchesData, isLoading: matchesLoading, error: matchesError } = useMatches();
-  const { data: mostRecentLeague, isLoading: mostRecentLeagueLoading } = useMostRecentLeague();
+  const { data: matches, isLoading: matchesLoading, error: matchesError } = useMatches();
+  const { data: mostRecentLeague } = useMostRecentLeague();
   const { data: allLeagues } = useLeagues();
   const { data: allScoringSystems } = useScoringSystems();
 
@@ -75,50 +73,17 @@ export default function DashboardPage() {
     return allScoringSystems?.find(s => s.isDefault);
   }, [scoringSystemId, fetchedScoringSystem, allScoringSystems]);
 
-  const matches = useMemo(() => {
-    if (!matchesData || !players) {
-      return [];
-    }
-    return matchesData.map(match => ({
-      ...match,
-      player1: players.find(p => p.id === match.player1Id),
-      player2: players.find(p => p.id === match.player2Id)
-    }));
-  }, [matchesData, players]);
-
   const isLoading = status === 'loading';
   const isStatsLoading = playersLoading || eventsLoading || matchesLoading;
   const error = playersError || eventsError || matchesError || leaderboardError;
 
-  // Calculate league stats for QuickStats component (FR-002, FR-003)
-  const leagueStats = useMemo((): LeagueStats | null => {
-    if (!displayLeague || !events || !matches || !allLeagues) {
-      return null;
-    }
-
-    // Get unique players
-    const uniquePlayerIds = new Set<string>();
-    matches.forEach(match => {
-      uniquePlayerIds.add(match.player1Id);
-      uniquePlayerIds.add(match.player2Id);
-    });
-
-    // Count active leagues (for "Total Leagues" card subtitle)
-    const activeLeaguesCount = allLeagues.filter(league => {
-      const now = new Date();
-      const startDate = new Date(league.startDate);
-      const endDate = new Date(league.endDate);
-      return startDate <= now && endDate >= now;
-    }).length;
-
-    return {
-      totalLeagues: allLeagues.length, // Global count (all leagues)
-      activeLeagues: activeLeaguesCount,
-      eventsCount: events.length,
-      playersCount: uniquePlayerIds.size,
-      matchesCount: matches.length
-    };
-  }, [displayLeague, events, matches, allLeagues]);
+  // League stats for QuickStats component
+  const leagueStats = {
+    totalLeagues: allLeagues.length,
+    eventsCount: events.length,
+    playersCount: players.length,
+    matchesCount: matches.length
+  };
 
   const sortedEvents = useMemo(() => genericSort(events, 'date', 'desc').slice(0, 3), [events]);
 
@@ -218,14 +183,14 @@ export default function DashboardPage() {
                 {sortedEvents.map(event => {
                   const eventMatches = matches.filter(m => m.eventId === event.id);
                   const eventPlayers = eventMatches.reduce((acc, match) => {
-                    if (match.player1 && !acc.find(p => p?.id === match.player1?.id)) {
-                      acc.push(match.player1);
+                    if (match.player1Id && !acc.find(p => p === match.player1Id)) {
+                      acc.push(match.player1Id);
                     }
-                    if (match.player2 && !acc.find(p => p?.id === match.player2?.id)) {
-                      acc.push(match.player2);
+                    if (match.player2Id && !acc.find(p => p === match.player2Id)) {
+                      acc.push(match.player2Id);
                     }
                     return acc;
-                  }, [] as Player[]);
+                  }, [] as string[]);
 
                   return (
                     <Link key={event.id} href={`/events/${event.id}`}>
