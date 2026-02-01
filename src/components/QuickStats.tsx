@@ -14,16 +14,15 @@ interface QuickStatsProps {
 export function QuickStats({ stats, isLoading = false }: QuickStatsProps) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         {[...Array(4)].map((_, index) => (
           <Card key={index}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-4 w-4 rounded-full" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-6 pb-1 sm:pb-2">
+              <Skeleton className="h-3 sm:h-4 w-16 sm:w-24" />
+              <Skeleton className="h-3 sm:h-4 w-3 sm:w-4 rounded-full" />
             </CardHeader>
-            <CardContent>
-              <Skeleton className="h-8 w-16 mb-2" />
-              <Skeleton className="h-3 w-32" />
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <Skeleton className="h-6 sm:h-8 w-12 sm:w-16 mb-2" />
             </CardContent>
           </Card>
         ))}
@@ -36,49 +35,51 @@ export function QuickStats({ stats, isLoading = false }: QuickStatsProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
       <Link href="/leagues">
         <Card className="hover:shadow-md transition-shadow hover:bg-accent">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Leagues</CardTitle>
-            <Trophy className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-6 pb-1 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">Leagues</CardTitle>
+            <Trophy className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent className={'text-2xl font-bold'}>{stats.totalLeagues}</CardContent>
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-xl sm:text-2xl font-bold">{stats.totalLeagues}</div>
+          </CardContent>
         </Card>
       </Link>
 
       <Link href="/events">
         <Card className="hover:shadow-md transition-shadow hover:bg-accent">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Events</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-6 pb-1 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">Events</CardTitle>
+            <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.eventsCount}</div>
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-xl sm:text-2xl font-bold">{stats.eventsCount}</div>
           </CardContent>
         </Card>
       </Link>
 
       <Link href="/players">
         <Card className="hover:shadow-md transition-shadow hover:bg-accent">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Players</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-6 pb-1 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">Players</CardTitle>
+            <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.playersCount}</div>
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-xl sm:text-2xl font-bold">{stats.playersCount}</div>
           </CardContent>
         </Card>
       </Link>
 
       <Link href="/matches">
         <Card className="hover:shadow-md transition-shadow hover:bg-accent">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Matches</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-6 pb-1 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">Matches</CardTitle>
+            <Target className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.matchesCount}</div>
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-xl sm:text-2xl font-bold">{stats.matchesCount}</div>
           </CardContent>
         </Card>
       </Link>

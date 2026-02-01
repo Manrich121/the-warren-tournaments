@@ -142,7 +142,7 @@ export default function EventPage({ params }: EventPageProps) {
               </Button>
             </Link>
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-center justify-between">
             <div className="flex items-center space-x-4">
               <div>
                 <div className="flex items-center space-x-3">
@@ -176,46 +176,46 @@ export default function EventPage({ params }: EventPageProps) {
           </div>
 
           {/* Event Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Players</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-6 pb-1 sm:pb-2">
+                <CardTitle className="text-xs sm:text-sm font-medium">Players</CardTitle>
+                <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{leaderboard?.length || 0}</div>
+              <CardContent className="p-3 sm:p-6 pt-0">
+                <div className="text-xl sm:text-2xl font-bold">{leaderboard?.length || 0}</div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Matches</CardTitle>
-                <Target className="h-4 w-4 text-muted-foreground" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-6 pb-1 sm:pb-2">
+                <CardTitle className="text-xs sm:text-sm font-medium">Matches</CardTitle>
+                <Target className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{eventMatches.length}</div>
+              <CardContent className="p-3 sm:p-6 pt-0">
+                <div className="text-xl sm:text-2xl font-bold">{eventMatches.length}</div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Rounds</CardTitle>
-                <Trophy className="h-4 w-4 text-muted-foreground" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-6 pb-1 sm:pb-2">
+                <CardTitle className="text-xs sm:text-sm font-medium">Rounds</CardTitle>
+                <Trophy className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
+              <CardContent className="p-3 sm:p-6 pt-0">
+                <div className="text-xl sm:text-2xl font-bold">
                   {eventMatches.length > 0 ? Math.max(...eventMatches.map(m => m.round)) : 0}
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Event Date</CardTitle>
-                <Calendar className="h-4 w-4 text-muted-foreground" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-6 pb-1 sm:pb-2">
+                <CardTitle className="text-xs sm:text-sm font-medium">Date</CardTitle>
+                <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
               </CardHeader>
-              <CardContent>
-                <div className="text-sm font-medium">{formatDate(event.date)}</div>
+              <CardContent className="p-3 sm:p-6 pt-0">
+                <div className="text-xs sm:text-sm font-medium">{formatDate(event.date)}</div>
               </CardContent>
             </Card>
           </div>
@@ -236,36 +236,36 @@ export default function EventPage({ params }: EventPageProps) {
               </CardHeader>
               <CardContent>
                 {sortedEventMatches.length > 0 ? (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Round</TableHead>
-                        <TableHead>Player 1</TableHead>
-                        <TableHead>Player 2</TableHead>
-                        <TableHead>Score</TableHead>
-                        <TableHead>Result</TableHead>
-                        {isAdmin && <TableHead>Actions</TableHead>}
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {sortedEventMatches.map(match => (
-                        <TableRow key={match.id}>
-                          <TableCell>{match.round}</TableCell>
-                          <TableCell>
-                            <Link href={`/players/${match.player1Id}`} className="text-primary hover:underline">
-                              {match.player1Name}
-                            </Link>
-                          </TableCell>
-                          <TableCell>
-                            <Link href={`/players/${match.player2Id}`} className="text-primary hover:underline">
-                              {match.player2Name}
-                            </Link>
-                          </TableCell>
-                          <TableCell>
-                            {match.player1Score} - {match.player2Score}
-                          </TableCell>
-                          <TableCell>{match.result}</TableCell>
-                          {isAdmin && (
+                  <div className="overflow-x-auto">
+                    <div className="min-w-[400px]">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Round</TableHead>
+                            <TableHead>Player 1</TableHead>
+                            <TableHead>Player 2</TableHead>
+                            <TableHead>Score</TableHead>
+                            <TableHead>Result</TableHead>
+                          {isAdmin && <TableHead>Actions</TableHead>}</TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {sortedEventMatches.map(match => (
+                            <TableRow key={match.id}>
+                              <TableCell>{match.round}</TableCell>
+                              <TableCell>
+                                <Link href={`/players/${match.player1Id}`} className="text-primary hover:underline">
+                                  {match.player1Name}
+                                </Link>
+                              </TableCell>
+                              <TableCell>
+                                <Link href={`/players/${match.player2Id}`} className="text-primary hover:underline">
+                                  {match.player2Name}
+                                </Link>
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                {match.player1Score} - {match.player2Score}
+                              </TableCell>
+                              <TableCell>{match.result}</TableCell>{isAdmin && (
                             <TableCell>
                               <TableRowActions
                                 entityName="match"
@@ -280,10 +280,12 @@ export default function EventPage({ params }: EventPageProps) {
                               />
                             </TableCell>
                           )}
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     No matches have been played in this event yet.

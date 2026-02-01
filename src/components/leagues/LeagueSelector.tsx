@@ -2,6 +2,7 @@
 
 import { League } from '@prisma/client';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
 interface LeagueSelectorProps {
   /** Array of all available leagues */
@@ -51,8 +52,8 @@ export function LeagueSelector({ leagues, selectedLeagueId, onSelectLeague, clas
   }
 
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
-      <label htmlFor="league-selector" className="text-sm font-medium">
+    <div className={cn('flex flex-col sm:flex-row sm:items-center gap-2', className)}>
+      <label htmlFor="league-selector" className="hidden sm:block text-sm font-medium">
         Select League:
       </label>
       <Select value={selectedLeagueId || undefined} onValueChange={onSelectLeague}>

@@ -142,13 +142,13 @@ export default function DashboardPage() {
   return (
     <>
       <Header />
-      <div className="container mx-auto space-y-6">
+      <div className="container mx-auto space-y-6 ">
         <Nav />
         <div className="py-8 space-y-6">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">The Warren Tournaments</h1>
             {isAdmin && (
-              <div className="flex gap-2">
+              <div className="flex-col sm:flex-row items-center space-y-2 sm:space-x-2 ">
                 <AddLeagueDialog
                   open={addLeagueOpen}
                   onOpenChange={open => {
@@ -180,33 +180,26 @@ export default function DashboardPage() {
 
           {/* Leaderboard and Recent Events */}
           {/* Most Recent League Leaderboard */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>League Leaderboard</CardTitle>
-                {allLeagues && allLeagues.length > 0 && (
-                  <LeagueSelector
-                    leagues={allLeagues}
-                    selectedLeagueId={selectedLeagueId}
-                    onSelectLeague={setSelectedLeagueId}
-                    className="mb-4"
-                  />
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              {displayLeague ? (
-                <Leaderboard
-                  title={formatLeagueOption(displayLeague)}
-                  entries={leaderboard || []}
-                  isLoading={leaderboardLoading || scoringSystemLoading}
-                  scoringSystem={displayScoringSystem}
-                />
-              ) : (
-                <div className="text-center text-muted-foreground py-8">No leagues available</div>
-              )}
-            </CardContent>
-          </Card>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <CardTitle>League Leaderboard</CardTitle>
+            {allLeagues && allLeagues.length > 0 && (
+              <LeagueSelector
+                leagues={allLeagues}
+                selectedLeagueId={selectedLeagueId}
+                onSelectLeague={setSelectedLeagueId}
+              />
+            )}
+          </div>
+          {displayLeague ? (
+            <Leaderboard
+              title={formatLeagueOption(displayLeague)}
+              entries={leaderboard || []}
+              isLoading={leaderboardLoading || scoringSystemLoading}
+              scoringSystem={displayScoringSystem}
+            />
+          ) : (
+            <div className="text-center text-muted-foreground py-8">No leagues available</div>
+          )}
 
           {/* Recent Events and Scoring System */}
           <Card>
