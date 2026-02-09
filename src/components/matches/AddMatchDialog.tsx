@@ -12,6 +12,7 @@ import { useAddMatch } from '@/hooks/useAddMatch';
 import { useUpdateMatch } from '@/hooks/useUpdateMatch';
 import { useMatches } from '@/hooks/useMatches';
 import { Player, Event, Match } from '@prisma/client';
+import { BYE_PLAYER_ID } from '@/lib/constants/player';
 
 // Constants
 const FIRST_ROUND = 1;
@@ -61,7 +62,8 @@ export function AddMatchDialog({ match, players, events, open, onOpenChange }: A
     if (!eventMatches || !selectedEventId) return new Set<string>();
 
     const round1Matches = eventMatches.filter(m => m.round === FIRST_ROUND);
-    const playerIds = new Set<string>();
+    // Always include the BYE player to allow assigning a bye in later rounds if needed
+    const playerIds = new Set<string>([BYE_PLAYER_ID]);
 
     round1Matches.forEach(match => {
       playerIds.add(match.player1Id);
@@ -241,7 +243,7 @@ export function AddMatchDialog({ match, players, events, open, onOpenChange }: A
                 value={newMatchPlayer1}
                 onSelect={value => setNewMatchPlayer1(value as string)}
                 label="Player 1"
-                placeholder={isLoadingMatches ? "Loading players..." : "Select Player 1"}
+                placeholder={isLoadingMatches ? 'Loading players...' : 'Select Player 1'}
                 searchPlaceholder="Search players..."
                 disabled={isLoadingMatches}
                 required
@@ -253,7 +255,7 @@ export function AddMatchDialog({ match, players, events, open, onOpenChange }: A
                 value={newMatchPlayer2}
                 onSelect={value => setNewMatchPlayer2(value as string)}
                 label="Player 2"
-                placeholder={isLoadingMatches ? "Loading players..." : "Select Player 2"}
+                placeholder={isLoadingMatches ? 'Loading players...' : 'Select Player 2'}
                 searchPlaceholder="Search players..."
                 disabled={isLoadingMatches}
                 required

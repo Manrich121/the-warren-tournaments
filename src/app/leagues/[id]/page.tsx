@@ -39,7 +39,7 @@ export default function LeaguePage({ params }: LeaguePageProps) {
   const { data: leaguesData, isLoading: leaguesLoading, error: leaguesError } = useLeagues();
   const { data: eventsData, isLoading: eventsLoading, error: eventsError } = useEvents();
   const { data: playersData, isLoading: playersLoading, error: playersError } = usePlayers();
-  const { data: matchesData, isLoading: matchesLoading, error: matchesError } = useMatches();
+  const { data: matchesData, isLoading: matchesLoading, error: matchesError } = useMatches({ leagueId });
   const { data: prizePoolsData, isLoading: prizePoolsLoading, error: prizePoolsError } = usePrizePools();
   const { data: leaderboard, isLoading: leaderboardLoading, error: leaderboardError } = useLeagueLeaderboard(leagueId);
   const { data: allScoringSystems } = useScoringSystems();
@@ -68,10 +68,7 @@ export default function LeaguePage({ params }: LeaguePageProps) {
 
   // Fetch the scoring system for the league, or get default scoring system
   const scoringSystemId = league?.scoringSystemId;
-  const {
-    data: fetchedScoringSystem,
-    isLoading: scoringSystemLoading
-  } = useScoringSystem(scoringSystemId || '');
+  const { data: fetchedScoringSystem, isLoading: scoringSystemLoading } = useScoringSystem(scoringSystemId || '');
 
   // Use the fetched scoring system, or fallback to default from all scoring systems
   const displayScoringSystem = useMemo(() => {

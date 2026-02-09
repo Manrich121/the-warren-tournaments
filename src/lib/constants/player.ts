@@ -1,0 +1,1 @@
+export const BYE_PLAYER_ID = '_bye';

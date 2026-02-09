@@ -19,6 +19,9 @@ export interface UseTableStateProps {
   /** Initial page size (default: 25) */
   initialPageSize?: number;
 
+  /** Initial sorting state (e.g., [{ id: 'date', desc: true }]) */
+  initialSorting?: Array<{ id: string; desc: boolean }>;
+
   /** Enable state persistence (default: true) */
   enablePersistence?: boolean;
 }
@@ -81,7 +84,7 @@ export interface UseTableStateReturn {
  * });
  */
 export function useTableState(props: UseTableStateProps): UseTableStateReturn {
-  const { storageKey, initialPageSize = 25, enablePersistence = true } = props;
+  const { storageKey, initialPageSize = 25, initialSorting, enablePersistence = true } = props;
 
   // Initialize state with sessionStorage or defaults
   const defaultState: TableState = useMemo(
@@ -90,9 +93,10 @@ export function useTableState(props: UseTableStateProps): UseTableStateReturn {
       pagination: {
         ...DEFAULT_TABLE_STATE.pagination,
         pageSize: initialPageSize
-      }
+      },
+      sorting: initialSorting || DEFAULT_TABLE_STATE.sorting
     }),
-    [initialPageSize]
+    [initialPageSize, initialSorting]
   );
 
   // Use sessionStorage if persistence is enabled, otherwise use regular useState

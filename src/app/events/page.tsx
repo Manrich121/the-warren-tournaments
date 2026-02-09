@@ -152,6 +152,7 @@ export default function EventsPage() {
             enableSorting={true}
             enablePagination={true}
             initialPageSize={25}
+            initialSorting={[{ id: 'date', desc: true }]}
             isLoading={isLoading}
             onRowClick={event => router.push(`/events/${event.id}`)}
             renderRowActions={

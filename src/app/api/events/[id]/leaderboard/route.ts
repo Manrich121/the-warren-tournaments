@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/prisma';
 import { calculateEventRanking } from '@/lib/PlayerStats';
+import { BYE_PLAYER_ID } from '@/lib/constants/player';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -21,6 +22,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       playerIds.add(match.player1Id);
       playerIds.add(match.player2Id);
     });
+    // Remove bye player from the set of player IDs to fetch
+    playerIds.delete(BYE_PLAYER_ID);
 
     const players = await prisma.player.findMany({
       where: {
