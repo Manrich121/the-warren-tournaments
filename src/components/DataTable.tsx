@@ -56,6 +56,9 @@ export interface DataTableProps<TData> {
   /** Initial page size (default: 25) */
   initialPageSize?: number;
 
+  /** Initial sorting state (e.g., [{ id: 'date', desc: true }]) */
+  initialSorting?: Array<{ id: string; desc: boolean }>;
+
   /** Loading state */
   isLoading?: boolean;
 
@@ -84,6 +87,7 @@ export function DataTable<TData>({
   enableSorting = true,
   enablePagination = true,
   initialPageSize = 25,
+  initialSorting,
   isLoading = false,
   onRowClick,
   renderRowActions,
@@ -100,6 +104,7 @@ export function DataTable<TData>({
   const tableState = useTableState({
     storageKey,
     initialPageSize,
+    initialSorting,
     enablePersistence: true
   });
 
