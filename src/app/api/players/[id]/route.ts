@@ -1,9 +1,18 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/prisma';
 import { auth } from '@/auth';
+import { BYE_PLAYER_ID } from '@/lib/constants/player';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  if (id === BYE_PLAYER_ID) {
+    return NextResponse.json(
+      {
+        error: 'BYE player cannot be accessed directly'
+      },
+      { status: 401 }
+    );
+  }
   const player = await prisma.player.findUnique({
     where: {
       id

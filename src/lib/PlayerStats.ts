@@ -1,6 +1,7 @@
 
 import { EventRankedPlayer, PlayerStats } from '@/types/PlayerStats';
 import { Match, Player } from '@prisma/client';
+import { BYE_PLAYER_ID } from '@/lib/constants/player';
 
 export const calculateEventAttendance = (playerId: string, allMatches: Match[])=> {
   const attendedEvents = new Set<string>();
@@ -93,6 +94,10 @@ export const calculateOpponentMatchWinPercentage = (playerId: string, playerMatc
 
   let totalOpponentWinPercentage = 0;
   for (const opponentId of Array.from(opponents)) {
+    // A player’s byes are ignored
+    if(opponentId === BYE_PLAYER_ID) {
+      continue;
+    }
     const opponentMatches = allMatches.filter(m => m.player1Id === opponentId || m.player2Id === opponentId);
     totalOpponentWinPercentage += calculateMatchWinPercentage(opponentId, opponentMatches);
   }
@@ -116,6 +121,10 @@ export const calculateOpponentGameWinPercentage = (playerId: string, playerMatch
 
   let totalOpponentWinPercentage = 0;
   for (const opponentId of opponents) {
+    // A player’s byes are ignored
+    if(opponentId === BYE_PLAYER_ID) {
+      continue;
+    }
     const opponentMatches = allMatches.filter(m => m.player1Id === opponentId || m.player2Id === opponentId);
     totalOpponentWinPercentage += calculateGameWinPercentage(opponentId, opponentMatches);
   }
@@ -146,6 +155,9 @@ export const calculateGamesWonCount = (playerId: string, matches: Match[]): numb
 
 export const calculateEventRanking = (players: Player[], matches: Match[]): EventRankedPlayer[] => {
   const playerStats: PlayerStats[] = players.map(player => {
+    if(player.id === BYE_PLAYER_ID) {
+      return null;
+    }
     const playerMatches = matches.filter(m => m.player1Id === player.id || m.player2Id === player.id);
 
     return  {
@@ -160,7 +172,7 @@ export const calculateEventRanking = (players: Player[], matches: Match[]): Even
       oppMatchWinPercentage: calculateOpponentMatchWinPercentage(player.id, playerMatches, matches),
       oppGameWinPercentage: calculateOpponentGameWinPercentage(player.id, playerMatches, matches),
     };
-  });
+  }).filter(s => s !== null) as PlayerStats[];
 
   /**
    * The following tiebreakers are used to determine how a player ranks in an event

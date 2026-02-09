@@ -28,6 +28,7 @@ import { calculateLeaguePoints } from '@/lib/scoring-system/calculate-points';
 import { applyTieBreakers } from '@/lib/scoring-system/apply-tie-breakers';
 import { PlayerPerformanceData, ScoringSystemFormData } from '@/types/scoring-system';
 import { LeaguePlayerStats } from '@/types/PlayerStats';
+import { BYE_PLAYER_ID } from '@/lib/constants/player';
 
 /**
  * Calculates the complete leaderboard for a league with proper tie-breaking.
@@ -47,19 +48,6 @@ import { LeaguePlayerStats } from '@/types/PlayerStats';
  * @param scoringSystem - The scoring system with formulas to use for point calculation
  * @returns Sorted array of leaderboard entries with ranks
  *
- * @example
- * ```typescript
- * const leaderboard = calculateLeagueLeaderboard(
- *   'league-123',
- *   allEvents,
- *   allMatches,
- *   allPlayers
- * );
- * // Returns: [
- * //   { rank: 1, playerId: 'p1', playerName: 'Alice', leaguePoints: 12, ... },
- * //   { rank: 2, playerId: 'p2', playerName: 'Bob', leaguePoints: 10, ... },
- * // ]
- * ```
  */
 export function calculateLeagueLeaderboard(
   leagueId: string,
@@ -93,7 +81,7 @@ export function calculateLeagueLeaderboard(
   }
 
   // Filter players to only those who participated
-  const leaguePlayers = players.filter((p) => leaguePlayerIds.has(p.id));
+  const leaguePlayers = players.filter((p) => leaguePlayerIds.has(p.id) && p.id !== BYE_PLAYER_ID);
 
   if (leaguePlayers.length === 0) {
     return []; // No players, return empty leaderboard
