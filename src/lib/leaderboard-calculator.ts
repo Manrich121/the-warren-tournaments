@@ -102,7 +102,9 @@ export function calculateLeagueLeaderboard(
   // Calculate event rankings for each event
   const eventRankings = leagueEvents.map((event) => {
     const eventMatches = leagueMatches.filter((m) => m.eventId === event.id);
-    return calculateEventRanking(leaguePlayers, eventMatches);
+    const eventPlayers = leaguePlayers.filter((p) => eventMatches.some(m => m.player1Id === p.id || m.player2Id === p.id));
+
+    return calculateEventRanking(eventPlayers, eventMatches);
   });
 
   // Calculate league points for each player using scoring system formulas

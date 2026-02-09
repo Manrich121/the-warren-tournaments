@@ -144,9 +144,9 @@ export const calculateGamesWonCount = (playerId: string, matches: Match[]): numb
   }, 0);
 }
 
-export const calculateEventRanking = (players: Player[], allMatches: Match[]): EventRankedPlayer[] => {
+export const calculateEventRanking = (players: Player[], matches: Match[]): EventRankedPlayer[] => {
   const playerStats: PlayerStats[] = players.map(player => {
-    const playerMatches = allMatches.filter(m => m.player1Id === player.id || m.player2Id === player.id);
+    const playerMatches = matches.filter(m => m.player1Id === player.id || m.player2Id === player.id);
 
     return  {
       playerId: player.id,
@@ -157,8 +157,8 @@ export const calculateEventRanking = (players: Player[], allMatches: Match[]): E
       gamesWon: calculateGamesWonCount(player.id, playerMatches),
       gamePoints: calculateGamePoints(player.id, playerMatches),
       gameWinPercentage: calculateGameWinPercentage(player.id,  playerMatches),
-      oppMatchWinPercentage: calculateOpponentMatchWinPercentage(player.id, playerMatches, allMatches),
-      oppGameWinPercentage: calculateOpponentGameWinPercentage(player.id, playerMatches, allMatches),
+      oppMatchWinPercentage: calculateOpponentMatchWinPercentage(player.id, playerMatches, matches),
+      oppGameWinPercentage: calculateOpponentGameWinPercentage(player.id, playerMatches, matches),
     };
   });
 
