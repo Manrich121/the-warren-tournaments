@@ -40,10 +40,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const { id } = await params;
 
     if (id === BYE_PLAYER_ID) {
-      return NextResponse.json(
-        { error: 'BYE player cannot be modified' },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'BYE player cannot be modified' }, { status: 403 });
     }
 
     const data = await request.json();
@@ -61,10 +58,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     return NextResponse.json(updatedPlayer);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Validation error', details: error.message }, { status: 400 });
     }
     console.error('Error updating player:', error);
     return NextResponse.json({ error: 'Failed to update player' }, { status: 500 });
@@ -81,10 +75,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     const { id } = await params;
 
     if (id === BYE_PLAYER_ID) {
-      return NextResponse.json(
-        { error: 'BYE player cannot be deleted' },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'BYE player cannot be deleted' }, { status: 403 });
     }
 
     await prisma.player.delete({
