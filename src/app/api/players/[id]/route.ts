@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/prisma';
 import { auth } from '@/auth';
 import { BYE_PLAYER_ID } from '@/lib/constants/player';
+import { z } from 'zod';
+
+const updatePlayerSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100, 'Name too long')
+});
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -33,19 +38,34 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
   try {
     const { id } = await params;
+
+    if (id === BYE_PLAYER_ID) {
+      return NextResponse.json(
+        { error: 'BYE player cannot be modified' },
+        { status: 403 }
+      );
+    }
+
     const data = await request.json();
+    const validatedData = updatePlayerSchema.parse(data);
 
     const updatedPlayer = await prisma.player.update({
       where: {
         id
       },
       data: {
-        name: data.name
+        name: validatedData.name
       }
     });
 
     return NextResponse.json(updatedPlayer);
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Validation error', details: error.errors },
+        { status: 400 }
+      );
+    }
     console.error('Error updating player:', error);
     return NextResponse.json({ error: 'Failed to update player' }, { status: 500 });
   }
@@ -59,6 +79,13 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 
   try {
     const { id } = await params;
+
+    if (id === BYE_PLAYER_ID) {
+      return NextResponse.json(
+        { error: 'BYE player cannot be deleted' },
+        { status: 403 }
+      );
+    }
 
     await prisma.player.delete({
       where: {

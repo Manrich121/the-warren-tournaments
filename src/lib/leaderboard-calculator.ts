@@ -188,10 +188,14 @@ export function calculateLeagueLeaderboard(
     }));
 
     const rankedPlayers = applyTieBreakers(playersWithMetrics, scoringSystem.tieBreakers);
-    
+
     // Convert back to LeaderboardEntry format
     return rankedPlayers.map(rankedPlayer => {
-      const originalEntry = leaderboardEntries.find(e => e.playerId === rankedPlayer.playerId)!;
+      const originalEntry = leaderboardEntries.find(e => e.playerId === rankedPlayer.playerId);
+      if (!originalEntry) {
+        console.error(`Missing leaderboard entry for player ${rankedPlayer.playerId}`);
+        throw new Error(`Data integrity error: Missing leaderboard entry for player ${rankedPlayer.playerId}`);
+      }
       return {
         ...originalEntry,
         rank: rankedPlayer.rank,

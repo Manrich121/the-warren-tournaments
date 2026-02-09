@@ -3,7 +3,14 @@ import { EventRankedPlayer, PlayerStats } from '@/types/PlayerStats';
 import { Match, Player } from '@prisma/client';
 import { BYE_PLAYER_ID } from '@/lib/constants/player';
 
-export const calculateEventAttendance = (playerId: string, allMatches: Match[])=> {
+/**
+ * Calculates the number of unique events a player has attended.
+ *
+ * @param playerId - The ID of the player
+ * @param allMatches - Array of all matches to check
+ * @returns The number of unique events the player participated in
+ */
+export const calculateEventAttendance = (playerId: string, allMatches: Match[]) => {
   const attendedEvents = new Set<string>();
   for (const match of allMatches) {
     if (match.player1Id === playerId || match.player2Id === playerId) {
@@ -13,6 +20,14 @@ export const calculateEventAttendance = (playerId: string, allMatches: Match[])=
   return attendedEvents.size;
 }
 
+/**
+ * Calculates the total match points earned by a player.
+ * Win = 3 points, Draw = 1 point, Loss = 0 points.
+ *
+ * @param playerId - The ID of the player to calculate points for
+ * @param matches - Array of matches involving the player
+ * @returns Total match points earned
+ */
 export const calculateMatchPoints = (playerId: string, matches: Match[]): number => {
   let points = 0;
   for (const match of matches) {
@@ -27,27 +42,43 @@ export const calculateMatchPoints = (playerId: string, matches: Match[]): number
   return points;
 };
 
+/**
+ * Calculates the total game points earned by a player.
+ * Each game won = 3 points, Draw match = 1 point total.
+ *
+ * @param playerId - The ID of the player to calculate points for
+ * @param matches - Array of matches involving the player
+ * @returns Total game points earned
+ */
 export const calculateGamePoints = (playerId: string, matches: Match[]): number => {
   let points = 0;
   for (const match of matches) {
-      if(match.draw && (match.player1Id === playerId || match.player2Id === playerId)) {
-        points += 1;
-      }else if (match.player1Id === playerId) {
-        points += 3*match.player1Score;
-      } else if (match.player2Id === playerId) {
-        points += 3*match.player2Score;
-      }
+    if (match.draw && (match.player1Id === playerId || match.player2Id === playerId)) {
+      points += 1;
+    } else if (match.player1Id === playerId) {
+      points += 3 * match.player1Score;
+    } else if (match.player2Id === playerId) {
+      points += 3 * match.player2Score;
     }
+  }
 
   return points;
 };
 
+/**
+ * Calculates the match win percentage for a player.
+ * Minimum value is 0.33 (33%) per tournament rules.
+ *
+ * @param playerId - The ID of the player to calculate percentage for
+ * @param matches - Array of matches involving the player
+ * @returns Match win percentage (0.33 minimum)
+ */
 export const calculateMatchWinPercentage = (playerId: string, matches: Match[]): number => {
   let numRounds = 0;
 
   for (const match of matches) {
-    if(playerId === match.player1Id || playerId === match.player2Id){
-      numRounds += 1
+    if (playerId === match.player1Id || playerId === match.player2Id) {
+      numRounds += 1;
     }
   }
 
@@ -61,11 +92,19 @@ export const calculateMatchWinPercentage = (playerId: string, matches: Match[]):
 };
 
 
-export const calculateGameWinPercentage = (playerId: string,  matches: Match[]): number => {
+/**
+ * Calculates the game win percentage for a player.
+ * Minimum value is 0.33 (33%) per tournament rules.
+ *
+ * @param playerId - The ID of the player to calculate percentage for
+ * @param matches - Array of matches involving the player
+ * @returns Game win percentage (0.33 minimum)
+ */
+export const calculateGameWinPercentage = (playerId: string, matches: Match[]): number => {
   let totalGames = 0;
 
   for (const match of matches) {
-    if(playerId === match.player1Id || playerId === match.player2Id){
+    if (playerId === match.player1Id || playerId === match.player2Id) {
       totalGames += match.player1Score + match.player2Score;
     }
   }
@@ -78,6 +117,15 @@ export const calculateGameWinPercentage = (playerId: string,  matches: Match[]):
   return Math.max(0.33, gamePoints / (totalGames * 3));
 };
 
+/**
+ * Calculates the average match win percentage of a player's opponents.
+ * BYE players are excluded from the calculation.
+ *
+ * @param playerId - The ID of the player
+ * @param playerMatches - Array of matches involving the player
+ * @param allMatches - Array of all matches for opponent calculations
+ * @returns Average opponent match win percentage
+ */
 export const calculateOpponentMatchWinPercentage = (playerId: string, playerMatches: Match[], allMatches: Match[]): number => {
   const opponents = new Set<string>();
   for (const match of playerMatches) {
@@ -88,16 +136,15 @@ export const calculateOpponentMatchWinPercentage = (playerId: string, playerMatc
     }
   }
 
+  // Remove BYE player from opponents set
+  opponents.delete(BYE_PLAYER_ID);
+
   if (opponents.size === 0) {
     return 0;
   }
 
   let totalOpponentWinPercentage = 0;
-  for (const opponentId of Array.from(opponents)) {
-    // A player’s byes are ignored
-    if(opponentId === BYE_PLAYER_ID) {
-      continue;
-    }
+  for (const opponentId of opponents) {
     const opponentMatches = allMatches.filter(m => m.player1Id === opponentId || m.player2Id === opponentId);
     totalOpponentWinPercentage += calculateMatchWinPercentage(opponentId, opponentMatches);
   }
@@ -105,6 +152,15 @@ export const calculateOpponentMatchWinPercentage = (playerId: string, playerMatc
   return totalOpponentWinPercentage / opponents.size;
 };
 
+/**
+ * Calculates the average game win percentage of a player's opponents.
+ * BYE players are excluded from the calculation.
+ *
+ * @param playerId - The ID of the player
+ * @param playerMatches - Array of matches involving the player
+ * @param allMatches - Array of all matches for opponent calculations
+ * @returns Average opponent game win percentage
+ */
 export const calculateOpponentGameWinPercentage = (playerId: string, playerMatches: Match[], allMatches: Match[]): number => {
   const opponents = new Set<string>();
   for (const match of playerMatches) {
@@ -115,16 +171,15 @@ export const calculateOpponentGameWinPercentage = (playerId: string, playerMatch
     }
   }
 
+  // Remove BYE player from opponents set
+  opponents.delete(BYE_PLAYER_ID);
+
   if (opponents.size === 0) {
     return 0;
   }
 
   let totalOpponentWinPercentage = 0;
   for (const opponentId of opponents) {
-    // A player’s byes are ignored
-    if(opponentId === BYE_PLAYER_ID) {
-      continue;
-    }
     const opponentMatches = allMatches.filter(m => m.player1Id === opponentId || m.player2Id === opponentId);
     totalOpponentWinPercentage += calculateGameWinPercentage(opponentId, opponentMatches);
   }
@@ -132,6 +187,14 @@ export const calculateOpponentGameWinPercentage = (playerId: string, playerMatch
   return totalOpponentWinPercentage / opponents.size;
 };
 
+/**
+ * Calculates the total number of matches won by a player.
+ * Draws are not counted as wins.
+ *
+ * @param playerId - The ID of the player
+ * @param matches - Array of matches involving the player
+ * @returns Number of matches won
+ */
 export const calculateMatchesWonCount = (playerId: string, matches: Match[]): number => {
   return matches.filter((m) => {
     if (m.draw) return false;
@@ -141,9 +204,17 @@ export const calculateMatchesWonCount = (playerId: string, matches: Match[]): nu
   }).length;
 }
 
+/**
+ * Calculates the total number of individual games won by a player.
+ * Games from draw matches are not counted.
+ *
+ * @param playerId - The ID of the player
+ * @param matches - Array of matches involving the player
+ * @returns Number of individual games won
+ */
 export const calculateGamesWonCount = (playerId: string, matches: Match[]): number => {
   return matches.reduce((sum, m) => {
-    if(m.draw) return sum;
+    if (m.draw) return sum;
     if (m.player1Id === playerId) {
       return sum + m.player1Score;
     } else if (m.player2Id === playerId) {
@@ -153,14 +224,28 @@ export const calculateGamesWonCount = (playerId: string, matches: Match[]): numb
   }, 0);
 }
 
+/**
+ * Calculates event rankings for players based on their performance in matches.
+ * BYE players are excluded from rankings.
+ *
+ * Tie-breaking order:
+ * 1. Match points (higher is better)
+ * 2. Opponents' match-win percentage (higher is better)
+ * 3. Game-win percentage (higher is better)
+ * 4. Opponents' game-win percentage (higher is better)
+ *
+ * @param players - Array of players who participated in the event
+ * @param matches - Array of matches from the event
+ * @returns Array of ranked players with their statistics and rank positions
+ */
 export const calculateEventRanking = (players: Player[], matches: Match[]): EventRankedPlayer[] => {
   const playerStats: PlayerStats[] = players.map(player => {
-    if(player.id === BYE_PLAYER_ID) {
+    if (player.id === BYE_PLAYER_ID) {
       return null;
     }
     const playerMatches = matches.filter(m => m.player1Id === player.id || m.player2Id === player.id);
 
-    return  {
+    return {
       playerId: player.id,
       playerName: player.name,
       matchesWon: calculateMatchesWonCount(player.id, playerMatches),
@@ -168,7 +253,7 @@ export const calculateEventRanking = (players: Player[], matches: Match[]): Even
       matchWinPercentage: calculateMatchWinPercentage(player.id, playerMatches),
       gamesWon: calculateGamesWonCount(player.id, playerMatches),
       gamePoints: calculateGamePoints(player.id, playerMatches),
-      gameWinPercentage: calculateGameWinPercentage(player.id,  playerMatches),
+      gameWinPercentage: calculateGameWinPercentage(player.id, playerMatches),
       oppMatchWinPercentage: calculateOpponentMatchWinPercentage(player.id, playerMatches, matches),
       oppGameWinPercentage: calculateOpponentGameWinPercentage(player.id, playerMatches, matches),
     };
@@ -177,9 +262,9 @@ export const calculateEventRanking = (players: Player[], matches: Match[]): Even
   /**
    * The following tiebreakers are used to determine how a player ranks in an event
    * 1. Match points
-   * 2. Opponents’ match-win percentage
+   * 2. Opponents' match-win percentage
    * 3. Game-win percentage
-   * 4. Opponents’ game-win percentage
+   * 4. Opponents' game-win percentage
    */
   playerStats.sort((a, b) => {
     if (b.matchPoints !== a.matchPoints) {
@@ -198,10 +283,10 @@ export const calculateEventRanking = (players: Player[], matches: Match[]): Even
   const rankedPlayers: EventRankedPlayer[] = [];
   for (let i = 0; i < playerStats.length; i++) {
     if (i > 0 && (
-      playerStats[i].matchPoints < playerStats[i-1].matchPoints ||
-      playerStats[i].oppMatchWinPercentage < playerStats[i-1].oppMatchWinPercentage ||
-      playerStats[i].gameWinPercentage < playerStats[i-1].gameWinPercentage ||
-      playerStats[i].oppGameWinPercentage < playerStats[i-1].oppGameWinPercentage
+      playerStats[i].matchPoints < playerStats[i - 1].matchPoints ||
+      playerStats[i].oppMatchWinPercentage < playerStats[i - 1].oppMatchWinPercentage ||
+      playerStats[i].gameWinPercentage < playerStats[i - 1].gameWinPercentage ||
+      playerStats[i].oppGameWinPercentage < playerStats[i - 1].oppGameWinPercentage
     )) {
       rank = i + 1;
     }
