@@ -167,20 +167,6 @@ export const Leaderboard = ({ title = 'Leaderboard', entries, scoringSystem, isL
     }
   });
 
-  // Handle empty state
-  if (!isLoading && entries.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{title}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center text-muted-foreground py-8">No matches played in this league yet</div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   // Get sortable columns for the mobile sort dropdown
   const sortableColumns = useMemo(() => {
     return table
@@ -208,6 +194,20 @@ export const Leaderboard = ({ title = 'Leaderboard', entries, scoringSystem, isL
       setSorting([{ id: currentSortColumn, desc: currentSortDirection === 'asc' }]);
     }
   };
+
+  // Handle empty state
+  if (!isLoading && entries.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>{title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center text-muted-foreground py-8">No matches played in this league yet</div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
